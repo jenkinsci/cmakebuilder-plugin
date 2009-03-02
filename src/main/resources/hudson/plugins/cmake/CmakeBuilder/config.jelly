@@ -1,0 +1,38 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+
+    See global.jelly for a general discussion about jelly script.
+  -->
+	
+	<f:entry title="Source Directory"
+	         description="The source directory. This becomes: cmake source_dir ..." 
+	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
+    <f:textbox field="sourceDir" />
+	</f:entry>
+	
+	<f:entry title="Build Directory"
+	         description="The build directory. Results in -DCMAKE_BUID_DIR=build_dir" 
+	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
+    <f:textbox field="buildDir" />
+	</f:entry>
+	
+	<f:entry title="Install Directory"
+	         description="The install directory. Results in -DCMAKE_INSTALL_PREFIX=install_dir" 
+	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
+    <f:textbox field="installDir" />
+	</f:entry>
+	
+	<f:entry title="Build Type"
+	         description="Must be one of Debug, Release, RelWithDebInfo , MinSizeRel. Results in -DCMAKE_BUILD_TYPE=build_type" 
+	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
+    <f:textbox field="buildType" />
+    </f:entry>
+    
+    <f:entry title="Other CMake Arguments"
+	         description="Other arguments to be added to the cmake call" 
+	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
+    <f:textbox field="cmakeArgs" />
+	</f:entry>
+	
+</j:jelly>
