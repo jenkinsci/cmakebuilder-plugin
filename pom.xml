@@ -4,7 +4,7 @@
   <groupId>hudson.plugins.cmake</groupId>
   <artifactId>cmakebuilder</artifactId>
   <packaging>hpi</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1</version>
   
   <properties>
     <!-- which version of Hudson is this plugin built against? -->
