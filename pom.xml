@@ -5,6 +5,7 @@
   <artifactId>cmakebuilder</artifactId>
   <packaging>hpi</packaging>
   <version>0.1</version>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
   
   <properties>
     <!-- which version of Hudson is this plugin built against? -->
