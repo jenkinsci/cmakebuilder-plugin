@@ -19,6 +19,14 @@
     <hudson.version>1.270</hudson.version>
   </properties>
 
+  <distributionManagement>
+     <repository>
+        <uniqueVersion>false</uniqueVersion>
+        <id>java.net-maven2.repository</id>
+        <url>java-net:/maven2-repository/trunk/repository/</url>
+     </repository>
+  </distributionManagement>
+ 
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
