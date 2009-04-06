@@ -65,18 +65,9 @@ public class CmakeBuilder extends Builder {
 		this.buildType = buildType;
 		this.cmakeArgs = cmakeArgs;
 		this.cleanBuild = false;
-		builderImpl = new CmakeBuilderImpl();
-		
-//		<f:entry title="Clean Build"
-//	         description="Clean Build?" 
-//	         help="${rootURL}/plugin/hello-world/help-projectConfig.html">
-//   <f:checkbox value="cmakeArgs" />
-//	</f:entry>
+		builderImpl = new CmakeBuilderImpl();		
     }
 
-    /**
-     * We'll use this from the <tt>config.jelly</tt>.
-     */
     public String getSourceDir() {
     	return this.sourceDir;
     }
@@ -107,14 +98,13 @@ public class CmakeBuilder extends Builder {
     	if (builderImpl == null) {
     		builderImpl = new CmakeBuilderImpl();
     	}
-    	String theBuildDir = ""; 
     	String theSourceDir = ""; 
     	String theInstallDir = ""; 
     	try {
-    		if (this.cleanBuild) {
-    			build.getProject().getWorkspace().deleteRecursive();
-    		}
-    		theBuildDir  = builderImpl.preparePath(build.getEnvVars(), this.buildDir, 
+//    		if (this.cleanBuild) {
+//    			build.getProject().getWorkspace().deleteRecursive();
+//    		}
+    		builderImpl.preparePath(build.getEnvVars(), this.buildDir, 
     				CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
     		theSourceDir = builderImpl.preparePath(build.getEnvVars(), this.sourceDir,
     				CmakeBuilderImpl.PreparePathOptions.CHECK_PATH_EXISTS);
@@ -123,18 +113,19 @@ public class CmakeBuilder extends Builder {
     	} catch (IOException ioe) {
     		listener.getLogger().println(ioe.getMessage());
     		return false;
-    	} catch (InterruptedException e) {
-    		listener.getLogger().println(e.getMessage());
-			return false;
-		}
+    	} 
+//    	catch (InterruptedException e) {
+//    		listener.getLogger().println(e.getMessage());
+//			return false;
+//		}
     	
     	String cmakeBin = CMAKE;
-    	if (DESCRIPTOR.cmakePath() != null) {
+    	if (DESCRIPTOR.cmakePath() != null && DESCRIPTOR.cmakePath().length() > 0) {
     		cmakeBin = DESCRIPTOR.cmakePath();
     	}
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, theSourceDir, theInstallDir, buildType, cmakeArgs);
     	FilePath workDir = new FilePath(build.getProject().getWorkspace(), this.buildDir); 
-    	listener.getLogger().println("CMMake call : " + cmakeCall);
+    	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
     		Proc proc = launcher.launch(cmakeCall, build.getEnvVars(), listener.getLogger(), workDir);
@@ -160,7 +151,6 @@ public class CmakeBuilder extends Builder {
     }
 
     public Descriptor<Builder> getDescriptor() {
-        // see Descriptor javadoc for more about what a descriptor is.
         return DESCRIPTOR;
     }
 
@@ -199,7 +189,7 @@ public class CmakeBuilder extends Builder {
             this.allowedBuildTypes.add("MinSizeRel");
             this.errorMessage = "Must be one of Debug, Release, RelWithDebInfo, MinSizeRel";
         }
-
+        
         public void doCheckSourceDir(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
         	new FormFieldValidator.WorkspaceFilePath(req, rsp, true, false).process();
         }
@@ -226,12 +216,11 @@ public class CmakeBuilder extends Builder {
                     	File file = new File(value);
                     	if (file.isFile()) {
                     		error("build dir is a file");
-                    	} else 
+                    	} else { 
                     		//TODO add more checks
                     		ok();
-                    	
+                    	}
                     }
-
                 }
             }.process();
         }
@@ -272,7 +261,6 @@ public class CmakeBuilder extends Builder {
         public boolean configure(StaplerRequest req, JSONObject o) throws FormException {
             // to persist global configuration information,
             // set that to properties and call save().
-            //useFrench = o.getBoolean("useFrench");
             cmakePath = o.getString("cmakePath");
             save();
             return super.configure(req, o);
