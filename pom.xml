@@ -10,6 +10,7 @@
 
   <groupId>hudson.plugins.cmake</groupId>
   <artifactId>cmakebuilder</artifactId>
+  <name>Hudson CMake plugin</name>
   <packaging>hpi</packaging>
   <version>0.5-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
