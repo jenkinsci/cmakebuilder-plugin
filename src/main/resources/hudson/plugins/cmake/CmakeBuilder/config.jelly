@@ -1,28 +1,23 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-	<f:entry title="Source Directory" 
-	         help="/plugin/cmakebuilder/CmakeBuilder/sourcedir.html">
-    	<f:textbox field="sourceDir" />
+	<f:entry title="Source Directory" field="sourceDir">
+    	<f:textbox />
 	</f:entry>
 	
-	<f:entry title="Build Directory" 
-	         help="/plugin/cmakebuilder/CmakeBuilder/builddir.html">
-    	<f:textbox field="buildDir"/>
+	<f:entry title="Build Directory" field="buildDir">
+    	<f:textbox />
 	</f:entry>
 	
-	<f:entry title="Install Directory" 
-	         help="/plugin/cmakebuilder/CmakeBuilder/installdir.html">
-    	<f:textbox field="installDir"/>
+	<f:entry title="Install Directory" field="installDir">
+    	<f:textbox />
 	</f:entry>
 	
-	<f:entry title="Build Type" 
-	         help="/plugin/cmakebuilder/CmakeBuilder/buildtype.html">
-    	<f:textbox field="buildType" />
-    </f:entry>
+	<f:entry title="Build Type" field="buildType">
+    	<f:textbox  />
+  </f:entry>
     
-    <f:entry title="Other CMake Arguments" 
-	         help="/plugin/cmakebuilder/CmakeBuilder/cmakeargs.html">
-    	<f:textbox field="cmakeArgs" />
+  <f:entry title="Other CMake Arguments" field="cmakeArgs">
+    	<f:textbox  />
 	</f:entry>
 	
 </j:jelly>
