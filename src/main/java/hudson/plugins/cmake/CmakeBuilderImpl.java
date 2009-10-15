@@ -12,6 +12,7 @@ public class CmakeBuilderImpl {
 
 	private static final String DCMAKE_BUILD_TYPE = "-DCMAKE_BUILD_TYPE=";
 	private static final String DCMAKE_INSTALL_PREFIX = "-DCMAKE_INSTALL_PREFIX=";
+	private static final String BLANK = " ";
 
 	public enum PreparePathOptions
 	{
@@ -87,11 +88,12 @@ public class CmakeBuilderImpl {
     	return file.getPath();
 	}
 	
-	String buildCMakeCall(String cmakeBin, String sourceDir, String installDir, String buildType, String cmakeArgs) {
-		String cmakeCall = cmakeBin + " " + sourceDir + " "
-		+ DCMAKE_INSTALL_PREFIX + installDir + " "
-		+ DCMAKE_BUILD_TYPE + buildType + " "
-		+ cmakeArgs;
-		return cmakeCall;
+	String buildCMakeCall(String cmakeBin, String generator, String sourceDir, String installDir, String buildType, String cmakeArgs) {
+		return new StringBuilder().append(cmakeBin).append(BLANK)
+			.append(sourceDir).append(BLANK)
+			.append("-G \"").append(generator).append("\"").append(BLANK)
+			.append(DCMAKE_INSTALL_PREFIX).append(installDir).append(BLANK)
+			.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK)
+			.append(cmakeArgs).toString();
 	}
 }

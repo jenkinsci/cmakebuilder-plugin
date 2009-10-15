@@ -12,12 +12,31 @@
     	<f:textbox />
 	</f:entry>
 	
-	<f:entry title="Build Type" field="buildType">
-    	<f:textbox  />
-  </f:entry>
-    
-  <f:entry title="Other CMake Arguments" field="cmakeArgs">
-    	<f:textbox  />
+	<f:entry name="buildType" title="Build Type" field="buildType">
+		<select name="buildType">
+			<option value="Debug">Debug</option>
+			<option value="Release">Release</option>
+			<option value="RelWithDebInfo">RelWithDebInfo</option>
+			<option value="MinSizeRel">MinSizeRel</option>
+		</select>
 	</f:entry>
+  	  	
+	<f:advanced>
+	  	<f:entry title="Makefile Generator" field="generator">
+    		<f:textbox name="cmakebuilder.generator" value="${h.defaulted(instance.getGenerator(), 'Unix Makefiles')}"/>
+		</f:entry>
+		
+	  	<f:entry title="Make Command" field="makeCommand">
+	    	<f:textbox name="cmakebuilder.makeCommand" value="${h.defaulted(instance.getMakeCommand(), 'make')}"/>
+	  	</f:entry>
+	  	
+	  	<f:entry title="Install Command" field="installCommand">
+	    	<f:textbox name="cmakebuilder.installCommand" value="${h.defaulted(instance.getInstallCommand(), 'make install')}"/>
+	  	</f:entry>
+	  	<f:entry title="Other CMake Arguments" field="cmakeArgs">
+			<f:textbox  />
+		</f:entry>
+	</f:advanced>
+	
 	
 </j:jelly>

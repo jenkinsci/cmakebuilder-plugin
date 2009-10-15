@@ -9,7 +9,9 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.AncestorInPath;
@@ -27,32 +29,37 @@ import java.util.List;
  * Executes <tt>cmake</tt> as the build process.
  *
  *
- * @author Kohsuke Kawaguchi
+ * @author Volker Kaiser
  */
 public class CmakeBuilder extends Builder {
 
 	private static final String CMAKE = "cmake";
-	private static final String MAKE = "make";
-	private static final String MAKE_INSTALL = "make install";
 	
 	private String sourceDir;
     private String buildDir;
     private String installDir;
     private String buildType;
+    private String generator;
+    private String makeCommand;
+    private String installCommand;
     private String cmakeArgs;
     private boolean cleanBuild;
 
     private CmakeBuilderImpl builderImpl;
+
     
     @DataBoundConstructor
-    public CmakeBuilder(String sourceDir, String buildDir, String installDir, String buildType, String cmakeArgs) {
+    public CmakeBuilder(String sourceDir, String buildDir, String installDir, String buildType, String generator, String makeCommand, String installCommand, String cmakeArgs) {
     	this.sourceDir = sourceDir;
 		this.buildDir = buildDir;
 		this.installDir = installDir;
 		this.buildType = buildType;
+		this.generator = generator;
+		this.makeCommand = makeCommand;
+		this.installCommand = installCommand; 		
 		this.cmakeArgs = cmakeArgs;
 		this.cleanBuild = false;
-		builderImpl = new CmakeBuilderImpl();		
+		builderImpl = new CmakeBuilderImpl();
     }
 
     public String getSourceDir() {
@@ -69,6 +76,18 @@ public class CmakeBuilder extends Builder {
 
     public String getBuildType() {
     	return this.buildType;
+    }
+    
+    public String getGenerator() {
+    	return this.generator;
+    }
+    
+    public String getMakeCommand() {
+    	return this.makeCommand;
+    }
+    
+    public String getInstallCommand() {
+    	return this.installCommand;
     }
     
     public String getCmakeArgs() {
@@ -113,7 +132,7 @@ public class CmakeBuilder extends Builder {
         if (cmakePath != null && cmakePath.length() > 0) {
     		cmakeBin = cmakePath;
     	}
-    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, theSourceDir, theInstallDir, buildType, cmakeArgs);
+    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, theSourceDir, theInstallDir, buildType, cmakeArgs);
     	FilePath workDir = new FilePath(build.getProject().getWorkspace(), this.buildDir); 
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
@@ -124,12 +143,12 @@ public class CmakeBuilder extends Builder {
     			return false;
     		}
     		
-    		proc = launcher.launch(MAKE, envs, listener.getLogger(), workDir);
+    		proc = launcher.launch(getMakeCommand(), envs, listener.getLogger(), workDir);
     		result = proc.join();
     		if (result != 0) {
     			return false;
     		}
-    		proc = launcher.launch(MAKE_INSTALL, envs, listener.getLogger(), workDir);
+    		proc = launcher.launch(getInstallCommand(), envs, listener.getLogger(), workDir);
     		result = proc.join();
     		return (result == 0);
 		} catch (IOException e) {
@@ -153,7 +172,7 @@ public class CmakeBuilder extends Builder {
      * for the actual HTML fragment for the configuration screen.
      */
     @Extension
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -202,7 +221,7 @@ public class CmakeBuilder extends Builder {
         }
 
         /**
-         * Performs on-the-fly validation of the form field 'name'.
+         * Performs on-the-fly validation of the form field 'buildType'.
          *
          * @param value
          */
@@ -215,6 +234,19 @@ public class CmakeBuilder extends Builder {
 
             return FormValidation.ok();
         }
+
+        /**
+         * Performs on-the-fly validation of the form field 'makeCommand'.
+         *
+         * @param value
+         */
+        public FormValidation doCheckMakeCommand(@QueryParameter final String value) throws IOException, ServletException {
+            if (value.length() == 0) {
+            	return FormValidation.error("Please set make command");
+            }
+            return FormValidation.validateExecutable(value);
+        }
+
         
         /**
          * This human readable name is used in the configuration screen.
@@ -233,6 +265,16 @@ public class CmakeBuilder extends Builder {
 
         public String cmakePath() {
         	return cmakePath;
+        }
+        
+        @Override
+        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        	return req.bindJSON(CmakeBuilder.class, formData);
+        }
+        
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        	return FreeStyleProject.class.isAssignableFrom(jobType);
         }
     }
 }
