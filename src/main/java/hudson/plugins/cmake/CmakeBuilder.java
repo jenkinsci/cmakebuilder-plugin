@@ -4,11 +4,10 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
@@ -99,7 +98,7 @@ public class CmakeBuilder extends Builder {
     }
     
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-    	listener.getLogger().println("MODULE: " + build.getProject().getModuleRoot());
+    	listener.getLogger().println("MODULE: " + build.getModuleRoot());
     	
     	if (builderImpl == null) {
     		builderImpl = new CmakeBuilderImpl();
@@ -133,23 +132,20 @@ public class CmakeBuilder extends Builder {
     		cmakeBin = cmakePath;
     	}
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, theSourceDir, theInstallDir, buildType, cmakeArgs);
-    	FilePath workDir = new FilePath(build.getProject().getWorkspace(), this.buildDir); 
+    	FilePath workDir = new FilePath(build.getWorkspace(), this.buildDir); 
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
-    		Proc proc = launcher.launch(cmakeCall, envs, listener.getLogger(), workDir);
-    		int result = proc.join();
+    		int result = launcher.launch().cmds(Util.tokenize(cmakeCall)).envs(envs).stdout(listener).pwd(workDir).join();
     		if (result != 0) {
     			return false;
     		}
     		
-    		proc = launcher.launch(getMakeCommand(), envs, listener.getLogger(), workDir);
-    		result = proc.join();
+    		result = launcher.launch().cmds(Util.tokenize(getMakeCommand())).envs(envs).stdout(listener).pwd(workDir).join();
     		if (result != 0) {
     			return false;
     		}
-    		proc = launcher.launch(getInstallCommand(), envs, listener.getLogger(), workDir);
-    		result = proc.join();
+    		result = launcher.launch().cmds(Util.tokenize(getInstallCommand())).envs(envs).stdout(listener).pwd(workDir).join();
     		return (result == 0);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -159,6 +155,7 @@ public class CmakeBuilder extends Builder {
 		return false;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
@@ -196,7 +193,7 @@ public class CmakeBuilder extends Builder {
         }
         
         public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject project, @QueryParameter final String value) throws IOException, ServletException {
-            FilePath ws = project.getWorkspace();
+            FilePath ws = project.getSomeWorkspace();
             if(ws==null) return FormValidation.ok();
             return ws.validateRelativePath(value,true,false);
         }
@@ -255,6 +252,7 @@ public class CmakeBuilder extends Builder {
             return "CMake Build";
         }
 
+        @Override
         public boolean configure(StaplerRequest req, JSONObject o) throws FormException {
             // to persist global configuration information,
             // set that to properties and call save().
