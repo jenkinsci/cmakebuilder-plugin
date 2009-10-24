@@ -12,6 +12,12 @@
   <artifactId>cmakebuilder</artifactId>
   <name>Hudson CMake plugin</name>
   <packaging>hpi</packaging>
-  <version>0.7-SNAPSHOT</version>
+  <version>1.0</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/cmakebuilder-1.0</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/cmakebuilder-1.0</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/cmakebuilder/tags/cmakebuilder-1.0</url>
+  </scm>
 </project>
