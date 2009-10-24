@@ -88,12 +88,26 @@ public class CmakeBuilderImpl {
     	return file.getPath();
 	}
 	
-	String buildCMakeCall(String cmakeBin, String generator, String sourceDir, String installDir, String buildType, String cmakeArgs) {
+	String buildCMakeCall(final String cmakeBin, 
+			final String generator,
+			final String preloadScript,
+			final String sourceDir, 
+			final String installDir, 
+			final String buildType, 
+			final String cmakeArgs) {
 		return new StringBuilder().append(cmakeBin).append(BLANK)
-			.append(sourceDir).append(BLANK)
+			.append(createPreloadScriptArg(preloadScript)).append(BLANK)
 			.append("-G \"").append(generator).append("\"").append(BLANK)
 			.append(DCMAKE_INSTALL_PREFIX).append(installDir).append(BLANK)
 			.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK)
-			.append(cmakeArgs).toString();
+			.append(cmakeArgs).append(BLANK)
+			.append("\"").append(sourceDir).append("\"").append(BLANK).toString();
+	}
+	
+	private String createPreloadScriptArg(final String preloadScript) {
+		if (preloadScript == null || preloadScript.trim().isEmpty()) {
+			return "";
+		}
+		return " -C \"" + preloadScript.trim() + "\"";
 	}
 }

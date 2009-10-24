@@ -41,6 +41,7 @@ public class CmakeBuilder extends Builder {
     private String generator;
     private String makeCommand;
     private String installCommand;
+    private String preloadScript;
     private String cmakeArgs;
     private boolean cleanBuild;
 
@@ -48,16 +49,26 @@ public class CmakeBuilder extends Builder {
 
     
     @DataBoundConstructor
-    public CmakeBuilder(String sourceDir, String buildDir, String installDir, String buildType, String generator, String makeCommand, String installCommand, String cmakeArgs) {
+    public CmakeBuilder(String sourceDir, 
+    		String buildDir, 
+    		String installDir, 
+    		String buildType, 
+    		boolean cleanBuild,
+    		String generator, 
+    		String makeCommand, 
+    		String installCommand,
+    		String preloadScript,
+    		String cmakeArgs) {
     	this.sourceDir = sourceDir;
 		this.buildDir = buildDir;
 		this.installDir = installDir;
 		this.buildType = buildType;
+		this.cleanBuild = cleanBuild;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
 		this.installCommand = installCommand; 		
 		this.cmakeArgs = cmakeArgs;
-		this.cleanBuild = false;
+		this.preloadScript = preloadScript;
 		builderImpl = new CmakeBuilderImpl();
     }
 
@@ -77,6 +88,10 @@ public class CmakeBuilder extends Builder {
     	return this.buildType;
     }
     
+    public boolean getCleanBuild() {
+    	return this.cleanBuild;
+    }
+    
     public String getGenerator() {
     	return this.generator;
     }
@@ -89,12 +104,12 @@ public class CmakeBuilder extends Builder {
     	return this.installCommand;
     }
     
+    public String getPreloadScript() {
+    	return this.preloadScript;
+    }
+    
     public String getCmakeArgs() {
     	return this.cmakeArgs;
-    }
-
-    public boolean getCleanBuild() {
-    	return this.cleanBuild;
     }
     
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -104,15 +119,19 @@ public class CmakeBuilder extends Builder {
     		builderImpl = new CmakeBuilderImpl();
     	}
         EnvVars envs = build.getEnvironment(listener);
-
+        FilePath workDir = new FilePath(build.getProject().getWorkspace(), this.buildDir);
+        
         String theSourceDir;
     	String theInstallDir;
     	try {
-//    		if (this.cleanBuild) {
-//    			build.getProject().getWorkspace().deleteRecursive();
-//    		}
-            builderImpl.preparePath(envs, this.buildDir, 
-    				CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+    		if (this.cleanBuild) {
+    			listener.getLogger().println("Cleaning Build Dir... " + workDir.toString());
+    			builderImpl.preparePath(envs, this.buildDir, 
+    					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+    		} else {
+    			builderImpl.preparePath(envs, this.buildDir,
+    					CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
+    		}    			
     		theSourceDir = builderImpl.preparePath(envs, this.sourceDir,
     				CmakeBuilderImpl.PreparePathOptions.CHECK_PATH_EXISTS);
     		theInstallDir = builderImpl.preparePath(envs, this.installDir,
@@ -131,8 +150,8 @@ public class CmakeBuilder extends Builder {
         if (cmakePath != null && cmakePath.length() > 0) {
     		cmakeBin = cmakePath;
     	}
-    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, theSourceDir, theInstallDir, buildType, cmakeArgs);
-    	FilePath workDir = new FilePath(build.getWorkspace(), this.buildDir); 
+    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, buildType, cmakeArgs);
+    	listener.getLogger().println("Build dir  : " + workDir.toString());
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
@@ -141,11 +160,15 @@ public class CmakeBuilder extends Builder {
     			return false;
     		}
     		
-    		result = launcher.launch().cmds(Util.tokenize(getMakeCommand())).envs(envs).stdout(listener).pwd(workDir).join();
-    		if (result != 0) {
-    			return false;
+    		if (!getMakeCommand().trim().isEmpty()) {
+    			result = launcher.launch().cmds(Util.tokenize(getMakeCommand())).envs(envs).stdout(listener).pwd(workDir).join();
+    			if (result != 0) {
+    				return false;
+    			}
     		}
-    		result = launcher.launch().cmds(Util.tokenize(getInstallCommand())).envs(envs).stdout(listener).pwd(workDir).join();
+    		if (!getInstallCommand().trim().isEmpty()) {
+    			result = launcher.launch().cmds(Util.tokenize(getInstallCommand())).envs(envs).stdout(listener).pwd(workDir).join();
+    		}
     		return (result == 0);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -157,7 +180,7 @@ public class CmakeBuilder extends Builder {
 
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     /**

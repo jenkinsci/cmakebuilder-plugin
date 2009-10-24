@@ -20,6 +20,10 @@
 			<option value="MinSizeRel">MinSizeRel</option>
 		</select>
 	</f:entry>
+  	
+  	<f:entry title="Clean Build" field="cleanBuild">
+    	<f:checkbox name="cmakebuilder.cleanBuild" checked="${instance.getCleanBuild()}"/>
+    </f:entry>
   	  	
 	<f:advanced>
 	  	<f:entry title="Makefile Generator" field="generator">
@@ -33,6 +37,11 @@
 	  	<f:entry title="Install Command" field="installCommand">
 	    	<f:textbox name="cmakebuilder.installCommand" value="${h.defaulted(instance.getInstallCommand(), 'make install')}"/>
 	  	</f:entry>
+	  	
+	  	<f:entry title="Preload Script" field="preloadScript">
+	    	<f:textbox />
+	  	</f:entry>
+	  	
 	  	<f:entry title="Other CMake Arguments" field="cmakeArgs">
 			<f:textbox  />
 		</f:entry>
