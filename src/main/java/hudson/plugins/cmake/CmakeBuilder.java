@@ -19,8 +19,11 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,11 +148,7 @@ public class CmakeBuilder extends Builder {
 //			return false;
 //		}
     	
-    	String cmakeBin = CMAKE;
-        String cmakePath = getDescriptor().cmakePath();
-        if (cmakePath != null && cmakePath.length() > 0) {
-    		cmakeBin = cmakePath;
-    	}
+    	String cmakeBin = checkCmake(listener);
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, buildType, cmakeArgs);
     	listener.getLogger().println("Build dir  : " + workDir.toString());
     	listener.getLogger().println("CMake call : " + cmakeCall);
@@ -177,6 +176,24 @@ public class CmakeBuilder extends Builder {
 		}
 		return false;
     }
+
+	private String checkCmake(BuildListener listener) throws IOException,
+			InterruptedException {
+		String cmakeBin = CMAKE;
+        String cmakePath = getDescriptor().cmakePath();
+        if (cmakePath != null && cmakePath.length() > 0) {
+    		cmakeBin = cmakePath;
+    	}
+        Process cmakeProc = new ProcessBuilder(cmakeBin, "-version").start();
+        BufferedReader cmakeProcReader = new BufferedReader(new InputStreamReader(cmakeProc.getInputStream()));
+        String temp = cmakeProcReader.readLine();
+        while (temp != null) {
+        	listener.getLogger().println(temp);
+        	temp = cmakeProcReader.readLine();
+        }
+        cmakeProc.waitFor();
+		return cmakeBin;
+	}
 
     @Override
     public DescriptorImpl getDescriptor() {
