@@ -4,11 +4,14 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Proc;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
+import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.util.FormValidation;
@@ -20,11 +23,15 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -122,51 +129,53 @@ public class CmakeBuilder extends Builder {
     		builderImpl = new CmakeBuilderImpl();
     	}
         EnvVars envs = build.getEnvironment(listener);
-        FilePath workDir = new FilePath(build.getProject().getWorkspace(), this.buildDir);
+        final FilePath workSpace = build.getProject().getWorkspace();
         
         String theSourceDir;
     	String theInstallDir;
+    	String theBuildDir = this.buildDir;
     	try {
     		if (this.cleanBuild) {
-    			listener.getLogger().println("Cleaning Build Dir... " + workDir.toString());
-    			builderImpl.preparePath(envs, this.buildDir, 
+    			listener.getLogger().println("Cleaning Build Dir... " + this.buildDir);
+    			theBuildDir = builderImpl.preparePath(workSpace, envs, this.buildDir, 
     					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
     		} else {
-    			builderImpl.preparePath(envs, this.buildDir,
+    			theBuildDir = builderImpl.preparePath(workSpace, envs, this.buildDir,
     					CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
     		}    			
-    		theSourceDir = builderImpl.preparePath(envs, this.sourceDir,
+    		theSourceDir = builderImpl.preparePath(workSpace, envs, this.sourceDir,
     				CmakeBuilderImpl.PreparePathOptions.CHECK_PATH_EXISTS);
-    		theInstallDir = builderImpl.preparePath(envs, this.installDir,
+    		theInstallDir = builderImpl.preparePath(workSpace, envs, this.installDir,
     				CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
     	} catch (IOException ioe) {
     		listener.getLogger().println(ioe.getMessage());
     		return false;
     	}
-//    	catch (InterruptedException e) {
-//    		listener.getLogger().println(e.getMessage());
-//			return false;
-//		}
     	
-    	String cmakeBin = checkCmake(listener);
+    	listener.getLogger().println("Build   dir  : " + theBuildDir.toString());
+    	listener.getLogger().println("Source  dir  : " + theSourceDir.toString());
+    	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
+    	String cmakeBin = checkCmake(build.getBuiltOn(), listener);
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, buildType, cmakeArgs);
-    	listener.getLogger().println("Build dir  : " + workDir.toString());
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
-    		int result = launcher.launch().cmds(Util.tokenize(cmakeCall)).envs(envs).stdout(listener).pwd(workDir).join();
+    		int result = launcher.launch(cmakeCall, new HashMap<String, String>(), 
+    				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     		if (result != 0) {
     			return false;
     		}
     		
     		if (!getMakeCommand().trim().isEmpty()) {
-    			result = launcher.launch().cmds(Util.tokenize(getMakeCommand())).envs(envs).stdout(listener).pwd(workDir).join();
+    			result = launcher.launch(getMakeCommand(), new HashMap<String, String>(), 
+        				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     			if (result != 0) {
     				return false;
     			}
     		}
     		if (!getInstallCommand().trim().isEmpty()) {
-    			result = launcher.launch().cmds(Util.tokenize(getInstallCommand())).envs(envs).stdout(listener).pwd(workDir).join();
+    			result = launcher.launch(getInstallCommand(), new HashMap<String, String>(), 
+        				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     		}
     		return (result == 0);
 		} catch (IOException e) {
@@ -177,21 +186,16 @@ public class CmakeBuilder extends Builder {
 		return false;
     }
 
-	private String checkCmake(BuildListener listener) throws IOException,
+	private String checkCmake(Node node, BuildListener listener) throws IOException,
 			InterruptedException {
 		String cmakeBin = CMAKE;
         String cmakePath = getDescriptor().cmakePath();
         if (cmakePath != null && cmakePath.length() > 0) {
     		cmakeBin = cmakePath;
     	}
-        Process cmakeProc = new ProcessBuilder(cmakeBin, "-version").start();
-        BufferedReader cmakeProcReader = new BufferedReader(new InputStreamReader(cmakeProc.getInputStream()));
-        String temp = cmakeProcReader.readLine();
-        while (temp != null) {
-        	listener.getLogger().println(temp);
-        	temp = cmakeProcReader.readLine();
-        }
-        cmakeProc.waitFor();
+        Proc proc = node.createLauncher(listener).launch(cmakeBin + " -version", 
+        		new HashMap<String, String>(), listener.getLogger(), node.getRootPath());
+        proc.join();
 		return cmakeBin;
 	}
 

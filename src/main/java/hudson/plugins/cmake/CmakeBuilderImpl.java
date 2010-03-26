@@ -1,5 +1,7 @@
 package hudson.plugins.cmake;
 
+import hudson.FilePath;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,74 +20,63 @@ public class CmakeBuilderImpl {
 	{
 		CHECK_PATH_EXISTS() {
 			@Override
-			public void process(File file) throws IOException {
-				if (!file.exists()) {
-					throw new FileNotFoundException(file.getAbsolutePath());
+			public void process(FilePath file) throws IOException {
+				try {
+					if (!file.exists()) {
+						throw new FileNotFoundException(file.getRemote());
+					}
+				} catch (InterruptedException e) {
+					// ignore
 				}
 			}
 		},
 		
 		CREATE_IF_NOT_EXISTING() {
 			@Override
-			public void process(File file) throws IOException {
-				if (!file.exists()) {
-					if (!file.mkdir()) {
-						throw new IOException("Directory could not be created: " + file.getAbsolutePath());
+			public void process(FilePath file) throws IOException {
+				try {
+					if (!file.exists()) {
+						file.mkdirs();
 					}
+				} catch (InterruptedException e) {
+					// ignore
 				}
 			}
 		},
 		
 		CREATE_NEW_IF_EXISTS() {
 			@Override
-			public void process(File file) throws IOException {
-				if (file.exists()) {
-					if (file.isDirectory()) {
-						if (!deleteDirectory(file)) {
-							throw new IOException("Unable to delete directory " + file.getAbsolutePath());
+			public void process(FilePath file) throws IOException {
+				try {
+					if (file.exists()) {
+						if (file.isDirectory()) {
+							file.deleteRecursive();
 						}
 					}
+				} catch (InterruptedException e) {
+					// ignore
 				}
-				CREATE_IF_NOT_EXISTING.process(file);
-			}
-			
-			private boolean deleteDirectory(File path) {
-			    if( path.exists() ) {
-			      File[] files = path.listFiles();
-			      for(int i=0; i<files.length; i++) {
-			         if(files[i].isDirectory()) {
-			           deleteDirectory(files[i]);
-			         }
-			         else {
-			           files[i].delete();
-			         }
-			      }
-			    }
-			    return( path.delete() );
-			}
+				CREATE_IF_NOT_EXISTING.process(file);				
+			}			
 		};
 		
-		public abstract void process(File file) throws IOException;
+		public abstract void process(FilePath file) throws IOException;
 	};
 	
 	public CmakeBuilderImpl() {
 		super();
 	}
 	
-	String preparePath(Map<String, String> envVars, String path, PreparePathOptions ppOption) throws IOException {
+	String preparePath(FilePath workSpace, Map<String, String> envVars, String path, PreparePathOptions ppOption) throws IOException {
 		path = path.trim();
     	Set<String> keys = envVars.keySet();
     	for (String key : keys) {
     		path   = path.replaceAll("\\$" + key, envVars.get(key));
     	}
 
-    	File file = new File(path);
-    	if (!file.isAbsolute()) {
-    		path = envVars.get("WORKSPACE") + "/" + path;
-    	}
-    	file = new File(path);
+    	FilePath file = workSpace.child(path);
     	ppOption.process(file);
-    	return file.getPath();
+    	return file.getRemote();
 	}
 	
 	String buildCMakeCall(final String cmakeBin, 
