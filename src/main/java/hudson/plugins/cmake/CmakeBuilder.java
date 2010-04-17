@@ -160,21 +160,21 @@ public class CmakeBuilder extends Builder {
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
-    		int result = launcher.launch(cmakeCall, new HashMap<String, String>(), 
+    		int result = launcher.launch(cmakeCall, envs, 
     				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     		if (result != 0) {
     			return false;
     		}
     		
     		if (!getMakeCommand().trim().isEmpty()) {
-    			result = launcher.launch(getMakeCommand(), new HashMap<String, String>(), 
+    			result = launcher.launch(getMakeCommand(), envs, 
         				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     			if (result != 0) {
     				return false;
     			}
     		}
     		if (!getInstallCommand().trim().isEmpty()) {
-    			result = launcher.launch(getInstallCommand(), new HashMap<String, String>(), 
+    			result = launcher.launch(getInstallCommand(), envs, 
         				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     		}
     		return (result == 0);

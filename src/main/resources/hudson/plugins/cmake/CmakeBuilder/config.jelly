@@ -14,10 +14,9 @@
 	
 	<f:entry name="buildType" title="Build Type" field="buildType">
 		<select name="buildType">
-			<option value="Debug">Debug</option>
-			<option value="Release">Release</option>
-			<option value="RelWithDebInfo">RelWithDebInfo</option>
-			<option value="MinSizeRel">MinSizeRel</option>
+			<j:forEach var="type" items="Debug, Release, RelWithDebInfo, MinSizeRel">
+				<f:option selected="${type==instance.getBuildType()}" value="${type}">${type}</f:option>
+			</j:forEach>
 		</select>
 	</f:entry>
   	
