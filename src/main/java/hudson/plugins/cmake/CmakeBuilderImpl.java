@@ -69,6 +69,9 @@ public class CmakeBuilderImpl {
 	
 	String preparePath(FilePath workSpace, Map<String, String> envVars, String path, PreparePathOptions ppOption) throws IOException {
 		path = path.trim();
+		if (path.isEmpty()) {
+			return path;
+		}
     	Set<String> keys = envVars.keySet();
     	for (String key : keys) {
     		path   = path.replaceAll("\\$" + key, envVars.get(key));
@@ -86,13 +89,17 @@ public class CmakeBuilderImpl {
 			final String installDir, 
 			final String buildType, 
 			final String cmakeArgs) {
-		return new StringBuilder().append(cmakeBin).append(BLANK)
+		StringBuilder builder = new StringBuilder().append(cmakeBin).append(BLANK)
 			.append(createPreloadScriptArg(preloadScript)).append(BLANK)
-			.append("-G \"").append(generator).append("\"").append(BLANK)
-			.append(DCMAKE_INSTALL_PREFIX).append(installDir).append(BLANK)
-			.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK)
+			.append("-G \"").append(generator).append("\"").append(BLANK);
+		if (!installDir.isEmpty()) {
+			builder.append(DCMAKE_INSTALL_PREFIX).append(installDir).append(BLANK);
+		}
+		builder.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK)
 			.append(cmakeArgs).append(BLANK)
-			.append("\"").append(sourceDir).append("\"").append(BLANK).toString();
+			.append("\"").append(sourceDir).append("\"").append(BLANK);
+		return builder.toString();
+		
 	}
 	
 	private String createPreloadScriptArg(final String preloadScript) {

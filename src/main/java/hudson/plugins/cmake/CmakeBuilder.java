@@ -173,7 +173,9 @@ public class CmakeBuilder extends Builder {
     				return false;
     			}
     		}
-    		if (!getInstallCommand().trim().isEmpty()) {
+    		final boolean doInstall = 
+    			!theInstallDir.isEmpty() && !getInstallCommand().trim().isEmpty();
+    		if (doInstall) {
     			result = launcher.launch(getInstallCommand(), envs, 
         				listener.getLogger(), new FilePath(workSpace, theBuildDir)).join();
     		}

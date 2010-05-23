@@ -42,7 +42,7 @@
 	  	</f:entry>
 	  	
 	  	<f:entry title="Other CMake Arguments" field="cmakeArgs">
-			<f:textbox  />
+			<f:textarea  />
 		</f:entry>
 	</f:advanced>
 	
