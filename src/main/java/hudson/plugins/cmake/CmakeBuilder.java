@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -318,7 +319,8 @@ public class CmakeBuilder extends Builder {
         
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-        	return FreeStyleProject.class.isAssignableFrom(jobType);
+        	return FreeStyleProject.class.isAssignableFrom(jobType)
+                        || MatrixProject.class.isAssignableFrom(jobType);
         }
     }
 }
