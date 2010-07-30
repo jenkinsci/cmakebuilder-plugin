@@ -19,7 +19,11 @@
 			</j:forEach>
 		</select>
 	</f:entry>
-  	
+
+        <f:entry title="Other Build Type" field="otherBuildType">
+            <f:textbox />
+	</f:entry>
+
   	<f:entry title="Clean Build" field="cleanBuild">
     	<f:checkbox name="cmakebuilder.cleanBuild" checked="${instance.getCleanBuild()}"/>
     </f:entry>

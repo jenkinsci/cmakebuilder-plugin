@@ -49,6 +49,7 @@ public class CmakeBuilder extends Builder {
     private String buildDir;
     private String installDir;
     private String buildType;
+    private String otherBuildType;
     private String generator;
     private String makeCommand;
     private String installCommand;
@@ -63,7 +64,8 @@ public class CmakeBuilder extends Builder {
     public CmakeBuilder(String sourceDir, 
     		String buildDir, 
     		String installDir, 
-    		String buildType, 
+    		String buildType,
+                String otherBuildType,
     		boolean cleanBuild,
     		String generator, 
     		String makeCommand, 
@@ -74,6 +76,7 @@ public class CmakeBuilder extends Builder {
 		this.buildDir = buildDir;
 		this.installDir = installDir;
 		this.buildType = buildType;
+                this.otherBuildType = otherBuildType;
 		this.cleanBuild = cleanBuild;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
@@ -97,6 +100,10 @@ public class CmakeBuilder extends Builder {
 
     public String getBuildType() {
     	return this.buildType;
+    }
+
+    public String getOtherBuildType() {
+    	return this.otherBuildType;
     }
     
     public boolean getCleanBuild() {
@@ -152,12 +159,17 @@ public class CmakeBuilder extends Builder {
     		listener.getLogger().println(ioe.getMessage());
     		return false;
     	}
-    	
+
+        String theBuildType = this.buildType;
+        if (this.otherBuildType.length() > 0) {
+            theBuildType = this.otherBuildType;
+        }
+
     	listener.getLogger().println("Build   dir  : " + theBuildDir.toString());
     	listener.getLogger().println("Source  dir  : " + theSourceDir.toString());
     	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
     	String cmakeBin = checkCmake(build.getBuiltOn(), listener);
-    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, buildType, cmakeArgs);
+    	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, theBuildType, cmakeArgs);
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
