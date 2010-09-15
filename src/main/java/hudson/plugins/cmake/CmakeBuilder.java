@@ -65,7 +65,7 @@ public class CmakeBuilder extends Builder {
     		String buildDir, 
     		String installDir, 
     		String buildType,
-                String otherBuildType,
+    		String otherBuildType,
     		boolean cleanBuild,
     		String generator, 
     		String makeCommand, 
@@ -76,7 +76,10 @@ public class CmakeBuilder extends Builder {
 		this.buildDir = buildDir;
 		this.installDir = installDir;
 		this.buildType = buildType;
-                this.otherBuildType = otherBuildType;
+        this.otherBuildType = otherBuildType;
+        if (null == this.otherBuildType) {
+        	this.otherBuildType = "";
+        }
 		this.cleanBuild = cleanBuild;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
