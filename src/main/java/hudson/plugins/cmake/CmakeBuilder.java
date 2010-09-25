@@ -77,9 +77,6 @@ public class CmakeBuilder extends Builder {
 		this.installDir = installDir;
 		this.buildType = buildType;
         this.otherBuildType = otherBuildType;
-        if (null == this.otherBuildType) {
-        	this.otherBuildType = "";
-        }
 		this.cleanBuild = cleanBuild;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
@@ -164,7 +161,7 @@ public class CmakeBuilder extends Builder {
     	}
 
         String theBuildType = this.buildType;
-        if (this.otherBuildType.length() > 0) {
+        if ((this.otherBuildType != null) && (this.otherBuildType.length() > 0)) {
             theBuildType = this.otherBuildType;
         }
 
