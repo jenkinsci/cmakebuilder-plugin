@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Executes <tt>cmake</tt> as the build process.
@@ -56,10 +57,10 @@ public class CmakeBuilder extends Builder {
     private String preloadScript;
     private String cmakeArgs;
     private boolean cleanBuild;
+    private boolean cleanInstallDir;
 
     private CmakeBuilderImpl builderImpl;
 
-    
     @DataBoundConstructor
     public CmakeBuilder(String sourceDir, 
     		String buildDir, 
@@ -67,6 +68,7 @@ public class CmakeBuilder extends Builder {
     		String buildType,
     		String otherBuildType,
     		boolean cleanBuild,
+    		boolean cleanInstallDir,
     		String generator, 
     		String makeCommand, 
     		String installCommand,
@@ -78,6 +80,7 @@ public class CmakeBuilder extends Builder {
 		this.buildType = buildType;
         this.otherBuildType = otherBuildType;
 		this.cleanBuild = cleanBuild;
+		this.cleanInstallDir = cleanInstallDir;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
 		this.installCommand = installCommand; 		
@@ -108,6 +111,10 @@ public class CmakeBuilder extends Builder {
     
     public boolean getCleanBuild() {
     	return this.cleanBuild;
+    }
+    
+    public boolean getCleanInstallDir() {
+    	return this.cleanInstallDir;
     }
     
     public String getGenerator() {
@@ -144,7 +151,7 @@ public class CmakeBuilder extends Builder {
     	String theBuildDir = this.buildDir;
     	try {
     		if (this.cleanBuild) {
-    			listener.getLogger().println("Cleaning Build Dir... " + this.buildDir);
+    			listener.getLogger().println("Cleaning build Dir... " + this.buildDir);
     			theBuildDir = builderImpl.preparePath(workSpace, envs, this.buildDir, 
     					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
     		} else {
@@ -153,8 +160,14 @@ public class CmakeBuilder extends Builder {
     		}    			
     		theSourceDir = builderImpl.preparePath(workSpace, envs, this.sourceDir,
     				CmakeBuilderImpl.PreparePathOptions.CHECK_PATH_EXISTS);
-    		theInstallDir = builderImpl.preparePath(workSpace, envs, this.installDir,
-    				CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+    		if (this.cleanInstallDir) {
+    			listener.getLogger().println("Wiping out install Dir... " + this.installDir);
+    			theInstallDir = builderImpl.preparePath(workSpace, envs, this.installDir,
+    					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+    		} else {
+    			theInstallDir = builderImpl.preparePath(workSpace, envs, this.installDir,
+    					CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
+    		}
     	} catch (IOException ioe) {
     		listener.getLogger().println(ioe.getMessage());
     		return false;
@@ -170,6 +183,11 @@ public class CmakeBuilder extends Builder {
     	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
     	String cmakeBin = checkCmake(build.getBuiltOn(), listener);
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, theBuildType, cmakeArgs);
+//    	Set<String> keys = envs.keySet();
+//    	for (String key : keys) {
+//    		listener.getLogger().println("Key : " + key);
+//    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
+//    	}
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
