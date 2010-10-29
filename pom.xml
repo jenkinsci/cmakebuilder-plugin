@@ -12,6 +12,6 @@
   <artifactId>cmakebuilder</artifactId>
   <name>Hudson CMake plugin</name>
   <packaging>hpi</packaging>
-  <version>1.7</version>
+  <version>1.7-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
 </project>
