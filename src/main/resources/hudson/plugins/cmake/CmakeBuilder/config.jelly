@@ -52,6 +52,10 @@
 	  	<f:entry title="Other CMake Arguments" field="cmakeArgs">
 			<f:textarea  />
 		</f:entry>
+		
+		<f:entry title="Job specific CMake path" field="projectCmakePath">
+			<f:textbox />
+		</f:entry>
 	</f:advanced>
 	
 	

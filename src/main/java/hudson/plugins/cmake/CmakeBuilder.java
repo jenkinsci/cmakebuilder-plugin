@@ -44,6 +44,8 @@ import java.util.Set;
  */
 public class CmakeBuilder extends Builder {
 
+	private static final String CMAKE_EXECUTABLE = "CMAKE_EXECUTABLE";
+
 	private static final String CMAKE = "cmake";
 	
 	private String sourceDir;
@@ -56,6 +58,7 @@ public class CmakeBuilder extends Builder {
     private String installCommand;
     private String preloadScript;
     private String cmakeArgs;
+    private String projectCmakePath;
     private boolean cleanBuild;
     private boolean cleanInstallDir;
 
@@ -73,7 +76,8 @@ public class CmakeBuilder extends Builder {
     		String makeCommand, 
     		String installCommand,
     		String preloadScript,
-    		String cmakeArgs) {
+    		String cmakeArgs, 
+    		String projectCmakePath) {
     	this.sourceDir = sourceDir;
 		this.buildDir = buildDir;
 		this.installDir = installDir;
@@ -85,6 +89,7 @@ public class CmakeBuilder extends Builder {
 		this.makeCommand = makeCommand;
 		this.installCommand = installCommand; 		
 		this.cmakeArgs = cmakeArgs;
+		this.projectCmakePath = projectCmakePath;
 		this.preloadScript = preloadScript;
 		builderImpl = new CmakeBuilderImpl();
     }
@@ -137,6 +142,10 @@ public class CmakeBuilder extends Builder {
     	return this.cmakeArgs;
     }
     
+    public String getProjectCmakePath() {
+    	return this.projectCmakePath;
+    }
+    
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
     	listener.getLogger().println("MODULE: " + build.getModuleRoot());
     	
@@ -181,13 +190,13 @@ public class CmakeBuilder extends Builder {
     	listener.getLogger().println("Build   dir  : " + theBuildDir.toString());
     	listener.getLogger().println("Source  dir  : " + theSourceDir.toString());
     	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
-    	String cmakeBin = checkCmake(build.getBuiltOn(), listener);
+    	String cmakeBin = checkCmake(build.getBuiltOn(), listener, envs);
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, theBuildType, cmakeArgs);
-//    	Set<String> keys = envs.keySet();
-//    	for (String key : keys) {
-//    		listener.getLogger().println("Key : " + key);
+    	Set<String> keys = envs.keySet();
+    	for (String key : keys) {
+    		listener.getLogger().println("Key : " + key);
 //    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
-//    	}
+    	}
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	try {
@@ -219,13 +228,19 @@ public class CmakeBuilder extends Builder {
 		return false;
     }
 
-	private String checkCmake(Node node, BuildListener listener) throws IOException,
+	private String checkCmake(Node node, BuildListener listener, EnvVars envs) throws IOException,
 			InterruptedException {
 		String cmakeBin = CMAKE;
         String cmakePath = getDescriptor().cmakePath();
         if (cmakePath != null && cmakePath.length() > 0) {
     		cmakeBin = cmakePath;
     	}
+        if (this.getProjectCmakePath() != null && this.getProjectCmakePath().length() > 0) {
+        	cmakeBin = this.getProjectCmakePath();
+        }
+        if (envs.containsKey(CMAKE_EXECUTABLE)) {
+        	cmakeBin = envs.get(CMAKE_EXECUTABLE);
+        }
         Proc proc = node.createLauncher(listener).launch(cmakeBin + " -version", 
         		new HashMap<String, String>(), listener.getLogger(), node.getRootPath());
         proc.join();
