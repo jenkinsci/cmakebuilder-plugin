@@ -194,7 +194,7 @@ public class CmakeBuilder extends Builder {
     	String cmakeCall = builderImpl.buildCMakeCall(cmakeBin, this.generator, this.preloadScript, theSourceDir, theInstallDir, theBuildType, cmakeArgs);
     	Set<String> keys = envs.keySet();
     	for (String key : keys) {
-    		listener.getLogger().println("Key : " + key);
+//    		listener.getLogger().println("Key : " + key);
 //    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
     	}
     	listener.getLogger().println("CMake call : " + cmakeCall);
