@@ -14,4 +14,15 @@
   <packaging>hpi</packaging>
   <version>1.9-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
+  <scm>
+   <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/cmakebuilder</connection>
+   <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/cmakebuilder</developerConnection>
+ </scm>
+ <distributionManagement>
+    <repository>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
+
 </project>
