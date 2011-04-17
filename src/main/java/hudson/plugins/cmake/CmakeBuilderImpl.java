@@ -67,16 +67,12 @@ public class CmakeBuilderImpl {
 		super();
 	}
 	
-	String preparePath(FilePath workSpace, Map<String, String> envVars, String path, PreparePathOptions ppOption) throws IOException {
+	String preparePath(FilePath workSpace, final Map<String, String> envVars, String path, PreparePathOptions ppOption) throws IOException {
 		path = path.trim();
 		if (path.isEmpty()) {
 			return path;
 		}
-    	Set<String> keys = envVars.keySet();
-    	for (String key : keys) {
-    		path   = path.replaceAll("\\$" + key, envVars.get(key));
-    	}
-
+		path = EnvVarReplacer.replace(path, envVars);
     	FilePath file = workSpace.child(path);
     	ppOption.process(file);
     	return file.getRemote();
