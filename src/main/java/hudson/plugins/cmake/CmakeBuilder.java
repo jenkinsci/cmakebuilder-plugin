@@ -45,6 +45,7 @@ import java.util.Set;
 public class CmakeBuilder extends Builder {
 
 	private static final String CMAKE_EXECUTABLE = "CMAKE_EXECUTABLE";
+        private static final String CMAKE_GENERATOR = "CMAKE_GENERATOR";
 
 	private static final String CMAKE = "cmake";
 	
@@ -204,9 +205,16 @@ public class CmakeBuilder extends Builder {
 			String theInstallDir, String theBuildType) throws IOException,
 			InterruptedException {
 		String cmakeBin = checkCmake(build.getBuiltOn(), listener, envs);
+        
+        String generator = this.generator;
+        
+        if (envs.containsKey(CMAKE_GENERATOR)) {
+            generator = envs.get(CMAKE_GENERATOR);
+        }
+        
     	String cmakeCall = 
     		builderImpl.buildCMakeCall(cmakeBin, 
-    				this.generator,
+    				generator,
     				this.preloadScript, 
     				theSourceDir, 
     				theInstallDir, 
