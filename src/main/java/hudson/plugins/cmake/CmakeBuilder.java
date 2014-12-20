@@ -52,7 +52,6 @@ public class CmakeBuilder extends Builder {
     private String buildDir;
     private String installDir;
     private String buildType;
-    private String otherBuildType;
     private String generator;
     private String makeCommand;
     private String installCommand;
@@ -69,7 +68,6 @@ public class CmakeBuilder extends Builder {
     		String buildDir, 
     		String installDir, 
     		String buildType,
-    		String otherBuildType,
     		boolean cleanBuild,
     		boolean cleanInstallDir,
     		String generator, 
@@ -82,7 +80,6 @@ public class CmakeBuilder extends Builder {
 		this.buildDir = buildDir;
 		this.installDir = installDir;
 		this.buildType = buildType;
-        this.otherBuildType = otherBuildType;
 		this.cleanBuild = cleanBuild;
 		this.cleanInstallDir = cleanInstallDir;
 		this.generator = generator;
@@ -108,10 +105,6 @@ public class CmakeBuilder extends Builder {
 
     public String getBuildType() {
     	return this.buildType;
-    }
-
-    public String getOtherBuildType() {
-    	return this.otherBuildType;
     }
     
     public boolean getCleanBuild() {
@@ -215,9 +208,6 @@ public class CmakeBuilder extends Builder {
 	}
 
 	private String prepareBuildType() {
-        if ((this.otherBuildType != null) && (this.otherBuildType.length() > 0)) {
-            return this.otherBuildType;
-        }
 		return this.buildType;
 	}
 
@@ -305,11 +295,12 @@ public class CmakeBuilder extends Builder {
             super(CmakeBuilder.class);
             load();
             this.allowedBuildTypes = new ArrayList<String>();            
+            this.allowedBuildTypes.add("");
             this.allowedBuildTypes.add("Debug");
             this.allowedBuildTypes.add("Release");
             this.allowedBuildTypes.add("RelWithDebInfo");
             this.allowedBuildTypes.add("MinSizeRel");
-            this.errorMessage = "Must be one of Debug, Release, RelWithDebInfo, MinSizeRel";
+            this.errorMessage = "Must be one of '','Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'";
         }
         
         public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject project, @QueryParameter final String value) throws IOException, ServletException {

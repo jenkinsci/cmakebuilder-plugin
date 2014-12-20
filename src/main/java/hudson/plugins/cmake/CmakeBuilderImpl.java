@@ -91,8 +91,10 @@ public class CmakeBuilderImpl {
 		if (!installDir.isEmpty()) {
 			builder.append(DCMAKE_INSTALL_PREFIX).append(installDir).append(BLANK);
 		}
-		builder.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK)
-			.append(cmakeArgs).append(BLANK)
+    if (!buildType.isEmpty()) {
+			builder.append(DCMAKE_BUILD_TYPE).append(buildType).append(BLANK);
+    }
+		builder.append(cmakeArgs).append(BLANK)
 			.append("\"").append(sourceDir).append("\"").append(BLANK);
 		return builder.toString();
 		
