@@ -288,19 +288,12 @@ public class CmakeBuilder extends Builder {
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
         private String cmakePath;
-        private transient List<String> allowedBuildTypes;
         private transient String errorMessage;
         
         public DescriptorImpl() {
             super(CmakeBuilder.class);
             load();
-            this.allowedBuildTypes = new ArrayList<String>();            
-            this.allowedBuildTypes.add("");
-            this.allowedBuildTypes.add("Debug");
-            this.allowedBuildTypes.add("Release");
-            this.allowedBuildTypes.add("RelWithDebInfo");
-            this.allowedBuildTypes.add("MinSizeRel");
-            this.errorMessage = "Must be one of '','Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'";
+            this.errorMessage = "Build type can be empty or a single word containing any alphabetical letter. Generally this will be one of '','Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'";
         }
         
         public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject project, @QueryParameter final String value) throws IOException, ServletException {
@@ -334,13 +327,12 @@ public class CmakeBuilder extends Builder {
          * @param value
          */
         public FormValidation doCheckBuildType(@QueryParameter final String value) throws IOException, ServletException {
-            for (String allowed : DescriptorImpl.this.allowedBuildTypes)
-                if (value.equals(allowed))
-                    return FormValidation.ok();
-            if (value.length() > 0)
-                return FormValidation.error(DescriptorImpl.this.errorMessage);
+            if (value.matches("^[a-zA-Z]*$"))
+            {
+              return FormValidation.ok();
+            }
+            return FormValidation.error(DescriptorImpl.this.errorMessage);
 
-            return FormValidation.ok();
         }
 
         /**

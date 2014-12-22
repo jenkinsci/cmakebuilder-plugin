@@ -1,11 +1,15 @@
 <div>
 <p>
- The CMAKE_BUILD_TYPE. Standard types can be selected via combo box (Debug, Release, RelWithDebInfo, MinSizeRel).
+Common values are blank, Debug, Release, RelWithDebInfo, and MinSizeRel.  The blank value is
+usually used with multi configuration generators such as Visual Studio. The Debug/Release values are
+usually used with single configuration generators such as Ninja or Unix Makefiles.
 </p>
 <p>
- Custom build types can be specified in 'Other Build Type'
+If the value is not blank CMAKE_BUILD_TYPE will be set to the contents of this field at CMake configuration time.   
 </p>
 <p>
- Results in -DCMAKE_BUILD_TYPE=&lt;build_type&gt; 
+If you desire to use a custom build type you are able to do so. Custom build types follow the
+pattern '^[a-zA-Z]+$'.  Any custom build type requires additional configuration in CMakeLists.txt.
+Please see the CMake wiki for details on extending the default set of build types.
 </p>
 </div>
