@@ -1,3 +1,5 @@
+package hudson.plugins.cmake;
+
 
 import org.jvnet.hudson.test.JenkinsRule;
 import hudson.model.*;
