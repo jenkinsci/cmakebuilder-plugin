@@ -12,6 +12,25 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class PathUtilTest {
+  @Test
+  public void checkBuildCmakeCallNoPreload() throws Exception {
+    CmakeBuilderImpl c = new CmakeBuilderImpl(); 
+    
+    String res = c.buildCMakeCall(
+      "/usr/bin/cmake",
+      "Unix Makefiles",
+      "",
+      "trunk/Modules/AllProjects",
+      "path/to/install/dir",
+      "Debug",
+      ""
+      ).trim();
+
+    String desired = new String("/usr/bin/cmake  -G \"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=path/to/install/dir -DCMAKE_BUILD_TYPE=Debug  \"trunk/Modules/AllProjects\"");
+
+    assertTrue("'" + desired + "' != '" + res + "'",desired.equals(res)); 
+
+  }
 
   @Test
   public void checkBuildCmakeCall() throws Exception {
