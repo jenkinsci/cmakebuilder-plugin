@@ -141,7 +141,7 @@ public class CmakeBuilder extends Builder {
 //    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
 //    	}
 
-        final FilePath workSpace = build.getProject().getWorkspace();
+        final FilePath workSpace = build.getWorkspace();
 
         String theSourceDir;
     	String theInstallDir;
