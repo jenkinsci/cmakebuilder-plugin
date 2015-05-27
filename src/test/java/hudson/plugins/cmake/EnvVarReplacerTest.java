@@ -1,15 +1,11 @@
 package hudson.plugins.cmake;
 
 
-import org.jvnet.hudson.test.JenkinsRule;
-import hudson.model.*;
-import org.junit.Test;
-import org.junit.Rule;
 import static org.junit.Assert.assertTrue;
-import hudson.plugins.cmake.EnvVarReplacer;
 
-import java.util.Map;
 import java.util.HashMap;
+
+import org.junit.Test;
 
 public class EnvVarReplacerTest {
 

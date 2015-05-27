@@ -2,13 +2,9 @@ package hudson.plugins.cmake;
 
 import hudson.FilePath;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
-
-import org.kohsuke.stapler.framework.io.IOException2;
 
 public class CmakeBuilderImpl {
 

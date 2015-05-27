@@ -5,36 +5,28 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
-import hudson.Util;
 import hudson.matrix.MatrixProject;
+import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
-import hudson.model.TaskListener;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import javax.servlet.ServletException;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Executes <tt>cmake</tt> as the build process.
