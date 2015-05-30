@@ -4,7 +4,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.matrix.MatrixProject;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
@@ -17,8 +16,6 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
@@ -251,11 +248,10 @@ public class CmakeBuilder extends Builder {
         if (envs.containsKey(CMAKE_EXECUTABLE)) {
         	cmakeBin = envs.get(CMAKE_EXECUTABLE);
         }
-        Proc proc = node.createLauncher(listener).launch(cmakeBin + " -version",
-        		new HashMap<String, String>(), listener.getLogger(), node.getRootPath());
-        proc.join();
-		return cmakeBin;
-	}
+        node.createLauncher(listener).launch().stdout(listener).cmds(cmakeBin ,"-version")
+        .pwd(node.getRootPath()).join();
+	return cmakeBin;
+    }
 
     @Override
     public DescriptorImpl getDescriptor() {
