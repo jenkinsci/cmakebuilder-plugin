@@ -362,9 +362,12 @@ public class CmakeBuilder extends Builder {
         }
 
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-        	return FreeStyleProject.class.isAssignableFrom(jobType)
-                        || MatrixProject.class.isAssignableFrom(jobType);
+        public boolean isApplicable(
+            @SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+          // Indicates that this builder can be used with all kinds of project types
+          return true;
+//        	return FreeStyleProject.class.isAssignableFrom(jobType)
+//                        || MatrixProject.class.isAssignableFrom(jobType);
         }
     }
 }
