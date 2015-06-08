@@ -1,11 +1,11 @@
 package hudson.plugins.cmake;
 
-import java.io.IOException;
-
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+
+import java.io.IOException;
 
 public class CmakeLauncher {
 
@@ -15,10 +15,10 @@ public class CmakeLauncher {
 	private final BuildListener listener;
 	private final String buildDir;
 
-	public CmakeLauncher(Launcher launcher, 
-			EnvVars envs, 
-			FilePath workSpace, 
-			BuildListener listener, 
+	public CmakeLauncher(Launcher launcher,
+			EnvVars envs,
+			FilePath workSpace,
+			BuildListener listener,
 			String buildDir) {
 		super();
 		this.launcher = launcher;
@@ -27,34 +27,34 @@ public class CmakeLauncher {
 		this.listener = listener;
 		this.buildDir = buildDir;
 	}
-	
+
 	public boolean launchCmake(String cmakeCall) throws IOException, InterruptedException {
-		int result = this.launcher.launch(cmakeCall, this.envs, 
-				this.listener.getLogger(), new FilePath(this.workSpace, this.buildDir)).join();
+	        int result = launcher.launch().stdout(listener).cmdAsSingleString(cmakeCall).envs(this.envs)
+	            .pwd(new FilePath(this.workSpace, this.buildDir)).join();
 		return (result == 0);
 	}
-	
+
 	public boolean launchMake(String makeCommand) throws IOException, InterruptedException {
 		if (makeCommand.trim().isEmpty()) {
 			return true;
 		}
-		makeCommand = 
+		makeCommand =
 			EnvVarReplacer.replace(makeCommand, envs);
-		int result = this.launcher.launch(makeCommand, this.envs, 
-				this.listener.getLogger(), new FilePath(this.workSpace, this.buildDir)).join();
+                int result = launcher.launch().stdout(listener).cmdAsSingleString(makeCommand).envs(this.envs)
+                    .pwd(new FilePath(this.workSpace, this.buildDir)).join();
 		return (result == 0);
 	}
-	
+
 	public boolean launchInstall(String installDir, String installCommand) throws IOException, InterruptedException {
-		final boolean doInstall = 
+		final boolean doInstall =
 			!installDir.isEmpty() && !installCommand.trim().isEmpty();
 		if (!doInstall) {
 			return true;
 		}
-		installCommand = 
+		installCommand =
 			EnvVarReplacer.replace(installCommand, this.envs);
-		int result = this.launcher.launch(installCommand, this.envs, 
-				this.listener.getLogger(), new FilePath(this.workSpace, this.buildDir)).join();
+                int result = launcher.launch().stdout(listener).cmdAsSingleString(installCommand).envs(this.envs)
+                    .pwd(new FilePath(this.workSpace, this.buildDir)).join();
 		return (result == 0);
 	}
 }

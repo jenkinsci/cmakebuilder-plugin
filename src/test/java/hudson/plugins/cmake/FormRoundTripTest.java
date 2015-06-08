@@ -1,11 +1,11 @@
 package hudson.plugins.cmake;
 
 
-import org.jvnet.hudson.test.JenkinsRule;
-import hudson.model.*;
-import org.junit.Test;
+import hudson.model.FreeStyleProject;
+
 import org.junit.Rule;
-import hudson.plugins.cmake.CmakeBuilder;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 
 public class FormRoundTripTest {

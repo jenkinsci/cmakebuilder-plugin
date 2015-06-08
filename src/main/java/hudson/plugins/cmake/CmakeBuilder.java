@@ -4,37 +4,26 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
-import hudson.Util;
 import hudson.matrix.MatrixProject;
+import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
-import hudson.model.TaskListener;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+
+import java.io.File;
+import java.io.IOException;
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import javax.servlet.ServletException;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Executes <tt>cmake</tt> as the build process.
@@ -47,7 +36,7 @@ public class CmakeBuilder extends Builder {
 	private static final String CMAKE_EXECUTABLE = "CMAKE_EXECUTABLE";
 
 	private static final String CMAKE = "cmake";
-	
+
 	private String sourceDir;
     private String buildDir;
     private String installDir;
@@ -64,17 +53,17 @@ public class CmakeBuilder extends Builder {
     private CmakeBuilderImpl builderImpl;
 
     @DataBoundConstructor
-    public CmakeBuilder(String sourceDir, 
-    		String buildDir, 
-    		String installDir, 
+    public CmakeBuilder(String sourceDir,
+    		String buildDir,
+    		String installDir,
     		String buildType,
     		boolean cleanBuild,
     		boolean cleanInstallDir,
-    		String generator, 
-    		String makeCommand, 
+    		String generator,
+    		String makeCommand,
     		String installCommand,
     		String preloadScript,
-    		String cmakeArgs, 
+    		String cmakeArgs,
     		String projectCmakePath) {
     	this.sourceDir = sourceDir;
 		this.buildDir = buildDir;
@@ -84,7 +73,7 @@ public class CmakeBuilder extends Builder {
 		this.cleanInstallDir = cleanInstallDir;
 		this.generator = generator;
 		this.makeCommand = makeCommand;
-		this.installCommand = installCommand; 		
+		this.installCommand = installCommand;
 		this.cmakeArgs = cmakeArgs;
 		this.projectCmakePath = projectCmakePath;
 		this.preloadScript = preloadScript;
@@ -94,7 +83,7 @@ public class CmakeBuilder extends Builder {
     public String getSourceDir() {
     	return this.sourceDir;
     }
-    
+
     public String getBuildDir() {
 		return this.buildDir;
 	}
@@ -106,42 +95,42 @@ public class CmakeBuilder extends Builder {
     public String getBuildType() {
     	return this.buildType;
     }
-    
+
     public boolean getCleanBuild() {
     	return this.cleanBuild;
     }
-    
+
     public boolean getCleanInstallDir() {
     	return this.cleanInstallDir;
     }
-    
+
     public String getGenerator() {
     	return this.generator;
     }
-    
+
     public String getMakeCommand() {
     	return this.makeCommand;
     }
-    
+
     public String getInstallCommand() {
     	return this.installCommand;
     }
-    
+
     public String getPreloadScript() {
     	return this.preloadScript;
     }
-    
+
     public String getCmakeArgs() {
     	return this.cmakeArgs;
     }
-    
+
     public String getProjectCmakePath() {
     	return this.projectCmakePath;
     }
-    
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
     	listener.getLogger().println("MODULE: " + build.getModuleRoot());
-    	
+
         final EnvVars envs = build.getEnvironment(listener);
 //        final Set<String> keys = envs.keySet();
 //    	for (String key : keys) {
@@ -149,13 +138,13 @@ public class CmakeBuilder extends Builder {
 //    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
 //    	}
 
-        final FilePath workSpace = build.getProject().getWorkspace();
-        
+        final FilePath workSpace = build.getWorkspace();
+
         String theSourceDir;
     	String theInstallDir;
     	String theBuildDir = this.buildDir;
     	try {
-    		theBuildDir = prepareBuildDir(listener, envs, workSpace);    			
+    		theBuildDir = prepareBuildDir(listener, envs, workSpace);
     		theSourceDir = prepareSourceDir(envs, workSpace);
     		theInstallDir = prepareInstallDir(listener, envs, workSpace);
     	} catch (IOException ioe) {
@@ -171,18 +160,18 @@ public class CmakeBuilder extends Builder {
 				theSourceDir, theInstallDir, theBuildType);
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
-    	final CmakeLauncher cmakeLauncher = 
+    	final CmakeLauncher cmakeLauncher =
     		new CmakeLauncher(launcher, envs, workSpace, listener, theBuildDir);
-    	
+
     	try {
     		if (!cmakeLauncher.launchCmake(cmakeCall)) {
     			return false;
     		}
-    		
+
     		if (!cmakeLauncher.launchMake(getMakeCommand())) {
     			return false;
     		}
-    		
+
     		return cmakeLauncher.launchInstall(installDir, getInstallCommand());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -192,17 +181,17 @@ public class CmakeBuilder extends Builder {
 		return false;
     }
 
-	private String prepareCmakeCall(AbstractBuild build,
+	private String prepareCmakeCall(AbstractBuild<?, ?> build,
 			BuildListener listener, EnvVars envs, String theSourceDir,
 			String theInstallDir, String theBuildType) throws IOException,
 			InterruptedException {
 		String cmakeBin = checkCmake(build.getBuiltOn(), listener, envs);
-    	String cmakeCall = 
-    		builderImpl.buildCMakeCall(cmakeBin, 
+    	String cmakeCall =
+    		builderImpl.buildCMakeCall(cmakeBin,
     				this.generator,
-    				this.preloadScript, 
-    				theSourceDir, 
-    				theInstallDir, 
+    				this.preloadScript,
+    				theSourceDir,
+    				theInstallDir,
     				theBuildType, EnvVarReplacer.replace(cmakeArgs, envs));
     	return EnvVarReplacer.replace(cmakeCall, envs);
 	}
@@ -217,7 +206,7 @@ public class CmakeBuilder extends Builder {
 			listener.getLogger().println("Wiping out install Dir... " + this.installDir);
 			return getCmakeBuilderImpl().preparePath(workSpace, envs, this.installDir,
 					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
-		} 
+		}
 		return getCmakeBuilderImpl().preparePath(workSpace, envs, this.installDir,
 				CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
 	}
@@ -232,11 +221,11 @@ public class CmakeBuilder extends Builder {
 			final FilePath workSpace) throws IOException {
 		if (this.cleanBuild) {
 			listener.getLogger().println("Cleaning build Dir... " + this.buildDir);
-			return getCmakeBuilderImpl().preparePath(workSpace, envs, this.buildDir, 
+			return getCmakeBuilderImpl().preparePath(workSpace, envs, this.buildDir,
 					CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
 		}
 		return getCmakeBuilderImpl().preparePath(workSpace, envs, this.buildDir,
-				CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);		
+				CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
 	}
 
 	private CmakeBuilderImpl getCmakeBuilderImpl() {
@@ -259,11 +248,10 @@ public class CmakeBuilder extends Builder {
         if (envs.containsKey(CMAKE_EXECUTABLE)) {
         	cmakeBin = envs.get(CMAKE_EXECUTABLE);
         }
-        Proc proc = node.createLauncher(listener).launch(cmakeBin + " -version", 
-        		new HashMap<String, String>(), listener.getLogger(), node.getRootPath());
-        proc.join();
-		return cmakeBin;
-	}
+        node.createLauncher(listener).launch().stdout(listener).cmds(cmakeBin ,"-version")
+        .pwd(node.getRootPath()).join();
+	return cmakeBin;
+    }
 
     @Override
     public DescriptorImpl getDescriptor() {
@@ -289,19 +277,19 @@ public class CmakeBuilder extends Builder {
          */
         private String cmakePath;
         private transient String errorMessage;
-        
+
         public DescriptorImpl() {
             super(CmakeBuilder.class);
             load();
             this.errorMessage = "Build type can be empty or a single word containing any alphabetical letter. Generally this will be one of '','Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'";
         }
-        
-        public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject project, @QueryParameter final String value) throws IOException, ServletException {
+
+        public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter final String value) throws IOException, ServletException {
             FilePath ws = project.getSomeWorkspace();
             if(ws==null) return FormValidation.ok();
             return ws.validateRelativePath(value,true,false);
         }
-        
+
         /**
          * Performs on-the-fly validation of the form field 'name'.
          *
@@ -347,7 +335,7 @@ public class CmakeBuilder extends Builder {
             return FormValidation.validateExecutable(value);
         }
 
-        
+
         /**
          * This human readable name is used in the configuration screen.
          */
@@ -367,16 +355,19 @@ public class CmakeBuilder extends Builder {
         public String cmakePath() {
         	return cmakePath;
         }
-        
+
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         	return req.bindJSON(CmakeBuilder.class, formData);
         }
-        
+
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-        	return FreeStyleProject.class.isAssignableFrom(jobType)
-                        || MatrixProject.class.isAssignableFrom(jobType);
+        public boolean isApplicable(
+            @SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+          // Indicates that this builder can be used with all kinds of project types
+          return true;
+//        	return FreeStyleProject.class.isAssignableFrom(jobType)
+//                        || MatrixProject.class.isAssignableFrom(jobType);
         }
     }
 }
