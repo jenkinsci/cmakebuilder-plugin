@@ -8,17 +8,32 @@
     <relativePath>../pom.xml</relativePath>
   </parent> 
 
-  <groupId>hudson.plugins.cmake</groupId>
   <artifactId>cmakebuilder</artifactId>
-  <name>Hudson CMake plugin</name>
+  <name>CMake plugin</name>
   <packaging>hpi</packaging>
   <version>1.10-SNAPSHOT</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/cmakebuilder+Plugin</url>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/cmakebuilder+Plugin</url>
+  
+  <developers>
+    <developer>
+      <id>15knots</id>
+      <name>Martin Weber</name>
+    </developer>
+  </developers>
+  
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <comments>All source code is under the MIT license.</comments>
+    </license>
+  </licenses>
+
   <scm>
-   <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/cmakebuilder</connection>
-   <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/cmakebuilder</developerConnection>
-   <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/plugins/cmakebuilder</url>
+   <connection>scm:git@github.com:jenkinsci/cmakebuilder-plugin.git</connection>
+   <developerConnection>scm:git@github.com:jenkinsci/cmakebuilder-plugin.git</developerConnection>
+   <url>https://github.com/jenkinsci/cmakebuilder-plugin</url>
   </scm>
+
  <distributionManagement>
     <repository>
       <id>maven.jenkins-ci.org</id>
