@@ -1,3 +1,5 @@
+[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/cmakebuilder-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/job/cmakebuilder-plugin/)
+
 This plugin oversees the launch of CMake based builds.
 
 It provides a user interface for configuring the following parameters.
