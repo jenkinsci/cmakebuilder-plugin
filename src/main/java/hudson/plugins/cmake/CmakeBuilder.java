@@ -4,6 +4,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -14,6 +15,7 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
@@ -130,12 +132,6 @@ public class CmakeBuilder extends Builder {
     	listener.getLogger().println("MODULE: " + build.getModuleRoot());
 
         final EnvVars envs = build.getEnvironment(listener);
-//        final Set<String> keys = envs.keySet();
-//    	for (String key : keys) {
-//    		listener.getLogger().println("Key : " + key);
-//    		cmakeCall   = cmakeCall.replaceAll("\\$" + key, envs.get(key));
-//    	}
-
         final FilePath workSpace = build.getWorkspace();
 
         String theSourceDir;
@@ -190,8 +186,8 @@ public class CmakeBuilder extends Builder {
     				this.preloadScript,
     				theSourceDir,
     				theInstallDir,
-    				theBuildType, EnvVarReplacer.replace(cmakeArgs, envs));
-    	return EnvVarReplacer.replace(cmakeCall, envs);
+    				theBuildType, Util.replaceMacro(cmakeArgs, envs));
+    	return Util.replaceMacro(cmakeCall, envs);
 	}
 
 	private String prepareBuildType() {
@@ -241,7 +237,7 @@ public class CmakeBuilder extends Builder {
     		cmakeBin = cmakePath;
     	}
         if (this.getProjectCmakePath() != null && this.getProjectCmakePath().length() > 0) {
-        	cmakeBin = EnvVarReplacer.replace(this.getProjectCmakePath(), envs);
+        	cmakeBin = Util.replaceMacro(this.getProjectCmakePath(), envs);
         }
         if (envs.containsKey(CMAKE_EXECUTABLE)) {
         	cmakeBin = envs.get(CMAKE_EXECUTABLE);
