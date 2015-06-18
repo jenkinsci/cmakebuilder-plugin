@@ -4,11 +4,9 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.matrix.MatrixProject;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -366,8 +364,6 @@ public class CmakeBuilder extends Builder {
             @SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
           // Indicates that this builder can be used with all kinds of project types
           return true;
-//        	return FreeStyleProject.class.isAssignableFrom(jobType)
-//                        || MatrixProject.class.isAssignableFrom(jobType);
         }
     }
 }
