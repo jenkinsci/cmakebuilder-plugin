@@ -13,7 +13,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -149,9 +148,7 @@ public class CmakeBuilder extends Builder {
     	listener.getLogger().println("Build   dir  : " + theBuildDir.toString());
     	listener.getLogger().println("Source  dir  : " + theSourceDir.toString());
     	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
-    	String cmakeCall = prepareCmakeCall(build, listener, envs,
-				theSourceDir, theInstallDir);
-    	listener.getLogger().println("CMake call : " + cmakeCall);
+    	String cmakeCall = prepareCmakeCall(envs, theSourceDir, theInstallDir);
 
     	final CmakeLauncher cmakeLauncher =
     		new CmakeLauncher(launcher, envs, workSpace, listener, theBuildDir);
@@ -167,18 +164,31 @@ public class CmakeBuilder extends Builder {
 
     		return cmakeLauncher.launchInstall(installDir, Util.replaceMacro(getInstallCommand(), envs));
 		} catch (IOException e) {
-			e.printStackTrace();
+		  listener.fatalError(e.getMessage());
+		  return false;
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();
 		}
 		return false;
     }
 
-	private String prepareCmakeCall(AbstractBuild<?, ?> build,
-			BuildListener listener, EnvVars envs, String theSourceDir,
-			String theInstallDir) throws IOException,
-			InterruptedException {
-		String cmakeBin = checkCmake(build.getBuiltOn(), listener, envs);
+	private String prepareCmakeCall(EnvVars envs,
+			String theSourceDir, String theInstallDir) {
+	// determine command name...
+        String cmakeBin = CMAKE; // built in default
+        // override with global seting, if any..
+        String cmakePath = getDescriptor().cmakePath();
+        if (cmakePath != null && cmakePath.length() > 0) {
+        	cmakeBin = cmakePath;
+        }
+        // override with job specific setting, if any..
+        if (this.getProjectCmakePath() != null && this.getProjectCmakePath().length() > 0) {
+        	cmakeBin = Util.replaceMacro(this.getProjectCmakePath(), envs);
+        }
+        if (envs.containsKey(CMAKE_EXECUTABLE)) {
+        	cmakeBin = envs.get(CMAKE_EXECUTABLE);
+        }
+
     	String cmakeCall =
     		builderImpl.buildCMakeCall(cmakeBin,
     		    Util.replaceMacro(this.generator, envs),
@@ -225,23 +235,6 @@ public class CmakeBuilder extends Builder {
 		return builderImpl;
 	}
 
-	private String checkCmake(Node node, BuildListener listener, EnvVars envs) throws IOException,
-			InterruptedException {
-		String cmakeBin = CMAKE;
-        String cmakePath = getDescriptor().cmakePath();
-        if (cmakePath != null && cmakePath.length() > 0) {
-    		cmakeBin = cmakePath;
-    	}
-        if (this.getProjectCmakePath() != null && this.getProjectCmakePath().length() > 0) {
-        	cmakeBin = Util.replaceMacro(this.getProjectCmakePath(), envs);
-        }
-        if (envs.containsKey(CMAKE_EXECUTABLE)) {
-        	cmakeBin = envs.get(CMAKE_EXECUTABLE);
-        }
-        node.createLauncher(listener).launch().stdout(listener).cmds(cmakeBin ,"-version")
-        .pwd(node.getRootPath()).join();
-	return cmakeBin;
-    }
 
     @Override
     public DescriptorImpl getDescriptor() {
