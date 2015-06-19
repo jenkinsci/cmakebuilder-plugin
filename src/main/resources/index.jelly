@@ -2,5 +2,5 @@
   This view is used to render the plugin list page. 
 -->
 <div>
-  This plugin can be used to build cmake based projects within hudson.
+  This plugin can be used to build cmake based projects.
 </div>

@@ -266,12 +266,10 @@ public class CmakeBuilder extends Builder {
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
         private String cmakePath;
-        private transient String errorMessage;
 
         public DescriptorImpl() {
             super(CmakeBuilder.class);
             load();
-            this.errorMessage = "Build type can be empty or a single word containing any alphabetical letter. Generally this will be one of '','Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'";
         }
 
         public FormValidation doCheckSourceDir(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter final String value) throws IOException, ServletException {
@@ -288,29 +286,7 @@ public class CmakeBuilder extends Builder {
         public FormValidation doCheckBuildDir(@QueryParameter final String value) throws IOException, ServletException {
             if(value.length()==0)
                 return FormValidation.error("Please set a build directory");
-            if(value.length() < 1)
-                return FormValidation.warning("Isn't the name too short?");
-
-            File file = new File(value);
-            if (file.isFile())
-                return FormValidation.error("build dir is a file");
-
-            //TODO add more checks
             return FormValidation.ok();
-        }
-
-        /**
-         * Performs on-the-fly validation of the form field 'buildType'.
-         *
-         * @param value
-         */
-        public FormValidation doCheckBuildType(@QueryParameter final String value) throws IOException, ServletException {
-            if (value.matches("^[a-zA-Z]*$"))
-            {
-              return FormValidation.ok();
-            }
-            return FormValidation.error(DescriptorImpl.this.errorMessage);
-
         }
 
         /**
