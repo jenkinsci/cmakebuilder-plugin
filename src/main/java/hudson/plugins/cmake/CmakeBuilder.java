@@ -145,13 +145,12 @@ public class CmakeBuilder extends Builder {
     		listener.getLogger().println(ioe.getMessage());
     		return false;
     	}
-        String theBuildType = prepareBuildType();
 
     	listener.getLogger().println("Build   dir  : " + theBuildDir.toString());
     	listener.getLogger().println("Source  dir  : " + theSourceDir.toString());
     	listener.getLogger().println("Install dir  : " + theInstallDir.toString());
     	String cmakeCall = prepareCmakeCall(build, listener, envs,
-				theSourceDir, theInstallDir, theBuildType);
+				theSourceDir, theInstallDir);
     	listener.getLogger().println("CMake call : " + cmakeCall);
 
     	final CmakeLauncher cmakeLauncher =
@@ -162,11 +161,11 @@ public class CmakeBuilder extends Builder {
     			return false;
     		}
 
-    		if (!cmakeLauncher.launchMake(getMakeCommand())) {
+    		if (!cmakeLauncher.launchMake( Util.replaceMacro(getMakeCommand(), envs))) {
     			return false;
     		}
 
-    		return cmakeLauncher.launchInstall(installDir, getInstallCommand());
+    		return cmakeLauncher.launchInstall(installDir, Util.replaceMacro(getInstallCommand(), envs));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException ie) {
@@ -177,21 +176,18 @@ public class CmakeBuilder extends Builder {
 
 	private String prepareCmakeCall(AbstractBuild<?, ?> build,
 			BuildListener listener, EnvVars envs, String theSourceDir,
-			String theInstallDir, String theBuildType) throws IOException,
+			String theInstallDir) throws IOException,
 			InterruptedException {
 		String cmakeBin = checkCmake(build.getBuiltOn(), listener, envs);
     	String cmakeCall =
     		builderImpl.buildCMakeCall(cmakeBin,
-    				this.generator,
-    				this.preloadScript,
+    		    Util.replaceMacro(this.generator, envs),
+    		    Util.replaceMacro(this.preloadScript,envs),
     				theSourceDir,
     				theInstallDir,
-    				theBuildType, Util.replaceMacro(cmakeArgs, envs));
-    	return Util.replaceMacro(cmakeCall, envs);
-	}
-
-	private String prepareBuildType() {
-		return this.buildType;
+    				Util.replaceMacro(this.buildType, envs),
+    				Util.replaceMacro(cmakeArgs, envs));
+    	return cmakeCall;
 	}
 
 	private String prepareInstallDir(BuildListener listener, EnvVars envs,

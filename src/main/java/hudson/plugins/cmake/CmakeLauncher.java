@@ -3,7 +3,6 @@ package hudson.plugins.cmake;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.BuildListener;
 
 import java.io.IOException;
@@ -39,7 +38,6 @@ public class CmakeLauncher {
 		if (makeCommand.trim().isEmpty()) {
 			return true;
 		}
-		makeCommand = Util.replaceMacro(makeCommand, envs);
                 int result = launcher.launch().stdout(listener).cmdAsSingleString(makeCommand).envs(this.envs)
                     .pwd(new FilePath(this.workSpace, this.buildDir)).join();
 		return (result == 0);
@@ -51,7 +49,6 @@ public class CmakeLauncher {
 		if (!doInstall) {
 			return true;
 		}
-		installCommand = Util.replaceMacro(installCommand, this.envs);
                 int result = launcher.launch().stdout(listener).cmdAsSingleString(installCommand).envs(this.envs)
                     .pwd(new FilePath(this.workSpace, this.buildDir)).join();
 		return (result == 0);
