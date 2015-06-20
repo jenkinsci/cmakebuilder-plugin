@@ -128,7 +128,6 @@ public class CmakeBuilder extends Builder {
     }
 
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-    	listener.getLogger().println("MODULE: " + build.getModuleRoot());
 
         final EnvVars envs = build.getEnvironment(listener);
         final FilePath workSpace = build.getWorkspace();
@@ -166,10 +165,7 @@ public class CmakeBuilder extends Builder {
 		} catch (IOException e) {
 		  listener.fatalError(e.getMessage());
 		  return false;
-		} catch (InterruptedException ie) {
-			ie.printStackTrace();
 		}
-		return false;
     }
 
 	private String prepareCmakeCall(EnvVars envs,
