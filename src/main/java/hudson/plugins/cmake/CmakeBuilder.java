@@ -8,9 +8,9 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Node;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  *
  * @author Volker Kaiser
+ * @author Martin Weber
  */
 public class CmakeBuilder extends Builder {
 
@@ -49,26 +50,23 @@ public class CmakeBuilder extends Builder {
     private boolean cleanBuild;
     private boolean cleanInstallDir;
 
-    private CmakeBuilderImpl builderImpl;
-
     @DataBoundConstructor
     public CmakeBuilder(String sourceDir, String buildDir, String installDir,
             String buildType, boolean cleanBuild, boolean cleanInstallDir,
             String generator, String makeCommand, String installCommand,
             String preloadScript, String cmakeArgs, String projectCmakePath) {
-        this.sourceDir = sourceDir;
-        this.buildDir = buildDir;
-        this.installDir = installDir;
-        this.buildType = buildType;
+        this.sourceDir = Util.fixEmptyAndTrim(sourceDir);
+        this.buildDir = Util.fixEmptyAndTrim(buildDir);
+        this.installDir = Util.fixEmptyAndTrim(installDir);
+        this.buildType = Util.fixEmptyAndTrim(buildType);
         this.cleanBuild = cleanBuild;
         this.cleanInstallDir = cleanInstallDir;
-        this.generator = generator;
-        this.makeCommand = makeCommand;
-        this.installCommand = installCommand;
-        this.cmakeArgs = cmakeArgs;
-        this.projectCmakePath = projectCmakePath;
-        this.preloadScript = preloadScript;
-        builderImpl = new CmakeBuilderImpl();
+        this.generator = Util.fixEmptyAndTrim(generator);
+        this.makeCommand = Util.fixEmptyAndTrim(makeCommand);
+        this.installCommand = Util.fixEmptyAndTrim(installCommand);
+        this.cmakeArgs = Util.fixEmptyAndTrim(cmakeArgs);
+        this.projectCmakePath = Util.fixEmptyAndTrim(projectCmakePath);
+        this.preloadScript = Util.fixEmptyAndTrim(preloadScript);
     }
 
     public String getSourceDir() {
@@ -119,133 +117,207 @@ public class CmakeBuilder extends Builder {
         return this.projectCmakePath;
     }
 
+    /**
+     * Constructs a directory under the workspace on the slave.
+     *
+     * @param path
+     *            the directory´s relative path {@code null} for no op
+     *
+     * @return the full path of the directoy on the remote machine.
+     */
+    private static FilePath makeRemotePath(FilePath workSpace, String path) {
+        if (path == null) {
+            return workSpace;
+        }
+        FilePath file = workSpace.child(path);
+        return file;
+    }
+
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
 
         final EnvVars envs = build.getEnvironment(listener);
+        envs.overrideAll(build.getBuildVariables());
+
         final FilePath workSpace = build.getWorkspace();
 
-        String theSourceDir;
-        String theInstallDir;
-        String theBuildDir = this.buildDir;
         try {
-            theBuildDir = prepareBuildDir(listener, envs, workSpace);
-            theSourceDir = prepareSourceDir(envs, workSpace);
-            theInstallDir = prepareInstallDir(listener, envs, workSpace);
-        } catch (IOException ioe) {
-            listener.getLogger().println(ioe.getMessage());
-            return false;
-        }
+            /*
+             * Determine remote directory paths. Clean each, if requested.
+             * Create each.
+             */
+            FilePath theSourceDir;
+            FilePath theBuildDir;
+            FilePath theInstallDir = null;
 
-        listener.getLogger()
-                .println("Build   dir  : " + theBuildDir.toString());
-        listener.getLogger().println(
-                "Source  dir  : " + theSourceDir.toString());
-        listener.getLogger().println(
-                "Install dir  : " + theInstallDir.toString());
-        String cmakeCall = prepareCmakeCall(envs, theSourceDir, theInstallDir);
+            theSourceDir = makeRemotePath(workSpace,
+                    Util.replaceMacro(sourceDir, envs));
 
-        final CmakeLauncher cmakeLauncher = new CmakeLauncher(launcher, envs,
-                workSpace, listener, theBuildDir);
-
-        try {
-            if (!cmakeLauncher.launchCmake(cmakeCall)) {
-                return false;
+            theBuildDir = makeRemotePath(workSpace,
+                    Util.replaceMacro(buildDir, envs));
+            if (buildDir != null) {
+                if (this.cleanBuild) {
+                    listener.getLogger().println(
+                            "Cleaning build dir... " + theBuildDir.getRemote());
+                    theBuildDir.deleteRecursive();
+                }
+                theBuildDir.mkdirs();
             }
 
-            if (!cmakeLauncher.launchMake(Util.replaceMacro(getMakeCommand(),
-                    envs))) {
-                return false;
+            if (installDir != null) {
+                theInstallDir = makeRemotePath(workSpace,
+                        Util.replaceMacro(installDir, envs));
+                if (this.cleanInstallDir) {
+                    listener.getLogger().println(
+                            "Cleaning install dir... "
+                                    + theInstallDir.getRemote());
+                    theInstallDir.deleteRecursive();
+                }
+                theInstallDir.mkdirs();
             }
 
-            return cmakeLauncher.launchInstall(installDir,
-                    Util.replaceMacro(getInstallCommand(), envs));
+            listener.getLogger().println(
+                    "Build   dir  : " + theBuildDir.getRemote());
+            if (theInstallDir != null)
+                listener.getLogger().println(
+                        "Install dir  : " + theInstallDir.getRemote());
+
+            /* Invoke cmake in build dir */
+            final String cmakeBin = getCmake(envs);
+            ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
+                    Util.replaceMacro(this.generator, envs),
+                    Util.replaceMacro(this.preloadScript, envs), theSourceDir,
+                    theInstallDir, Util.replaceMacro(this.buildType, envs),
+                    Util.replaceMacro(cmakeArgs, envs));
+            // invoke cmake
+            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join()) {
+                return false; // invokation failed
+            }
+
+            /* invoke make in build dir */
+            if (0 != launcher
+                    .launch()
+                    .pwd(theBuildDir)
+                    .envs(envs)
+                    .stdout(listener)
+                    .cmdAsSingleString(
+                            Util.replaceMacro(getMakeCommand(), envs)).join()) {
+                return false; // invokation failed
+            }
+
+            /* invoke 'make install' in build dir */
+            if (theInstallDir != null) {
+                if (0 != launcher
+                        .launch()
+                        .pwd(theBuildDir)
+                        .envs(envs)
+                        .stdout(listener)
+                        .cmdAsSingleString(
+                                Util.replaceMacro(getInstallCommand(), envs))
+                        .join()) {
+                    return false; // invokation failed
+                }
+            }
         } catch (IOException e) {
-            listener.fatalError(e.getMessage());
+            Util.displayIOException(e, listener);
             return false;
         }
+        return true;
     }
 
-    private String prepareCmakeCall(EnvVars envs, String theSourceDir,
-            String theInstallDir) {
+    /**
+     * Determines the name of the cmake executable to invoke. Macro expansion
+     * takes place.
+     *
+     * @param envs
+     *            the build environment for macro expansion.
+     */
+    private String getCmake(EnvVars envs) {
         // determine command name...
         String cmakeBin = CMAKE; // built in default
-        // override with global seting, if any..
-        String cmakePath = getDescriptor().cmakePath();
-        if (cmakePath != null && cmakePath.length() > 0) {
+
+        // NOTE: fixEmptyAndTrim() is called for backward compatiblity with
+        // existing jobs only (pre 1.11)
+        // override with global setting, if any..
+        String cmakePath = Util.fixEmptyAndTrim(getDescriptor().cmakePath());
+        if (cmakePath != null) {
             cmakeBin = cmakePath;
         }
         // override with job specific setting, if any..
-        if (this.getProjectCmakePath() != null
-                && this.getProjectCmakePath().length() > 0) {
-            cmakeBin = Util.replaceMacro(this.getProjectCmakePath(), envs);
+        cmakePath = Util.fixEmptyAndTrim(this.getProjectCmakePath());
+        if (cmakePath != null) {
+            cmakeBin = Util.replaceMacro(cmakePath, envs);
         }
+        // what is this for?
         if (envs.containsKey(CMAKE_EXECUTABLE)) {
             cmakeBin = envs.get(CMAKE_EXECUTABLE);
         }
 
-        String cmakeCall = builderImpl.buildCMakeCall(cmakeBin,
-                Util.replaceMacro(this.generator, envs),
-                Util.replaceMacro(this.preloadScript, envs), theSourceDir,
-                theInstallDir, Util.replaceMacro(this.buildType, envs),
-                Util.replaceMacro(cmakeArgs, envs));
-        return cmakeCall;
+        return cmakeBin;
     }
 
-    private String prepareInstallDir(BuildListener listener, EnvVars envs,
-            final FilePath workSpace) throws IOException {
-        if (this.cleanInstallDir) {
-            listener.getLogger().println(
-                    "Wiping out install Dir... " + this.installDir);
-            return getCmakeBuilderImpl().preparePath(workSpace, envs,
-                    this.installDir,
-                    CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+    /**
+     * Constructs the command line to invoke cmake.
+     *
+     * @param cmakeBin
+     *            the name of the cmake binary, either as an absolute or
+     *            relative file system path.
+     * @param generator
+     *            the name of the build-script generator
+     * @param preloadScript
+     *            name of the pre-load a script to populate the cache or
+     *            {@code null}
+     * @param theSourceDir
+     *            source directory, must not be {@code null}
+     * @param theInstallDir
+     *            install directory or {@code null}
+     * @param buildType
+     *            build type argument for cmake or {@code null} to pass none
+     * @param cmakeArgs
+     *            addional arguments, separated by spaces to pass to cmake or
+     *            {@code null}
+     * @return the argument list, never {@code null}
+     */
+   private ArgumentListBuilder buildCMakeCall(final String cmakeBin,
+            final String generator, final String preloadScript,
+            final FilePath theSourceDir, final FilePath theInstallDir,
+            final String buildType, final String cmakeArgs) {
+        ArgumentListBuilder args = new ArgumentListBuilder();
+
+        args.add(cmakeBin);
+        args.add("-G").add(generator);
+        if (preloadScript != null) {
+            args.add("-C").add(preloadScript);
         }
-        return getCmakeBuilderImpl().preparePath(workSpace, envs,
-                this.installDir,
-                CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
-    }
-
-    private String prepareSourceDir(EnvVars envs, final FilePath workSpace)
-            throws IOException {
-        return getCmakeBuilderImpl().preparePath(workSpace, envs,
-                this.sourceDir,
-                CmakeBuilderImpl.PreparePathOptions.CHECK_PATH_EXISTS);
-    }
-
-    private String prepareBuildDir(BuildListener listener, EnvVars envs,
-            final FilePath workSpace) throws IOException {
-        if (this.cleanBuild) {
-            listener.getLogger().println(
-                    "Cleaning build Dir... " + this.buildDir);
-            return getCmakeBuilderImpl().preparePath(workSpace, envs,
-                    this.buildDir,
-                    CmakeBuilderImpl.PreparePathOptions.CREATE_NEW_IF_EXISTS);
+        if (buildType != null) {
+            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType);
         }
-        return getCmakeBuilderImpl().preparePath(workSpace, envs,
-                this.buildDir,
-                CmakeBuilderImpl.PreparePathOptions.CREATE_IF_NOT_EXISTING);
-    }
-
-    private CmakeBuilderImpl getCmakeBuilderImpl() {
-        if (builderImpl == null) {
-            builderImpl = new CmakeBuilderImpl();
+        if (theInstallDir != null) {
+            args.add("-D").add(
+                    "CMAKE_INSTALL_PREFIX=" + theInstallDir.getRemote());
         }
-        return builderImpl;
+        if (cmakeArgs != null) {
+            args.addTokenized(cmakeArgs);
+        }
+        args.add(theSourceDir.getRemote());
+        return args;
     }
 
+    /*
+     * Overridden for better type safety.
+     */
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
     }
 
+    // //////////////////////////////////////////////////////////////////
+    // inner classes
+    // //////////////////////////////////////////////////////////////////
     /**
      * Descriptor for {@link CmakeBuilder}. Used as a singleton. The class is
      * marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See <tt>views/hudson/plugins/hello_world/CmakeBuilder/*.jelly</tt> for
-     * the actual HTML fragment for the configuration screen.
      */
     @Extension
     public static final class DescriptorImpl extends
@@ -334,5 +406,5 @@ public class CmakeBuilder extends Builder {
             // types
             return true;
         }
-    }
+    } // DescriptorImpl
 }
