@@ -1,5 +1,7 @@
 package hudson.plugins.cmake;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 public class FieldValidationTest {
@@ -30,8 +32,13 @@ public class FieldValidationTest {
                 "Buildarea/cmake/3rdparty/Debug", "", "Debug", false, false,
                 "Unix Makefiles", "make", "", "", "", "");
 
-        assert (c.getInstallDir() == "");
+        assertNull(c.getInstallDir());
 
+        CmakeBuilder c2 = new CmakeBuilder("trunk/CMakeModules/3rdparty",
+                "Buildarea/cmake/3rdparty/Debug", ".INSTALL", "Debug", false,
+                false, "Unix Makefiles", "make", "", "", "", "");
+
+        assertEquals(".INSTALL", c2.getInstallDir());
     }
 
 }

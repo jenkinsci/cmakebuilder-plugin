@@ -17,7 +17,7 @@ public class FormRoundTripTest {
         FreeStyleProject p = j.createFreeStyleProject();
         CmakeBuilder before = new CmakeBuilder("trunk/CMakeModules/3rdparty",
                 "Buildarea/cmake/3rdparty/Debug", "", "Debug", false, false,
-                "Unix Makefiles", "make", "", "", "", "");
+                "Unix Makefiles", "make", "make all install", "", "", "");
 
         p.getBuildersList().add(before);
 
