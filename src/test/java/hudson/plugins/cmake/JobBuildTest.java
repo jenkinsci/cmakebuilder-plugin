@@ -47,9 +47,10 @@ public class JobBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
-        CmakeBuilder cmb = new CmakeBuilder("src", "build/Debug", null,
-                "Debug", true, true, "Unix Makefiles", "make", null, null,
-                null, null);
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
+                "Unix Makefiles", "src", "build/Debug", "make");
+        cmb.setCleanBuild(true);
+        cmb.setCleanInstallDir(true);
         p.getBuildersList().add(cmb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
@@ -70,9 +71,10 @@ public class JobBuildTest {
                 .get("cmakebuilder-test-slave"));
         p.setAssignedLabel(slave.getSelfLabel());
 
-        CmakeBuilder cmb = new CmakeBuilder("src", "build/Debug", null,
-                "Debug", true, true, "Unix Makefiles", "make", null, null,
-                null, null);
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
+                "Unix Makefiles", "src", "build/Debug", "make");
+        cmb.setCleanBuild(true);
+        cmb.setCleanInstallDir(true);
         p.getBuildersList().add(cmb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
@@ -106,9 +108,14 @@ public class JobBuildTest {
                 pd1, pd2, pd3, pd4, pd5, pd6, pd7);
         p.addProperty(pdp);
 
-        CmakeBuilder cmb = new CmakeBuilder("${SOURCEDIR}", "${BUILDDIR}",
-                null, "${BUILDTYPE}", true, true, "${BUILDGENERATOR}",
-                "${BUILDTYPE}", null, "${PRESCRIPT}", "${CMAKEARGS}", null);
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
+                "${BUILDGENERATOR}", "${SOURCEDIR}", "${BUILDDIR}", "make");
+        cmb.setBuildType("${BUILDTYPE}");
+        cmb.setCleanBuild(true);
+        cmb.setCleanInstallDir(true);
+        cmb.setCmakeArgs("${CMAKEARGS}");
+        cmb.setPreloadScript("${PRESCRIPT}");
+
         p.getBuildersList().add(cmb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();

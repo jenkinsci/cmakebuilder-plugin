@@ -1,5 +1,6 @@
 package hudson.plugins.cmake;
 
+import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -8,65 +9,64 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 
 import java.io.IOException;
 
 import javax.servlet.ServletException;
 
-import net.sf.json.JSONObject;
+import jenkins.model.Jenkins;
 
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Executes <tt>cmake</tt> as the build process.
- *
+ * Executes <tt>cmake</tt> as a build step.
  *
  * @author Volker Kaiser
  * @author Martin Weber
  */
 public class CmakeBuilder extends Builder {
 
-    private static final String CMAKE_EXECUTABLE = "CMAKE_EXECUTABLE";
-
-    private static final String CMAKE = "cmake";
-
     private String sourceDir;
     private String buildDir;
     private String installDir;
-    private String buildType;
     private String generator;
     private String makeCommand;
+    private String buildType;
     private String installCommand;
     private String preloadScript;
     private String cmakeArgs;
-    private String projectCmakePath;
     private boolean cleanBuild;
     private boolean cleanInstallDir;
+    /** the name of the cmake installation to use for this build step */
+    private String installationName;
 
     @DataBoundConstructor
-    public CmakeBuilder(String sourceDir, String buildDir, String installDir,
-            String buildType, boolean cleanBuild, boolean cleanInstallDir,
-            String generator, String makeCommand, String installCommand,
-            String preloadScript, String cmakeArgs, String projectCmakePath) {
+    public CmakeBuilder(String installationName, String generator,
+            String sourceDir, String buildDir, String makeCommand) {
+        this.installationName = Util.fixEmptyAndTrim(installationName);
+        this.generator = Util.fixEmptyAndTrim(generator);
         this.sourceDir = Util.fixEmptyAndTrim(sourceDir);
         this.buildDir = Util.fixEmptyAndTrim(buildDir);
         this.installDir = Util.fixEmptyAndTrim(installDir);
-        this.buildType = Util.fixEmptyAndTrim(buildType);
-        this.cleanBuild = cleanBuild;
-        this.cleanInstallDir = cleanInstallDir;
-        this.generator = Util.fixEmptyAndTrim(generator);
         this.makeCommand = Util.fixEmptyAndTrim(makeCommand);
-        this.installCommand = Util.fixEmptyAndTrim(installCommand);
-        this.cmakeArgs = Util.fixEmptyAndTrim(cmakeArgs);
-        this.projectCmakePath = Util.fixEmptyAndTrim(projectCmakePath);
-        this.preloadScript = Util.fixEmptyAndTrim(preloadScript);
+    }
+
+    /** Gets the name of the cmake installation to use for this build step */
+    public String getInstallationName() {
+        return this.installationName;
+    }
+
+    public String getGenerator() {
+        return this.generator;
     }
 
     public String getSourceDir() {
@@ -77,44 +77,71 @@ public class CmakeBuilder extends Builder {
         return this.buildDir;
     }
 
+    public String getMakeCommand() {
+        return this.makeCommand;
+    }
+
+    @DataBoundSetter
+    public void setInstallDir(String installDir) {
+        this.installDir = Util.fixEmptyAndTrim(installDir);
+    }
+
     public String getInstallDir() {
         return this.installDir;
+    }
+
+    @DataBoundSetter
+    public void setBuildType(String buildType) {
+        this.buildType = Util.fixEmptyAndTrim(buildType);
     }
 
     public String getBuildType() {
         return this.buildType;
     }
 
+    @DataBoundSetter
+    public void setCleanBuild(boolean cleanBuild) {
+        this.cleanBuild = cleanBuild;
+    }
+
     public boolean getCleanBuild() {
         return this.cleanBuild;
+    }
+
+    @DataBoundSetter
+    public void setCleanInstallDir(boolean cleanInstallDir) {
+        this.cleanInstallDir = cleanInstallDir;
     }
 
     public boolean getCleanInstallDir() {
         return this.cleanInstallDir;
     }
 
-    public String getGenerator() {
-        return this.generator;
-    }
-
-    public String getMakeCommand() {
-        return this.makeCommand;
+    @DataBoundSetter
+    public void setInstallCommand(String installCommand) {
+        this.installCommand = Util.fixEmptyAndTrim(installCommand);
     }
 
     public String getInstallCommand() {
         return this.installCommand;
     }
 
+    @DataBoundSetter
+    public void setPreloadScript(String preloadScript) {
+        this.preloadScript = Util.fixEmptyAndTrim(preloadScript);
+    }
+
     public String getPreloadScript() {
         return this.preloadScript;
     }
 
-    public String getCmakeArgs() {
-        return this.cmakeArgs;
+    @DataBoundSetter
+    public void setCmakeArgs(String cmakeArgs) {
+        this.cmakeArgs = Util.fixEmptyAndTrim(cmakeArgs);
     }
 
-    public String getProjectCmakePath() {
-        return this.projectCmakePath;
+    public String getCmakeArgs() {
+        return this.cmakeArgs;
     }
 
     /**
@@ -133,11 +160,44 @@ public class CmakeBuilder extends Builder {
         return file;
     }
 
+    /**
+     * Finds the cmake tool installation to use for this build among all
+     * installations configured in the Jenkins administration
+     *
+     * @return selected CMake installation or {@code null} if none could be
+     *         found
+     */
+    private CmakeTool getSelectedInstallation() {
+        CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) Jenkins
+                .getInstance().getDescriptor(CmakeTool.class);
+        for (CmakeTool i : descriptor.getInstallations()) {
+            if (installationName != null
+                    && i.getName().equals(installationName))
+                return i;
+        }
+
+        return null;
+    }
+
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
 
+        CmakeTool installToUse = getSelectedInstallation();
+
+        // Raise an error if the doxygen installation isn't found
+        if (installToUse == null) {
+            listener.getLogger().println(
+                    "There is no CMake installation selected."
+                            + " Please review the build step configuration.");
+            return false;
+        }
         final EnvVars envs = build.getEnvironment(listener);
         envs.overrideAll(build.getBuildVariables());
+        // Get the CMake version for this node, installing it if necessary
+        installToUse = installToUse.forNode(Computer.currentComputer()
+                .getNode(), listener);
+        installToUse = installToUse.forEnvironment(envs);
+        final String cmakeBin = installToUse.getHome();
 
         final FilePath workSpace = build.getWorkspace();
 
@@ -183,7 +243,6 @@ public class CmakeBuilder extends Builder {
                         "Install dir  : " + theInstallDir.getRemote());
 
             /* Invoke cmake in build dir */
-            final String cmakeBin = getCmake(envs);
             ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
                     Util.replaceMacro(this.generator, envs),
                     Util.replaceMacro(this.preloadScript, envs), theSourceDir,
@@ -227,37 +286,6 @@ public class CmakeBuilder extends Builder {
     }
 
     /**
-     * Determines the name of the cmake executable to invoke. Macro expansion
-     * takes place.
-     *
-     * @param envs
-     *            the build environment for macro expansion.
-     */
-    private String getCmake(EnvVars envs) {
-        // determine command name...
-        String cmakeBin = CMAKE; // built in default
-
-        // NOTE: fixEmptyAndTrim() is called for backward compatiblity with
-        // existing jobs only (pre 1.11)
-        // override with global setting, if any..
-        String cmakePath = Util.fixEmptyAndTrim(getDescriptor().cmakePath());
-        if (cmakePath != null) {
-            cmakeBin = cmakePath;
-        }
-        // override with job specific setting, if any..
-        cmakePath = Util.fixEmptyAndTrim(this.getProjectCmakePath());
-        if (cmakePath != null) {
-            cmakeBin = Util.replaceMacro(cmakePath, envs);
-        }
-        // what is this for?
-        if (envs.containsKey(CMAKE_EXECUTABLE)) {
-            cmakeBin = envs.get(CMAKE_EXECUTABLE);
-        }
-
-        return cmakeBin;
-    }
-
-    /**
      * Constructs the command line to invoke cmake.
      *
      * @param cmakeBin
@@ -279,7 +307,7 @@ public class CmakeBuilder extends Builder {
      *            {@code null}
      * @return the argument list, never {@code null}
      */
-   private ArgumentListBuilder buildCMakeCall(final String cmakeBin,
+    private ArgumentListBuilder buildCMakeCall(final String cmakeBin,
             final String generator, final String preloadScript,
             final FilePath theSourceDir, final FilePath theInstallDir,
             final String buildType, final String cmakeArgs) {
@@ -304,7 +332,7 @@ public class CmakeBuilder extends Builder {
         return args;
     }
 
-    /*
+    /**
      * Overridden for better type safety.
      */
     @Override
@@ -323,17 +351,34 @@ public class CmakeBuilder extends Builder {
     public static final class DescriptorImpl extends
             BuildStepDescriptor<Builder> {
         /**
-         * To persist global configuration information, simply store it in a
-         * field and call save().
-         *
-         * <p>
-         * If you don't want fields to be persisted, use <tt>transient</tt>.
+         * the cmake tool installations
          */
-        private String cmakePath;
+        @CopyOnWrite
+        private volatile CmakeTool[] installations = new CmakeTool[0];
 
         public DescriptorImpl() {
             super(CmakeBuilder.class);
             load();
+        }
+
+        /**
+         * This human readable name is used in the configuration screen.
+         */
+        public String getDisplayName() {
+            return "CMake Build";
+        }
+
+        /**
+         * Determines the values of the Cmake installation drop-down list box.
+         */
+        public ListBoxModel doFillInstallationNameItems() {
+            ListBoxModel items = new ListBoxModel();
+            CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) Jenkins
+                    .getInstance().getDescriptor(CmakeTool.class);
+            for (CmakeTool inst : descriptor.getInstallations()) {
+                items.add(inst.getName());// , "" + inst.getPid());
+            }
+            return items;
         }
 
         public FormValidation doCheckSourceDir(
@@ -372,33 +417,6 @@ public class CmakeBuilder extends Builder {
             return FormValidation.validateExecutable(value);
         }
 
-        /**
-         * This human readable name is used in the configuration screen.
-         */
-        public String getDisplayName() {
-            return "CMake Build";
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject o)
-                throws FormException {
-            // to persist global configuration information,
-            // set that to properties and call save().
-            cmakePath = o.getString("cmakePath");
-            save();
-            return super.configure(req, o);
-        }
-
-        public String cmakePath() {
-            return cmakePath;
-        }
-
-        @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData)
-                throws FormException {
-            return req.bindJSON(CmakeBuilder.class, formData);
-        }
-
         @Override
         public boolean isApplicable(
                 @SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
@@ -406,5 +424,6 @@ public class CmakeBuilder extends Builder {
             // types
             return true;
         }
+
     } // DescriptorImpl
 }

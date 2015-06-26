@@ -15,10 +15,9 @@ public class FormRoundTripTest {
     public void checkValidation() throws Exception {
 
         FreeStyleProject p = j.createFreeStyleProject();
-        CmakeBuilder before = new CmakeBuilder("trunk/CMakeModules/3rdparty",
-                "Buildarea/cmake/3rdparty/Debug", "", "Debug", false, false,
-                "Unix Makefiles", "make", "make all install", "", "", "");
-
+        CmakeBuilder before = new CmakeBuilder(CmakeTool.DEFAULT,
+                "Unix Makefiles", "trunk/CMakeModules/3rdparty",
+                "Buildarea/cmake/3rdparty/Debug", "make");
         p.getBuildersList().add(before);
 
         j.submit(j.createWebClient().getPage(p, "configure")
@@ -29,7 +28,7 @@ public class FormRoundTripTest {
         j.assertEqualBeans(
                 before,
                 after,
-                "sourceDir,buildDir,installDir,buildType,cleanBuild,cleanInstallDir,generator,makeCommand,installCommand,preloadScript,cmakeArgs,projectCmakePath");
+                "sourceDir,buildDir,installDir,buildType,cleanBuild,cleanInstallDir,generator,makeCommand,installCommand,preloadScript,cmakeArgs,installationName");
 
     }
 
