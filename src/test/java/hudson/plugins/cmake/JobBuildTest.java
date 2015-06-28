@@ -1,6 +1,10 @@
 package hudson.plugins.cmake;
 
+import static org.junit.Assert.assertNotNull;
+import hudson.Launcher;
+import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
+import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ParametersDefinitionProperty;
@@ -16,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * Tests the CmakeBuilder in a running job.
@@ -128,4 +133,45 @@ public class JobBuildTest {
         }
     }
 
+    /**
+     * Verifies that the build-tool variable gets injected.
+     */
+    @Test
+    public void testBuildToolVariableInjected() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(scm);
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
+                "Unix Makefiles", "src", "build/Debug", "make");
+        cmb.setCleanBuild(true);
+        cmb.setCleanInstallDir(true);
+        p.getBuildersList().add(cmb);
+        GetEnvVarBuilder gevb = new GetEnvVarBuilder();
+        p.getBuildersList().add(gevb);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        System.out.println(JenkinsRule.getLog(build));
+        assertNotNull(
+                CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
+                gevb.value);
+    }
+
+    // //////////////////////////////////////////////////////////////////
+    // inner classes
+    // //////////////////////////////////////////////////////////////////
+    private static class GetEnvVarBuilder extends TestBuilder {
+        String value;
+
+        /*-
+         * @see org.jvnet.hudson.test.TestBuilder#perform(hudson.model.AbstractBuild, hudson.Launcher, hudson.model.BuildListener)
+         */
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
+                BuildListener listener) throws InterruptedException,
+                IOException {
+            value = build.getEnvironment(listener).get(
+                    CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL);
+            return true;
+        }
+
+    }
 }

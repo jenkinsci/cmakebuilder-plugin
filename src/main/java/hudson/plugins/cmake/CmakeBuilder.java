@@ -7,6 +7,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
+import hudson.model.Environment;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
@@ -30,10 +31,17 @@ import org.kohsuke.stapler.QueryParameter;
 /**
  * Executes <tt>cmake</tt> as a build step.
  *
- * @author Volker Kaiser
+ * @author Volker Kaiser (initial implementation)
  * @author Martin Weber
  */
 public class CmakeBuilder extends Builder {
+
+    /**
+     * the key for the build variable that holds the build tool that the
+     * build-scripts have been generated for (e.g. /usr/bin/make or
+     * /usr/bin/ninja)
+     */
+    public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL";
 
     private String sourceDir;
     private String buildDir;
@@ -254,6 +262,21 @@ public class CmakeBuilder extends Builder {
                 return false; // invokation failed
             }
 
+            /* parse CMakeCache.txt to get the actual build tool */
+            FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
+            String buildTool = cacheFile.act(new BuildToolEntryParser());
+            if (buildTool == null) {
+                listener.error("Failed to get CMAKE_BUILD_TOOL value from "
+                        + cacheFile.getRemote());
+                return false; // abort build
+            }
+            // export the variable..
+            EnvVars envVars = new EnvVars(
+                    CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
+            build.getEnvironments().add(Environment.create(envVars));
+            listener.getLogger().println(
+                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
+
             /* invoke make in build dir */
             if (0 != launcher
                     .launch()
@@ -280,6 +303,7 @@ public class CmakeBuilder extends Builder {
             }
         } catch (IOException e) {
             Util.displayIOException(e, listener);
+            listener.error(e.getLocalizedMessage());
             return false;
         }
         return true;
