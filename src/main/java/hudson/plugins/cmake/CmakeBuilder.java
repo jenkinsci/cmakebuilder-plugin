@@ -193,8 +193,7 @@ public class CmakeBuilder extends Builder {
             BuildListener listener) throws InterruptedException, IOException {
 
         CmakeTool installToUse = getSelectedInstallation();
-
-        // Raise an error if the doxygen installation isn't found
+        // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
             listener.getLogger().println(
                     "There is no CMake installation selected."

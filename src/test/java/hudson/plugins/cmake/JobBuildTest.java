@@ -157,6 +157,38 @@ public class JobBuildTest {
         assertNotNull(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, gevb.value);
     }
 
+    /**
+     * Verify that build tool invocations work.
+     */
+    @Test
+    public void testBuildToolStep() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(scm);
+
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        cmb.setCleanBuild(true);
+        cmb.setSourceDir("src");
+        cmb.setBuildDir("build/debug");
+        p.getBuildersList().add(cmb);
+        // let the build invoke 'make clean all'..
+        BuildToolStep step = new BuildToolStep();
+        final String makeTargets = "clean all";
+        step.setArgs(makeTargets);
+        cmb.getSteps().add(step);
+        // let the build invoke 'make rebuild_cache'..
+        step = new BuildToolStep();
+        String makeTargets2 = "rebuild_cache";
+        step.setArgs(makeTargets2);
+        cmb.getSteps().add(step);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        System.out.println(JenkinsRule.getLog(build));
+        j.assertLogContains(makeTargets, build);
+        j.assertLogContains(makeTargets2, build);
+
+        j.assertBuildStatusSuccess(build);
+    }
+
     // //////////////////////////////////////////////////////////////////
     // inner classes
     // //////////////////////////////////////////////////////////////////

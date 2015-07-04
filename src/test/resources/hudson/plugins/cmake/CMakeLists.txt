@@ -1,2 +1,2 @@
 PROJECT(Tester)
-ADD_EXECUTABLE(tester tester.cpp)
+ADD_EXECUTABLE(theBuildArtifact tester.cpp)
