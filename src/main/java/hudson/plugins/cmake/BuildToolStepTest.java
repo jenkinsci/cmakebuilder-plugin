@@ -6,7 +6,10 @@
  *******************************************************************************/
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import hudson.EnvVars;
 import hudson.console.ConsoleNote;
 import hudson.util.AbstractTaskListener;
@@ -17,9 +20,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Martin Weber
