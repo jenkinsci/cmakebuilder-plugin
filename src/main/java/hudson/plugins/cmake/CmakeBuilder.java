@@ -254,8 +254,8 @@ public class CmakeBuilder extends Builder {
             EnvVars envVars = new EnvVars(
                     CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
             build.getEnvironments().add(Environment.create(envVars));
-            listener.getLogger().println(
-                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
+//            listener.getLogger().println(
+//                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
 
             /* invoke each build tool step in build dir */
             for (BuildToolStep step : toolSteps) {

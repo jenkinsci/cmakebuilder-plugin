@@ -52,10 +52,10 @@ public class JobBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
-                "Unix Makefiles", "src", "build/Debug", "make");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
         cmb.setCleanBuild(true);
-        cmb.setCleanInstallDir(true);
+        cmb.setSourceDir("src");
+        cmb.setBuildDir("src");
         p.getBuildersList().add(cmb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
@@ -76,10 +76,10 @@ public class JobBuildTest {
                 .get("cmakebuilder-test-slave"));
         p.setAssignedLabel(slave.getSelfLabel());
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
-                "Unix Makefiles", "src", "build/Debug", "make");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
         cmb.setCleanBuild(true);
-        cmb.setCleanInstallDir(true);
+        cmb.setSourceDir("src");
+        cmb.setBuildDir("src");
         p.getBuildersList().add(cmb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
@@ -114,10 +114,11 @@ public class JobBuildTest {
         p.addProperty(pdp);
 
         CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
-                "${BUILDGENERATOR}", "${SOURCEDIR}", "${BUILDDIR}", "make");
+                "${BUILDGENERATOR}");
         cmb.setBuildType("${BUILDTYPE}");
         cmb.setCleanBuild(true);
-        cmb.setCleanInstallDir(true);
+        cmb.setSourceDir("${SOURCEDIR}");
+        cmb.setBuildDir("${BUILDDIR}");
         cmb.setCmakeArgs("${CMAKEARGS}");
         cmb.setPreloadScript("${PRESCRIPT}");
 
@@ -141,18 +142,19 @@ public class JobBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
         CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT,
-                "Unix Makefiles", "src", "build/Debug", "make");
+                "Unix Makefiles");
         cmb.setCleanBuild(true);
-        cmb.setCleanInstallDir(true);
+        cmb.setSourceDir("src");
+        cmb.setBuildDir("build");
         p.getBuildersList().add(cmb);
         GetEnvVarBuilder gevb = new GetEnvVarBuilder();
         p.getBuildersList().add(gevb);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
-        assertNotNull(
-                CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
-                gevb.value);
+        j.assertBuildStatusSuccess(build);
+
+        assertNotNull(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, gevb.value);
     }
 
     // //////////////////////////////////////////////////////////////////
