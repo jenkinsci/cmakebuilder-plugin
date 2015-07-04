@@ -13,12 +13,10 @@ import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
-import hudson.tools.ZipExtractionInstaller;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -34,8 +32,8 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class CmakeTool extends ToolInstallation implements
         NodeSpecific<CmakeTool>, EnvironmentSpecific<CmakeTool> {
-    private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
-            .getName());
+//    private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
+//            .getName());
 
     /**
      * Tool name of the default tool (usually found on the executable search
