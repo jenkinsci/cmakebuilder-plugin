@@ -18,6 +18,10 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.servlet.ServletException;
 
@@ -43,29 +47,33 @@ public class CmakeBuilder extends Builder {
      */
     public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL";
 
+    /** the name of the cmake tool installation to use for this build step */
+    private String installationName;
+    /** allowed to be empty but not {@code null} */
+    private String generator;
     private String sourceDir;
     private String buildDir;
-    private String installDir;
-    private String generator;
-    private String makeCommand;
     private String buildType;
-    private String installCommand;
     private String preloadScript;
     private String cmakeArgs;
     private boolean cleanBuild;
-    private boolean cleanInstallDir;
-    /** the name of the cmake installation to use for this build step */
-    private String installationName;
 
+    private List<BuildToolStep> toolSteps = new ArrayList<BuildToolStep>(0);
+
+    /**
+     * Minimal constructor.
+     *
+     * @param installationName
+     *            the name of the cmake tool installation from the global config
+     *            page.
+     * @param generator
+     *            the name of cmake´s buildscript generator. May be empty but
+     *            not {@code null}
+     */
     @DataBoundConstructor
-    public CmakeBuilder(String installationName, String generator,
-            String sourceDir, String buildDir, String makeCommand) {
+    public CmakeBuilder(String installationName, String generator) {
         this.installationName = Util.fixEmptyAndTrim(installationName);
-        this.generator = Util.fixEmptyAndTrim(generator);
-        this.sourceDir = Util.fixEmptyAndTrim(sourceDir);
-        this.buildDir = Util.fixEmptyAndTrim(buildDir);
-        this.installDir = Util.fixEmptyAndTrim(installDir);
-        this.makeCommand = Util.fixEmptyAndTrim(makeCommand);
+        this.generator = Util.fixNull(generator);
     }
 
     /** Gets the name of the cmake installation to use for this build step */
@@ -77,25 +85,22 @@ public class CmakeBuilder extends Builder {
         return this.generator;
     }
 
+    @DataBoundSetter
+    public void setSourceDir(String sourceDir) {
+        this.sourceDir = Util.fixEmptyAndTrim(sourceDir);
+    }
+
     public String getSourceDir() {
         return this.sourceDir;
     }
 
+    @DataBoundSetter
+    public void setBuildDir(String buildDir) {
+        this.buildDir = Util.fixEmptyAndTrim(buildDir);
+    }
+
     public String getBuildDir() {
         return this.buildDir;
-    }
-
-    public String getMakeCommand() {
-        return this.makeCommand;
-    }
-
-    @DataBoundSetter
-    public void setInstallDir(String installDir) {
-        this.installDir = Util.fixEmptyAndTrim(installDir);
-    }
-
-    public String getInstallDir() {
-        return this.installDir;
     }
 
     @DataBoundSetter
@@ -117,24 +122,6 @@ public class CmakeBuilder extends Builder {
     }
 
     @DataBoundSetter
-    public void setCleanInstallDir(boolean cleanInstallDir) {
-        this.cleanInstallDir = cleanInstallDir;
-    }
-
-    public boolean getCleanInstallDir() {
-        return this.cleanInstallDir;
-    }
-
-    @DataBoundSetter
-    public void setInstallCommand(String installCommand) {
-        this.installCommand = Util.fixEmptyAndTrim(installCommand);
-    }
-
-    public String getInstallCommand() {
-        return this.installCommand;
-    }
-
-    @DataBoundSetter
     public void setPreloadScript(String preloadScript) {
         this.preloadScript = Util.fixEmptyAndTrim(preloadScript);
     }
@@ -150,6 +137,23 @@ public class CmakeBuilder extends Builder {
 
     public String getCmakeArgs() {
         return this.cmakeArgs;
+    }
+
+    /**
+     * Sets the toolSteps property.
+     */
+    @DataBoundSetter
+    public void setSteps(List<BuildToolStep> toolSteps) {
+        this.toolSteps = toolSteps;
+    }
+
+    /**
+     * Gets the toolSteps property.
+     *
+     * @return the current toolSteps property.
+     */
+    public List<BuildToolStep> getSteps() {
+        return toolSteps;
     }
 
     /**
@@ -211,20 +215,14 @@ public class CmakeBuilder extends Builder {
 
         try {
             /*
-             * Determine remote directory paths. Clean each, if requested.
-             * Create each.
+             * Determine remote build directory path. Clean it, if requested.
+             * Create it.
              */
-            FilePath theSourceDir;
-            FilePath theBuildDir;
-            FilePath theInstallDir = null;
-
-            theSourceDir = makeRemotePath(workSpace,
-                    Util.replaceMacro(sourceDir, envs));
-
-            theBuildDir = makeRemotePath(workSpace,
+            FilePath theBuildDir = makeRemotePath(workSpace,
                     Util.replaceMacro(buildDir, envs));
             if (buildDir != null) {
-                if (this.cleanBuild) {
+                if (this.cleanBuild && !buildDir.equals(sourceDir)) {
+                    // avoid deleting source dir
                     listener.getLogger().println(
                             "Cleaning build dir... " + theBuildDir.getRemote());
                     theBuildDir.deleteRecursive();
@@ -232,33 +230,17 @@ public class CmakeBuilder extends Builder {
                 theBuildDir.mkdirs();
             }
 
-            if (installDir != null) {
-                theInstallDir = makeRemotePath(workSpace,
-                        Util.replaceMacro(installDir, envs));
-                if (this.cleanInstallDir) {
-                    listener.getLogger().println(
-                            "Cleaning install dir... "
-                                    + theInstallDir.getRemote());
-                    theInstallDir.deleteRecursive();
-                }
-                theInstallDir.mkdirs();
-            }
-
-            listener.getLogger().println(
-                    "Build   dir  : " + theBuildDir.getRemote());
-            if (theInstallDir != null)
-                listener.getLogger().println(
-                        "Install dir  : " + theInstallDir.getRemote());
-
             /* Invoke cmake in build dir */
+            FilePath theSourceDir = makeRemotePath(workSpace,
+                    Util.replaceMacro(sourceDir, envs));
             ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
                     Util.replaceMacro(this.generator, envs),
                     Util.replaceMacro(this.preloadScript, envs), theSourceDir,
-                    theInstallDir, Util.replaceMacro(this.buildType, envs),
+                    Util.replaceMacro(this.buildType, envs),
                     Util.replaceMacro(cmakeArgs, envs));
             // invoke cmake
-            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
-                    .stdout(listener).cmds(cmakeCall).join()) {
+            if (0 != launcher.launch().pwd(theBuildDir).stdout(listener)
+                    .cmds(cmakeCall).join()) {
                 return false; // invokation failed
             }
 
@@ -277,27 +259,13 @@ public class CmakeBuilder extends Builder {
             listener.getLogger().println(
                     "Exported CMAKE_BUILD_TOOL=" + buildTool);
 
-            /* invoke make in build dir */
-            if (0 != launcher
-                    .launch()
-                    .pwd(theBuildDir)
-                    .envs(envs)
-                    .stdout(listener)
-                    .cmdAsSingleString(
-                            Util.replaceMacro(getMakeCommand(), envs)).join()) {
-                return false; // invokation failed
-            }
-
-            /* invoke 'make install' in build dir */
-            if (theInstallDir != null) {
-                if (0 != launcher
-                        .launch()
-                        .pwd(theBuildDir)
-                        .envs(envs)
-                        .stdout(listener)
-                        .cmdAsSingleString(
-                                Util.replaceMacro(getInstallCommand(), envs))
-                        .join()) {
+            /* invoke each build tool step in build dir */
+            for (BuildToolStep step : toolSteps) {
+                ArgumentListBuilder toolCall = buildBuildToolCall(buildTool,
+                        step.getCommandArguments(envVars));
+                if (0 != launcher.launch().pwd(theBuildDir)
+                        .envs(step.getEnvironmentVars(envs, listener)).stdout(listener)
+                        .cmds(toolCall).join()) {
                     return false; // invokation failed
                 }
             }
@@ -322,8 +290,6 @@ public class CmakeBuilder extends Builder {
      *            {@code null}
      * @param theSourceDir
      *            source directory, must not be {@code null}
-     * @param theInstallDir
-     *            install directory or {@code null}
      * @param buildType
      *            build type argument for cmake or {@code null} to pass none
      * @param cmakeArgs
@@ -331,10 +297,10 @@ public class CmakeBuilder extends Builder {
      *            {@code null}
      * @return the argument list, never {@code null}
      */
-    private ArgumentListBuilder buildCMakeCall(final String cmakeBin,
+    private static ArgumentListBuilder buildCMakeCall(final String cmakeBin,
             final String generator, final String preloadScript,
-            final FilePath theSourceDir, final FilePath theInstallDir,
-            final String buildType, final String cmakeArgs) {
+            final FilePath theSourceDir, final String buildType,
+            final String cmakeArgs) {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(cmakeBin);
@@ -345,14 +311,32 @@ public class CmakeBuilder extends Builder {
         if (buildType != null) {
             args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType);
         }
-        if (theInstallDir != null) {
-            args.add("-D").add(
-                    "CMAKE_INSTALL_PREFIX=" + theInstallDir.getRemote());
-        }
         if (cmakeArgs != null) {
             args.addTokenized(cmakeArgs);
         }
         args.add(theSourceDir.getRemote());
+        return args;
+    }
+
+    /**
+     * Constructs the command line to invoke the actual build tool.
+     *
+     * @param toolBin
+     *            the name of the build tool binary, either as an absolute or
+     *            relative file system path.
+     * @param toolArgs
+     *            addional arguments, separated by spaces to pass to cmake or
+     *            {@code null}
+     * @return the argument list, never {@code null}
+     */
+    private static ArgumentListBuilder buildBuildToolCall(final String toolBin,
+            String... toolArgs) {
+        ArgumentListBuilder args = new ArgumentListBuilder();
+
+        args.add(toolBin);
+        if (toolArgs != null) {
+            args.add(toolArgs);
+        }
         return args;
     }
 
@@ -405,6 +389,25 @@ public class CmakeBuilder extends Builder {
             return items;
         }
 
+        /**
+         * Performs on-the-fly validation of the form field 'generator'.
+         *
+         * @param value
+         */
+        public FormValidation doCheckGenerator(
+                @QueryParameter final String value) throws IOException,
+                ServletException {
+            if (value.length() == 0) {
+                return FormValidation.error("Please set a generator name");
+            }
+            return FormValidation.ok();
+        }
+
+        /**
+         * Performs on-the-fly validation of the form field 'sourceDir'.
+         *
+         * @param value
+         */
         public FormValidation doCheckSourceDir(
                 @AncestorInPath AbstractProject<?, ?> project,
                 @QueryParameter final String value) throws IOException,
@@ -415,37 +418,10 @@ public class CmakeBuilder extends Builder {
             return ws.validateRelativePath(value, true, false);
         }
 
-        /**
-         * Performs on-the-fly validation of the form field 'name'.
-         *
-         * @param value
-         */
-        public FormValidation doCheckBuildDir(@QueryParameter final String value)
-                throws IOException, ServletException {
-            if (value.length() == 0)
-                return FormValidation.error("Please set a build directory");
-            return FormValidation.ok();
-        }
-
-        /**
-         * Performs on-the-fly validation of the form field 'makeCommand'.
-         *
-         * @param value
-         */
-        public FormValidation doCheckMakeCommand(
-                @QueryParameter final String value) throws IOException,
-                ServletException {
-            if (value.length() == 0) {
-                return FormValidation.error("Please set make command");
-            }
-            return FormValidation.validateExecutable(value);
-        }
-
         @Override
         public boolean isApplicable(
                 @SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-            // Indicates that this builder can be used with all kinds of project
-            // types
+            // this builder can be used with all kinds of project types
             return true;
         }
 

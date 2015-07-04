@@ -38,6 +38,14 @@ public class CmakeTool extends ToolInstallation implements
             .getName());
 
     /**
+     * Tool name of the default tool (usually found on the executable search
+     * path). Do not use: Exposed here only for testing purposes.
+     */
+    public static transient final String DEFAULT = "InSearchPath";
+
+    private static final long serialVersionUID = 1;
+
+    /**
      * Constructor for CmakeTool.
      *
      * @param name
@@ -53,14 +61,6 @@ public class CmakeTool extends ToolInstallation implements
         super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim(home),
                 properties);
     }
-
-    /**
-     * Tool name of the default tool (usually found on the executable search
-     * path). Do not use: Exposed here only for testing purposes.
-     */
-    public static transient final String DEFAULT = "InSearchPath";
-
-    private static final long serialVersionUID = 1;
 
     /**
      * @return {@link java.lang.String} that will be used to execute cmake (e.g.

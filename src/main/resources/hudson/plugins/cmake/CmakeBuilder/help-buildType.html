@@ -1,13 +1,17 @@
 <div>
-Common values are blank, Debug, Release, RelWithDebInfo, and MinSizeRel. A blank value is
-usually used with multi configuration generators such as Visual Studio. The Debug/Release values are
+Common values are &lt;empty>, <kbd>Debug</kbd>, <kbd>Release</kbd>, <kbd>RelWithDebInfo</kbd>
+and <kbd>MinSizeRel</kbd>.<br/>
+An empty value is usually used with multi configuration generators such as Visual Studio. 
+The Debug/Release values are
 usually used with single configuration generators such as Ninja or Unix Makefiles.
 <p>
-If the value is not blank CMAKE_BUILD_TYPE will be set to the contents of this field at CMake configuration time.   
+If the value is not empty, it will pre-populate the CMake cache variable 
+<code>CMAKE_BUILD_TYPE</code> upon CMake invocation.   
 </p>
 <p>
-If you desire to use a custom build type you are able to do so. Custom build types follow the
-pattern '^[a-zA-Z]+$'.  Any custom build type requires additional configuration in CMakeLists.txt.
-Please see the CMake wiki for details on extending the default set of build types.
+If you desire to use a custom build type, you are able to do so. 
+Any custom build type requires additional configuration in CMakeLists.txt.
+Please see the <a href="http://www.cmake.org/Wiki/CMake_Useful_Variables#Compilers_and_Tools">CMake wiki</a>
+for details on extending the default set of build types.
 </p>
 </div>

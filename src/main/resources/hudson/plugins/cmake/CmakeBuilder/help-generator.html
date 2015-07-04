@@ -1,11 +1,6 @@
 <div>CMake´s <a href="http://www.cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html#cmake-generators">
 buildscript generator</a> to use (e.g. <code>Unix Makefiles</code>).</br>
- The name of the build tool chosen by CMake to executed the generated scripts will be read from 
- the generated cmake cache file (<code>CMakeCache.txt</code>) and is exposed
- for subsequent build steps in the
- <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable.
- <p>
-  Possible generators include:
+Possible generators include:
  <ul>
  <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Borland Makefiles.html">Borland Makefiles</a></li>
 <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/MSYS Makefiles.html">MSYS Makefiles</a></li>
@@ -20,5 +15,14 @@ buildscript generator</a> to use (e.g. <code>Unix Makefiles</code>).</br>
 <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Visual Studio 12 2013.html">Visual Studio 12 2013</a></li>
 <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Xcode.html">Xcode</a></li>
  </ul>
+ <p>
+ The build tool chosen by CMake &mdash; corresponding to the generator &mdash;
+ is exposed in the
+ <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable.
+ Subsequent build steps may use <code>$CMAKE_BUILD_TOOL</code> 
+ to execute the generated scripts.<br>
+ Its actual value is retrieved from the generated CMake cache file
+ (<code>CMakeCache.txt</code>). Usually that value is something like 
+ <code>/usr/bin/gmake</code> on Linux.
  </p> 
 </div>
