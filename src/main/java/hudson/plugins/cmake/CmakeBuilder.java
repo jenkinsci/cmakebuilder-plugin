@@ -236,7 +236,7 @@ public class CmakeBuilder extends Builder {
                     Util.replaceMacro(this.buildType, envs),
                     Util.replaceMacro(cmakeArgs, envs));
             // invoke cmake
-            if (0 != launcher.launch().pwd(theBuildDir).stdout(listener)
+            if (0 != launcher.launch().pwd(theBuildDir).envs(envs).stdout(listener)
                     .cmds(cmakeCall).join()) {
                 return false; // invokation failed
             }
