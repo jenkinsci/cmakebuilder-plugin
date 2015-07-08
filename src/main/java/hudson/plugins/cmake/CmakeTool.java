@@ -32,8 +32,8 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class CmakeTool extends ToolInstallation implements
         NodeSpecific<CmakeTool>, EnvironmentSpecific<CmakeTool> {
-//    private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
-//            .getName());
+    // private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
+    // .getName());
 
     /**
      * Tool name of the default tool (usually found on the executable search
@@ -145,10 +145,8 @@ public class CmakeTool extends ToolInstallation implements
          */
         @Override
         public List<? extends ToolInstaller> getDefaultInstallers() {
-            return super.getDefaultInstallers();
-            // Collections.singletonList(new ZipExtractionInstaller() );
+            return Collections.singletonList(new CmakeInstaller(null));
         }
 
-    }
-
+    } // DescriptorImpl
 }
