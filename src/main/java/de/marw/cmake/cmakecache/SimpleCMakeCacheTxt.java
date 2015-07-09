@@ -53,7 +53,7 @@ public class SimpleCMakeCacheTxt {
       for (SimpleCMakeCacheEntry entry : entries) {
         final String toolKey = entry.getKey();
         final String tool = entry.getValue();
-        if ("CMAKE_BUILD_TOOL".equals(toolKey)) {
+        if ("CMAKE_MAKE_PROGRAM".equals(toolKey)) {
           buildTool = tool;
         } else if ("CMAKE_COMMAND".equals(toolKey)) {
           commands.add(tool);
@@ -84,7 +84,7 @@ public class SimpleCMakeCacheTxt {
    * most cases, this method will return the absolute file system path of the
    * tool, such as {@code /usr/bin/make}.
    *
-   * @return the CMAKE_BUILD_TOOL entry from the CMakeCache.txt file or
+   * @return the CMAKE_MAKE_PROGRAM entry from the CMakeCache.txt file or
    *         {@code null} if the file could not be parsed
    */
   public String getBuildTool() {

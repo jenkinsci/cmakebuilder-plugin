@@ -104,7 +104,7 @@ public class JobBuildTest {
         StringParameterDefinition pd4 = new StringParameterDefinition(
                 "BUILDGENERATOR", "Unix Makefiles");
         StringParameterDefinition pd5 = new StringParameterDefinition(
-                "BUILDTOOL", "make");
+                "BUILDPROGRAM", "make");
         StringParameterDefinition pd6 = new StringParameterDefinition(
                 "PRESCRIPT", "setup/cmake-cache-preload.txt");
         StringParameterDefinition pd7 = new StringParameterDefinition(
@@ -154,7 +154,7 @@ public class JobBuildTest {
         System.out.println(JenkinsRule.getLog(build));
         j.assertBuildStatusSuccess(build);
 
-        assertNotNull(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, gevb.value);
+        assertNotNull(CmakeBuilder.ENV_VAR_NAME_CMAKE_MAKE_PROGRAM, gevb.value);
     }
 
     /**
@@ -203,7 +203,7 @@ public class JobBuildTest {
                 BuildListener listener) throws InterruptedException,
                 IOException {
             value = build.getEnvironment(listener).get(
-                    CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL);
+                    CmakeBuilder.ENV_VAR_NAME_CMAKE_MAKE_PROGRAM);
             return true;
         }
 

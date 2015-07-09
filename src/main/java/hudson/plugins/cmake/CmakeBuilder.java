@@ -43,7 +43,7 @@ public class CmakeBuilder extends Builder {
      * build-scripts have been generated for (e.g. /usr/bin/make or
      * /usr/bin/ninja)
      */
-    public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL";
+    public static final String ENV_VAR_NAME_CMAKE_MAKE_PROGRAM = "CMAKE_MAKE_PROGRAM";
 
     /** the name of the cmake tool installation to use for this build step */
     private String installationName;
@@ -245,16 +245,16 @@ public class CmakeBuilder extends Builder {
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
-                listener.error("Failed to get CMAKE_BUILD_TOOL value from "
+                listener.error("Failed to get CMAKE_MAKE_PROGRAM value from "
                         + cacheFile.getRemote());
                 return false; // abort build
             }
             // export the variable..
             EnvVars envVars = new EnvVars(
-                    CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
+                    CmakeBuilder.ENV_VAR_NAME_CMAKE_MAKE_PROGRAM, buildTool);
             build.getEnvironments().add(Environment.create(envVars));
 //            listener.getLogger().println(
-//                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
+//                    "Exported CMAKE_MAKE_PROGRAM=" + buildTool);
 
             /* invoke each build tool step in build dir */
             for (BuildToolStep step : toolSteps) {
