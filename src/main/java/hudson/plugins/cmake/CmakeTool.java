@@ -135,6 +135,15 @@ public class CmakeTool extends ToolInstallation implements
         @Override
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws FormException {
+            // reject empty tool names...
+            List<CmakeTool> cmakes = req.bindJSONToList(CmakeTool.class,
+                    json.get("tool"));
+            for (CmakeTool tool : cmakes) {
+                if (Util.fixEmpty(tool.getName()) == null)
+                    throw new FormException(getDisplayName()
+                            + " installation requires a name", "_.name");
+            }
+
             super.configure(req, json);
             save();
             return true;
