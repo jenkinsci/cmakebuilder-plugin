@@ -18,8 +18,8 @@ Possible generators include:
  <p>
  The build tool chosen by CMake &mdash; corresponding to the generator &mdash;
  is exposed in the
- <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable.
- Subsequent build steps may use <code>$CMAKE_BUILD_TOOL</code> 
+ <code><strong>CMAKE_MAKE_PROGRAM</strong></code> build environment variable.
+ Subsequent build steps may use <code>$CMAKE_MAKE_PROGRAM</code> 
  to execute the generated scripts.<br>
  Its actual value is retrieved from the generated CMake cache file
  (<code>CMakeCache.txt</code>). Usually that value is something like 
