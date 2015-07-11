@@ -245,7 +245,7 @@ public class CmakeBuilder extends Builder {
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
-                listener.error("Failed to get CMAKE_BUILD_TOOL value from "
+                listener.error("Failed to get CMAKE_MAKE_PROGRAM value from "
                         + cacheFile.getRemote());
                 return false; // abort build
             }

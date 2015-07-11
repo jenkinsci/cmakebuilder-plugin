@@ -29,7 +29,7 @@ import de.marw.cmake.cmakecache.CMakeCacheFileParser.EntryFilter;
 import de.marw.cmake.cmakecache.SimpleCMakeCacheEntry;
 
 /**
- * Gets the value of the {@code "CMAKE_BUILD_TOOL"} entry from a cmake cache
+ * Gets the value of the {@code "CMAKE_MAKE_PROGRAM"} entry from a cmake cache
  * file.
  *
  * @author Martin Weber
@@ -39,7 +39,7 @@ public class BuildToolEntryParser implements FilePath.FileCallable<String> {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Parses the cach file and returns value of the {@code "CMAKE_BUILD_TOOL"}
+     * Parses the cache file and returns value of the {@code "CMAKE_MAKE_PROGRAM"}
      * entry.
      *
      * @return the entry value or {@code null} if the file could not be parsed
@@ -57,7 +57,7 @@ public class BuildToolEntryParser implements FilePath.FileCallable<String> {
 
                 @Override
                 public boolean accept(String key) {
-                    return "CMAKE_BUILD_TOOL".equals(key);
+                    return "CMAKE_MAKE_PROGRAM".equals(key);
                 }
             }, result, null);
             if (result.size() > 0) {
