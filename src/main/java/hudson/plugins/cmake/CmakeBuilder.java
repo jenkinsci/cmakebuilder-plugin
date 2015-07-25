@@ -13,6 +13,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.tools.InstallSourceProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -203,9 +204,14 @@ public class CmakeBuilder extends Builder {
         final EnvVars envs = build.getEnvironment(listener);
         envs.overrideAll(build.getBuildVariables());
         // Get the CMake version for this node, installing it if necessary
-        installToUse = installToUse.forNode(Computer.currentComputer()
-                .getNode(), listener);
-        installToUse = installToUse.forEnvironment(envs);
+        installToUse = (CmakeTool) installToUse.translate(Computer
+                .currentComputer().getNode(), envs, listener);
+        InstallSourceProperty isp = installToUse.getProperties().get(
+                InstallSourceProperty.class);
+        if (isp != null) {
+            // cmake was downloaded and installed
+
+        }
         final String cmakeBin = installToUse.getHome();
 
         final FilePath workSpace = build.getWorkspace();
@@ -236,8 +242,8 @@ public class CmakeBuilder extends Builder {
                     Util.replaceMacro(this.buildType, envs),
                     Util.replaceMacro(cmakeArgs, envs));
             // invoke cmake
-            if (0 != launcher.launch().pwd(theBuildDir).envs(envs).stdout(listener)
-                    .cmds(cmakeCall).join()) {
+            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join()) {
                 return false; // invokation failed
             }
 
@@ -253,16 +259,16 @@ public class CmakeBuilder extends Builder {
             EnvVars envVars = new EnvVars(
                     CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
             build.getEnvironments().add(Environment.create(envVars));
-//            listener.getLogger().println(
-//                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
+            // listener.getLogger().println(
+            // "Exported CMAKE_BUILD_TOOL=" + buildTool);
 
             /* invoke each build tool step in build dir */
             for (BuildToolStep step : toolSteps) {
                 ArgumentListBuilder toolCall = buildBuildToolCall(buildTool,
                         step.getCommandArguments(envVars));
                 if (0 != launcher.launch().pwd(theBuildDir)
-                        .envs(step.getEnvironmentVars(envs, listener)).stdout(listener)
-                        .cmds(toolCall).join()) {
+                        .envs(step.getEnvironmentVars(envs, listener))
+                        .stdout(listener).cmds(toolCall).join()) {
                     return false; // invokation failed
                 }
             }

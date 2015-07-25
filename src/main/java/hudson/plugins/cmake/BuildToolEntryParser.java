@@ -39,7 +39,7 @@ public class BuildToolEntryParser implements FilePath.FileCallable<String> {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Parses the cach file and returns value of the {@code "CMAKE_BUILD_TOOL"}
+     * Parses the cache file and returns value of the {@code "CMAKE_BUILD_TOOL"}
      * entry.
      *
      * @return the entry value or {@code null} if the file could not be parsed

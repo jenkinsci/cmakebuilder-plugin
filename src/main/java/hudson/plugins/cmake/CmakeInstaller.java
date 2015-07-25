@@ -8,14 +8,19 @@ package hudson.plugins.cmake;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.remoting.Callable;
+import hudson.tools.ToolInstaller;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +36,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Automatic Cmake installer from cmake.org.
  */
 public class CmakeInstaller extends DownloadFromUrlInstaller {
-    private transient String[] nodeProperties;
 
     @DataBoundConstructor
     public CmakeInstaller(String id) {
@@ -41,44 +45,132 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     @Override
     public FilePath performInstallation(ToolInstallation tool, Node node,
             TaskListener log) throws IOException, InterruptedException {
-        // TODO Auto-generated function stub
         // Gather properties for the node to install on
-        this.nodeProperties = node.getChannel().call(
+        String[] nodeProperties = node.getChannel().call(
                 new GetSystemProperties("os.name", "os.arch"));
 
-        return super.performInstallation(tool, node, log);
+        FilePath toolPath = preferredLocation(tool, node);
+        toolPath = fixPreferredLocation(toolPath, id);
+
+        Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
+        if (inst == null) {
+            log.fatalError(
+                    "%s [%s]: No tool download known for OS `%s` with arch `%s`.%n",
+                    getDescriptor().getDisplayName(), tool.getName(),
+                    nodeProperties[0], nodeProperties[1]);
+            return toolPath;
+        }
+
+        if (!isUpToDate(toolPath, inst)) {
+            if (toolPath.installIfNecessaryFrom(
+                    new URL(inst.url),
+                    log,
+                    "Unpacking " + inst.url + " to " + toolPath + " on "
+                            + node.getDisplayName())) {
+                toolPath.child(".timestamp").delete(); // we don't use the
+                                                       // timestamp
+                // TODO remove unnecessary files (docs, man pages)..
+                // ./doc ./cmake-*/
+                FilePath base = findPullUpDirectory(toolPath);
+                if (base != null && !base.equals(toolPath))
+                    base.moveAllChildrenTo(toolPath);
+                // leave a record for the next up-to-date check
+                toolPath.child(".installedFrom").write(inst.url, "UTF-8");
+                // TODO expected.act(new
+                // ZipExtractionInstaller.ChmodRecAPlusX());
+            }
+        }
+
+        return toolPath.child("bin/cmake");
     }
 
     /**
-     * Overwritten to fill in the OS-ARCH specific URL.
+     * Overloaded to select the OS-ARCH specific variant and to fill in the
+     * variant´s URL.
      *
-     * @return null if no such ID is found.
+     * @param nodeOsName
+     *            the value of the JVM system property "os.name" of the node
+     * @param nodeOsArch
+     *            the value of the JVM system property "os.arch" of the node
+     * @return null if no such matching variant is found.
      */
-    public Installable getInstallable() throws IOException {
-        try {
-            List<CmakeInstallable> installables = ((DescriptorImpl) getDescriptor())
-                    .getInstallables();
+    public Installable getInstallable(String nodeOsName, String nodeOsArch)
+            throws IOException {
+        List<CmakeInstallable> installables = ((DescriptorImpl) getDescriptor())
+                .getInstallables();
 
-            for (CmakeInstallable inst : installables)
-                if (id.equals(inst.id)) {
-                    // Filter variants to install by system-properties
-                    final String nodeOsName = nodeProperties[0];
-                    final String nodeOsArch = nodeProperties[1];
-                    // for the node to install on
-                    for (CmakeVariant variant : inst.variants) {
-                        if (variant.appliesTo(nodeOsName, nodeOsArch)) {
-                            CmakeInstallable inst2 = new CmakeInstallable(inst,
-                                    variant);
-                            return inst2;
-                        }
+        for (CmakeInstallable inst : installables)
+            if (id.equals(inst.id)) {
+                // Filter variants to install by system-properties
+                // for the node to install on
+                for (CmakeVariant variant : inst.variants) {
+                    if (variant.appliesTo(nodeOsName, nodeOsArch)) {
+                        // fill in URL for download machinery
+                        inst.url = variant.url;
+                        return inst;
                     }
                 }
-            return null;
-        } finally {
-            nodeProperties = null; // for GC
-        }
+            }
+        return null;
     }
 
+    /**
+     * Fixes the value returned by {@link ToolInstaller#preferredLocation} to
+     * use the specified <strong>installer ID</strong> instead of the
+     * ToolInstallation {@link ToolInstallation#getName name}. This fix avoids
+     * unneccessary downloads when users change the name of the tool on the
+     * global config page.
+     *
+     * @param location
+     *            preferred location of the tool being installed
+     * @param installerID
+     *            usually the value of {@link DownloadFromUrlInstaller#id}
+     *
+     * @return the fixed file path, if {@code location} ends with
+     *         {@link ToolInstallation#getName}, else the unchanged
+     *         {@code location}
+     */
+    protected FilePath fixPreferredLocation(FilePath location,
+            String installerID) {
+        String name = Util.fixEmptyAndTrim(tool.getName());
+        if (location.getName().equals(name)) {
+            return location.sibling(sanitize(installerID));
+        }
+        return location;
+    }
+
+    private static String sanitize(String s) {
+        return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
+    }
+
+    /**
+     * Overwritten since 3.x archives from cmake.org have more than the
+     * "cmake-<version>" directory
+     */
+    @Override
+    protected FilePath findPullUpDirectory(FilePath root) throws IOException,
+            InterruptedException {
+        FilePath newRoot = super.findPullUpDirectory(root);
+        if (newRoot.equals(root)) {
+            return root;// super found a directory
+        }
+        // 3.x archives from cmake.org have more than the "cmake-<version>"
+        // directory
+        final String prefix = "cmake-" + id + "-";
+        List<FilePath> dirs = root.list(new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                if (!pathname.isFile()
+                        && pathname.toString().startsWith(prefix))
+                    return true;
+                return false;
+            }
+        });
+        if (dirs.size() == 1)
+            return dirs.get(0);
+        return null;
+    }
 
     // //////////////////////////////////////////////////////////////////
     // inner classes
@@ -87,6 +179,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     @Extension
     public static final class DescriptorImpl extends
             DownloadFromUrlInstaller.DescriptorImpl<CmakeInstaller> {
+        @Override
         public String getDisplayName() {
             return "Install from cmake.org";
         }
@@ -99,6 +192,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          *
          * @return never null.
          */
+        @Override
         public List<CmakeInstallable> getInstallables() throws IOException {
             JSONObject d = Downloadable.get(getId()).getData();
             if (d == null)
@@ -199,19 +293,6 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             return false;
         }
 
-        /**
-         * @return the value of the JVM system property "os.name" of a node
-         */
-        private String osToJvmProp() {
-            if ("Linux".equalsIgnoreCase(os)) {
-                return "Linux";
-            } else if ("win32".equalsIgnoreCase(os)) {
-                return "win32";
-            } else {
-                // no replacement known yet, users should file a change request
-                return os;
-            }
-        }
     }
 
     // Needs to be public for JSON deserialisation
@@ -219,22 +300,9 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         public CmakeVariant[] variants = new CmakeVariant[0];
 
         /**
-         * Default ctor for JSON desrialization.
+         * Default ctor for JSON de-serialization.
          */
         public CmakeInstallable() {
-        }
-
-        /**
-         * @param id
-         *            Used internally to uniquely identify the name.
-         * @param name
-         *            This is the human readable name.
-         */
-        public CmakeInstallable(CmakeInstallable installable,
-                CmakeVariant variant) {
-            super.id = installable.id;
-            super.name = installable.name;
-            super.url = variant.url;
         }
 
     }
