@@ -103,8 +103,9 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             if (id.equals(inst.id)) {
                 // Filter variants to install by system-properties
                 // for the node to install on
+                OsFamily osFamily = OsFamily.valueOfOsName(nodeOsName);
                 for (CmakeVariant variant : inst.variants) {
-                    if (variant.appliesTo(nodeOsName, nodeOsArch)) {
+                    if (variant.appliesTo(osFamily, nodeOsArch)) {
                         // fill in URL for download machinery
                         inst.url = variant.url;
                         return inst;
@@ -213,7 +214,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     /**
      * A Callable that gets the values of the given Java system properties from
      * the (remote) node.
-     * */
+     */
     private static class GetSystemProperties implements
             Callable<String[], InterruptedException> {
         private static final long serialVersionUID = 1L;
@@ -237,9 +238,62 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          */
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
-            // TODO Auto-generated function stub
         }
     } // GetSystemProperties
+
+    private static enum OsFamily {
+        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX("IRIX64"), AIX, HPUX(
+                "HP-UX");
+        private final String cmakeOrgName;
+
+        /**
+         * Gets the OS name as specified in the files on the cmake.org download
+         * site.
+         *
+         * @return the current cmakeOrgName property.
+         */
+        public String getCmakeOrgName() {
+            return cmakeOrgName != null ? cmakeOrgName : name();
+        }
+
+        private OsFamily() {
+            this(null);
+        }
+
+        private OsFamily(String cmakeOrgName) {
+            this.cmakeOrgName = cmakeOrgName;
+        }
+
+        /**
+         * Gets the OS family from the value of the system property "os.name".
+         *
+         * @param osName
+         *            the value of the system property "os.name"
+         * @return the OsFalimly object or {@code null} if osName is unknown
+         */
+        public static OsFamily valueOfOsName(String osName) {
+            if (osName != null) {
+                if ("Linux".equals(osName)) {
+                    return Linux;
+                } else if (osName.startsWith("Windows")) {
+                    return Windows;
+                } else if (osName.contains("OS X")) {
+                    return OSX;
+                } else if ("SunOS".equals(osName)) {
+                    return SunOS;// not verified
+                } else if ("AIX".equals(osName)) {
+                    return AIX;
+                } else if ("HPUX".equals(osName)) {
+                    return HPUX;
+                } else if ("Irix".equals(osName)) {
+                    return IRIX;
+                } else if ("FreeBSD".equals(osName)) {
+                    return FreeBSD; // not verified
+                }
+            }
+            return null;
+        }
+    } // OsFamily
 
     // //////////////////////////////////////////////////////////////////
     // JSON desrialization
@@ -259,40 +313,60 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     // Needs to be public for JSON deserialisation
     public static class CmakeVariant {
         public String url;
-        // these come frome the JSON file and finally from cmake´s update site
+        // these come frome the JSON file and finally from cmake´s download site
         // URLs
-        public String os = "";
-        public String arch = "";
+        /** OS name as specified by the cmake.org download site */
+        public String os_cm = "";
+        /** OS architecture as specified by the cmake.org download site */
+        public String arch_cm = "";
 
         /**
          * Checks whether an installation of this CmakeVariant will work on the
          * given node. This checks the given JVM system properties of a node.
          *
-         * @param nodeOsName
-         *            the value of the JVM system property "os.name" of the node
+         * @param osFamily
+         *            the OS family derived from the JVM system property
+         *            "os.name" of the node
          * @param nodeOsArch
          *            the value of the JVM system property "os.arch" of the node
          */
-        public boolean appliesTo(String nodeOsName, String nodeOsArch) {
-            if ("Linux".equals(nodeOsName)) {
-                if (os.equals(nodeOsName)) {
-                    if (nodeOsArch.equals("i386") && arch.equals("i386")) {
+        public boolean appliesTo(OsFamily osFamily, String nodeOsArch) {
+            if (osFamily != null && osFamily.getCmakeOrgName().equals(os_cm)) {
+                switch (osFamily) {
+                case Linux:
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch_cm)) {
                         return true;
                     }
                     if (nodeOsArch.equals("amd64")
-                            && (arch.equals("i386") || arch.equals("x86_64"))) {
+                            && (arch_cm.equals("i386") || arch_cm
+                                    .equals("x86_64"))) {
                         return true; // allow both i386 and x86_64
                     }
-                }
-            } else if (nodeOsName.startsWith("Windows")) {
-                nodeOsName = "win32";
-                if (os.equals(nodeOsName)) {
+                    return false;
+                case OSX: // to be verified by the community..
+                    // ..cmake.org has both Darwin and Darwin64
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch_cm)) {
+                        return true;
+                    }
+                    if (nodeOsArch.equals("amd64")
+                            && (arch_cm.equals("universal") || arch_cm
+                                    .equals("x86_64"))) {
+                        return true; // allow both i386 and x86_64
+                    }
+                    return false;
+                case Windows:
+                case AIX:
+                case HPUX:
+                    return true; // only one arch is provided by cmake.org
+                case IRIX:// to be verified by the community
+                    // cmake.org provides arches "n32" & "64"
                     return true;
+                default:
+                    break;
                 }
             }
             return false;
         }
-
     }
 
     // Needs to be public for JSON deserialisation
