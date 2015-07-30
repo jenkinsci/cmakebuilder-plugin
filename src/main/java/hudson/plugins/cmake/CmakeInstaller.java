@@ -280,7 +280,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 } else if (osName.contains("OS X")) {
                     return OSX;
                 } else if ("SunOS".equals(osName)) {
-                    return SunOS;// not verified
+                    return SunOS;
                 } else if ("AIX".equals(osName)) {
                     return AIX;
                 } else if ("HPUX".equals(osName)) {
@@ -355,9 +355,16 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     }
                     return false;
                 case Windows:
+                    return true; // only "x86" arch is provided by cmake.org
                 case AIX:
                 case HPUX:
+                    // to be verified by the community
                     return true; // only one arch is provided by cmake.org
+                case SunOS:
+                    if (nodeOsArch.equals("sparc")
+                            && nodeOsArch.equals(arch_cm)) {
+                        return true;
+                    }
                 case IRIX:// to be verified by the community
                     // cmake.org provides arches "n32" & "64"
                     return true;
