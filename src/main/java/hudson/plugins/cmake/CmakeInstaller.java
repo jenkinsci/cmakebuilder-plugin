@@ -6,6 +6,7 @@
  *******************************************************************************/
 package hudson.plugins.cmake;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
@@ -49,17 +50,17 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         String[] nodeProperties = node.getChannel().call(
                 new GetSystemProperties("os.name", "os.arch"));
 
-        FilePath toolPath = preferredLocation(tool, node);
-        toolPath = fixPreferredLocation(toolPath, id);
-
         Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
         if (inst == null) {
-            log.fatalError(
-                    "%s [%s]: No tool download known for OS `%s` with arch `%s`.%n",
+            String msg = String.format(
+                    "%s [%s]: No tool download known for OS `%s` and arch `%s`.",
                     getDescriptor().getDisplayName(), tool.getName(),
                     nodeProperties[0], nodeProperties[1]);
-            return toolPath;
+            throw new AbortException(msg);
         }
+
+        FilePath toolPath = preferredLocation(tool, node);
+        toolPath = fixPreferredLocation(toolPath, id);
 
         if (!isUpToDate(toolPath, inst)) {
             if (toolPath.installIfNecessaryFrom(
@@ -316,9 +317,9 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         // these come frome the JSON file and finally from cmake´s download site
         // URLs
         /** OS name as specified by the cmake.org download site */
-        public String os_cm = "";
+        public String os = "";
         /** OS architecture as specified by the cmake.org download site */
-        public String arch_cm = "";
+        public String arch = "";
 
         /**
          * Checks whether an installation of this CmakeVariant will work on the
@@ -331,25 +332,25 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          *            the value of the JVM system property "os.arch" of the node
          */
         public boolean appliesTo(OsFamily osFamily, String nodeOsArch) {
-            if (osFamily != null && osFamily.getCmakeOrgName().equals(os_cm)) {
+            if (osFamily != null && osFamily.getCmakeOrgName().equals(os)) {
                 switch (osFamily) {
                 case Linux:
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch_cm)) {
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
                         return true;
                     }
                     if (nodeOsArch.equals("amd64")
-                            && (arch_cm.equals("i386") || arch_cm
+                            && (arch.equals("i386") || arch
                                     .equals("x86_64"))) {
                         return true; // allow both i386 and x86_64
                     }
                     return false;
                 case OSX: // to be verified by the community..
                     // ..cmake.org has both Darwin and Darwin64
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch_cm)) {
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
                         return true;
                     }
                     if (nodeOsArch.equals("amd64")
-                            && (arch_cm.equals("universal") || arch_cm
+                            && (arch.equals("universal") || arch
                                     .equals("x86_64"))) {
                         return true; // allow both i386 and x86_64
                     }
@@ -362,7 +363,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     return true; // only one arch is provided by cmake.org
                 case SunOS:
                     if (nodeOsArch.equals("sparc")
-                            && nodeOsArch.equals(arch_cm)) {
+                            && nodeOsArch.equals(arch)) {
                         return true;
                     }
                 case IRIX:// to be verified by the community
