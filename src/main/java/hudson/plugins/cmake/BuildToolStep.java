@@ -113,6 +113,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> {
      * <code>$CMAKE_BUILD_TOOL</code>) or to have <code>cmake</code> run the
      * build tool (by invoking <code>cmake --build</code>).
      */
+    @DataBoundSetter
     public void setWithCmake(boolean withCmake) {
         this.withCmake = withCmake;
     }
