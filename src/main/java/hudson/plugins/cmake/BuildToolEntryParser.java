@@ -10,7 +10,6 @@
  *******************************************************************************/
 package hudson.plugins.cmake;
 
-import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 
 import java.io.BufferedInputStream;
@@ -20,10 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jenkins.security.Roles;
-
-import org.jenkinsci.remoting.RoleChecker;
-
+import jenkins.MasterToSlaveFileCallable;
 import de.marw.cmake.cmakecache.CMakeCacheFileParser;
 import de.marw.cmake.cmakecache.CMakeCacheFileParser.EntryFilter;
 import de.marw.cmake.cmakecache.SimpleCMakeCacheEntry;
@@ -34,7 +30,7 @@ import de.marw.cmake.cmakecache.SimpleCMakeCacheEntry;
  *
  * @author Martin Weber
  */
-public class BuildToolEntryParser implements FilePath.FileCallable<String> {
+public class BuildToolEntryParser extends MasterToSlaveFileCallable<String> {
 
     private static final long serialVersionUID = 1L;
 
@@ -65,13 +61,4 @@ public class BuildToolEntryParser implements FilePath.FileCallable<String> {
             }
         return null;
     }
-
-    /*-
-     * @see org.jenkinsci.remoting.RoleSensitive#checkRoles(org.jenkinsci.remoting.RoleChecker)
-     */
-    @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
-        checker.check(this, Roles.SLAVE);
-    }
-
 }
