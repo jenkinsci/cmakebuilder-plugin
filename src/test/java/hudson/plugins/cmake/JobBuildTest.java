@@ -158,7 +158,7 @@ public class JobBuildTest {
     }
 
     /**
-     * Verify that build tool invocations work.
+     * Verify that direct build tool invocations work.
      */
     @Test
     public void testBuildToolStep() throws Exception {
@@ -178,6 +178,41 @@ public class JobBuildTest {
         // let the build invoke 'make rebuild_cache'..
         step = new BuildToolStep();
         String makeTargets2 = "rebuild_cache";
+        step.setArgs(makeTargets2);
+        cmb.getSteps().add(step);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        System.out.println(JenkinsRule.getLog(build));
+        j.assertLogContains(makeTargets, build);
+        j.assertLogContains(makeTargets2, build);
+
+        j.assertBuildStatusSuccess(build);
+    }
+
+    /**
+     * Verify that build tool invocations with 'cmake --build' work.
+     * Test will fail with cmake >= 2.8
+     */
+    @Test
+    public void testBuildToolStepWithCmake() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(scm);
+
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        cmb.setCleanBuild(true);
+        cmb.setSourceDir("src");
+        cmb.setBuildDir("build/debug");
+        p.getBuildersList().add(cmb);
+        // let the build invoke 'cmake --build <dir> clean all'..
+        BuildToolStep step = new BuildToolStep();
+        step.setWithCmake(true);
+        final String makeTargets = "--target all";
+        step.setArgs(makeTargets);
+        cmb.getSteps().add(step);
+        // let the build invoke 'cmake --build <dir> rebuild_cache'..
+        step = new BuildToolStep();
+        step.setWithCmake(true);
+        String makeTargets2 = "--target rebuild_cache";
         step.setArgs(makeTargets2);
         cmb.getSteps().add(step);
 

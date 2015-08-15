@@ -32,6 +32,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> {
 
     private String args;
     private String vars;
+    private boolean withCmake;
 
     /**
      *
@@ -96,6 +97,24 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> {
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
+    }
+
+    /**
+     * Gets whether to run the actual build tool directly (by expanding
+     * <code>$CMAKE_BUILD_TOOL</code>) or to have <code>cmake</code> run the
+     * build tool (by invoking <code>cmake --build</code>).
+     */
+    public boolean getWithCmake() {
+        return withCmake;
+    }
+
+    /**
+     * Sets whether to run the actual build tool directly (by expanding
+     * <code>$CMAKE_BUILD_TOOL</code>) or to have <code>cmake</code> run the
+     * build tool (by invoking <code>cmake --build</code>).
+     */
+    public void setWithCmake(boolean withCmake) {
+        this.withCmake = withCmake;
     }
 
     /**

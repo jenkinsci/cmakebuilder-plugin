@@ -191,6 +191,7 @@ public class CmakeBuilder extends Builder {
 
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
+        EnvVars exportedEnvVars = new EnvVars();
 
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
@@ -236,8 +237,8 @@ public class CmakeBuilder extends Builder {
                     Util.replaceMacro(this.buildType, envs),
                     Util.replaceMacro(cmakeArgs, envs));
             // invoke cmake
-            if (0 != launcher.launch().pwd(theBuildDir).envs(envs).stdout(listener)
-                    .cmds(cmakeCall).join()) {
+            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join()) {
                 return false; // invokation failed
             }
 
@@ -245,24 +246,36 @@ public class CmakeBuilder extends Builder {
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
-                listener.error("Failed to get CMAKE_MAKE_PROGRAM value from "
-                        + cacheFile.getRemote());
-                return false; // abort build
+                listener.error("Failed to get value for %1s from %2$s",
+                        CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
+                        cacheFile.getRemote());
             }
-            // export the variable..
-            EnvVars envVars = new EnvVars(
+            // add variable
+            exportedEnvVars.putIfNotNull(
                     CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
-            build.getEnvironments().add(Environment.create(envVars));
-//            listener.getLogger().println(
-//                    "Exported CMAKE_BUILD_TOOL=" + buildTool);
+            // export our environment
+            build.getEnvironments().add(Environment.create(exportedEnvVars));
 
             /* invoke each build tool step in build dir */
             for (BuildToolStep step : toolSteps) {
-                ArgumentListBuilder toolCall = buildBuildToolCall(buildTool,
-                        step.getCommandArguments(envVars));
+                ArgumentListBuilder toolCall;
+                if (!step.getWithCmake()) {
+                    // invoke directly
+                    // if buildTool == null, let the unexpanded macro show up in
+                    // the log
+                    final String buildToolMacro = Util.replaceMacro("${"
+                            + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
+                            exportedEnvVars);
+                    toolCall = buildBuildToolCall(buildToolMacro,
+                            step.getCommandArguments(envs));
+                } else {
+                    // invoke through 'cmake --build <dir>'
+                    toolCall = buildBuildToolCallWithCmake(cmakeBin,
+                            theBuildDir, step.getCommandArguments(envs));
+                }
                 if (0 != launcher.launch().pwd(theBuildDir)
-                        .envs(step.getEnvironmentVars(envs, listener)).stdout(listener)
-                        .cmds(toolCall).join()) {
+                        .envs(step.getEnvironmentVars(envs, listener))
+                        .stdout(listener).cmds(toolCall).join()) {
                     return false; // invokation failed
                 }
             }
@@ -331,6 +344,33 @@ public class CmakeBuilder extends Builder {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(toolBin);
+        if (toolArgs != null) {
+            args.add(toolArgs);
+        }
+        return args;
+    }
+
+    /**
+     * Constructs the command line to have the actual build tool invoked with
+     * cmake.
+     *
+     * @param cmakeBin
+     *            the name of the cmake tool binary, either as an absolute or
+     *            relative file system path.
+     * @param theBuildDir
+     *            the build directory path
+     * @param toolArgs
+     *            addional build tool arguments, separated by spaces to pass to
+     *            cmake or {@code null}
+     * @return the argument list, never {@code null}
+     */
+    private static ArgumentListBuilder buildBuildToolCallWithCmake(
+            final String cmakeBin, FilePath theBuildDir, String... toolArgs) {
+        ArgumentListBuilder args = new ArgumentListBuilder();
+
+        args.add(cmakeBin);
+        args.add("--build");
+        args.add(theBuildDir.getRemote());
         if (toolArgs != null) {
             args.add(toolArgs);
         }
