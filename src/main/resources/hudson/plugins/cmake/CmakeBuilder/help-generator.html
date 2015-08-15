@@ -16,13 +16,14 @@ Possible generators include:
 <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Xcode.html">Xcode</a></li>
  </ul>
  <p>
- The build tool chosen by CMake &mdash; corresponding to the generator &mdash;
- is exposed in the
- <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable.
- Subsequent build steps may use <code>$CMAKE_BUILD_TOOL}</code> 
- to execute the generated scripts.<br>
- Its actual value is retrieved from the generated CMake cache file
- (<code>CMakeCache.txt</code>). Usually that value is something like 
- <code>/usr/bin/gmake</code> on Linux.
+ The build tool chosen by CMake corresponds to the specified script generator
+ and is exposed in the
+ <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable for any generator
+ except the <em>Visual Studio</em> and <em>Xcode</em> generators
+ (these generators do not set <code>CMAKE_MAKE_PROGRAM</code> at buildscript generation time).<br>
+ The actual value of <code><strong>CMAKE_BUILD_TOOL</strong></code> is retrieved
+ from the generated CMake cache file (<code>CMakeCache.txt</code>).<br>
+ Subsequent build steps may use <code>${CMAKE_BUILD_TOOL}</code> 
+ to execute the generated scripts.
  </p> 
 </div>

@@ -3,7 +3,7 @@
   <f:entry title="${%CMake installation}" field="installationName">
     <f:select />
   </f:entry>
-  <f:entry title="Buildscript Generator" field="generator">
+  <f:entry title="Script Generator" field="generator">
     <f:textbox default="Unix Makefiles" />
   </f:entry>
   <f:entry title="Source Directory" field="sourceDir">
@@ -23,18 +23,11 @@
     <f:entry title="Preload Script" field="preloadScript">
       <f:textbox />
     </f:entry>
-
     <f:entry title="Other CMake Arguments" field="cmakeArgs">
       <f:expandableTextbox />
     </f:entry>
   </f:advanced>
   <!--
-  -->
-  <!--
-    <f:block>
-    <f:optionalBlock title="${%Show Build tool invocations}" help="help-run-tool.html">
-    <f:entry>
-  help="help-run-tool.html">
   -->
   <f:entry title="${%Build tool}&lt;br>${%invocations}" field="runTool" >
     <f:repeatable field="steps" header="${%Run build tool}" add="${%Add build tool invocation}">
@@ -49,29 +42,5 @@
     </f:repeatable>
   </f:entry>
   <!--
-  -->
-  <!--
-    </f:optionalBlock>
-    </f:block>
-  -->
-  <!--
-    <f:entry title="Make Command" field="makeCommand">
-    <f:textbox />
-    </f:entry>
-    <f:entry title="Wipeout Install Dir" field="cleanInstallDir">
-    <f:checkbox />
-    </f:entry>
-    <f:entry title="Install Directory" field="installDir">
-    <f:textbox />
-    </f:entry>
-    <f:entry title="Install Command" field="installCommand">
-    <f:textbox />
-    </f:entry>
-    <f:entry title="Install Directory" field="installDir">
-    <f:textbox />
-    </f:entry>
-    <f:entry title="Install Command" field="installCommand">
-    <f:textbox />
-    </f:entry>
   -->
 </j:jelly>
