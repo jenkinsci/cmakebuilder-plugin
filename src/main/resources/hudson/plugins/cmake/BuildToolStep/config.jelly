@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:entry title="${%Use cmake}" field="withCmake" name="NAME">
+  <f:entry title="${%Use cmake}" field="withCmake">
     <f:checkbox />
   </f:entry>
   <f:entry title="${%Arguments}" field="args">
