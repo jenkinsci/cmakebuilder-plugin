@@ -13,7 +13,6 @@ import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.tools.ToolInstaller;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
@@ -21,6 +20,7 @@ import hudson.tools.ToolInstallation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
-import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -52,10 +52,10 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
 
         Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
         if (inst == null) {
-            String msg = String.format(
-                    "%s [%s]: No tool download known for OS `%s` and arch `%s`.",
-                    getDescriptor().getDisplayName(), tool.getName(),
-                    nodeProperties[0], nodeProperties[1]);
+            String msg = String
+                    .format("%s [%s]: No tool download known for OS `%s` and arch `%s`.",
+                            getDescriptor().getDisplayName(), tool.getName(),
+                            nodeProperties[0], nodeProperties[1]);
             throw new AbortException(msg);
         }
 
@@ -73,8 +73,11 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 // TODO remove unnecessary files (docs, man pages)..
                 // ./doc ./cmake-*/
                 FilePath base = findPullUpDirectory(toolPath);
-                if (base != null && !base.equals(toolPath))
+                if (base != null && !base.equals(toolPath)) {
+                    // remove anything that might get into the way..
+
                     base.moveAllChildrenTo(toolPath);
+                }
                 // leave a record for the next up-to-date check
                 toolPath.child(".installedFrom").write(inst.url, "UTF-8");
                 // TODO expected.act(new
@@ -153,24 +156,35 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     protected FilePath findPullUpDirectory(FilePath root) throws IOException,
             InterruptedException {
         FilePath newRoot = super.findPullUpDirectory(root);
-        if (newRoot.equals(root)) {
+        if (newRoot != null) {
             return root;// super found a directory
         }
-        // 3.x archives from cmake.org have more than the "cmake-<version>"
-        // directory
-        final String prefix = "cmake-" + id + "-";
-        List<FilePath> dirs = root.list(new FileFilter() {
+
+        final class PrefixFileFilter implements FileFilter, Serializable {
+            private static final long serialVersionUID = 1L;
+            final String prefix;
+
+            PrefixFileFilter(String prefix) {
+                this.prefix = prefix;
+            }
 
             @Override
             public boolean accept(File pathname) {
-                if (!pathname.isFile()
-                        && pathname.toString().startsWith(prefix))
+                if (pathname.getName().startsWith(prefix))
                     return true;
                 return false;
             }
-        });
-        if (dirs.size() == 1)
-            return dirs.get(0);
+
+        }
+        // 3.x archives from cmake.org have more than the "cmake-<version>"
+        // directory
+        final List<FilePath> dirs = root.list(new PrefixFileFilter("cmake-"
+                + id + "-"));
+        if (dirs.size() == 1) {
+            final FilePath dir = dirs.get(0);
+            if (dir.isDirectory())
+                return dir;
+        }
         return null;
     }
 
@@ -216,8 +230,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * A Callable that gets the values of the given Java system properties from
      * the (remote) node.
      */
-    private static class GetSystemProperties implements
-            Callable<String[], InterruptedException> {
+    private static class GetSystemProperties extends
+            MasterToSlaveCallable<String[], InterruptedException> {
         private static final long serialVersionUID = 1L;
 
         private final String[] properties;
@@ -232,13 +246,6 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 values[i] = System.getProperty(properties[i]);
             }
             return values;
-        }
-
-        /*-
-         * @see org.jenkinsci.remoting.RoleSensitive#checkRoles(org.jenkinsci.remoting.RoleChecker)
-         */
-        @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
         }
     } // GetSystemProperties
 
@@ -339,8 +346,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                         return true;
                     }
                     if (nodeOsArch.equals("amd64")
-                            && (arch.equals("i386") || arch
-                                    .equals("x86_64"))) {
+                            && (arch.equals("i386") || arch.equals("x86_64"))) {
                         return true; // allow both i386 and x86_64
                     }
                     return false;
@@ -362,8 +368,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     // to be verified by the community
                     return true; // only one arch is provided by cmake.org
                 case SunOS:
-                    if (nodeOsArch.equals("sparc")
-                            && nodeOsArch.equals(arch)) {
+                    if (nodeOsArch.equals("sparc") && nodeOsArch.equals(arch)) {
                         return true;
                     }
                 case IRIX:// to be verified by the community
