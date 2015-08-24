@@ -196,9 +196,8 @@ public class CmakeBuilder extends Builder {
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
-            listener.getLogger().println(
-                    "There is no CMake installation selected."
-                            + " Please review the build step configuration.");
+            listener.fatalError("There is no CMake installation selected."
+                    + " Please review the build step configuration.");
             return false;
         }
         final EnvVars envs = build.getEnvironment(listener);
@@ -246,10 +245,10 @@ public class CmakeBuilder extends Builder {
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
-                listener.getLogger().printf(
-                "WARNING: Failed to get value for variable `%1s` from %2$s.",
-                        CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
-                        cacheFile.getRemote());
+                listener.getLogger()
+                        .printf("WARNING: Failed to get value for variable `%1s` from %2$s.",
+                                CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
+                                cacheFile.getRemote());
             }
             // add variable
             exportedEnvVars.putIfNotNull(
