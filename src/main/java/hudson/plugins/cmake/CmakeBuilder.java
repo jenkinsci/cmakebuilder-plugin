@@ -246,7 +246,8 @@ public class CmakeBuilder extends Builder {
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
-                listener.error("Failed to get value for %1s from %2$s",
+                listener.getLogger().printf(
+                "WARNING: Failed to get value for variable `%1s` from %2$s.",
                         CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
                         cacheFile.getRemote());
             }
