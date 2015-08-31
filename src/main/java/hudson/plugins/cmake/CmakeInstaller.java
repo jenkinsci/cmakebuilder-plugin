@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -37,6 +38,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Automatic Cmake installer from cmake.org.
  */
 public class CmakeInstaller extends DownloadFromUrlInstaller {
+    private static Logger logger = Logger.getLogger(CmakeInstaller.class
+            .getName());
 
     @DataBoundConstructor
     public CmakeInstaller(String id) {
@@ -68,19 +71,31 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     log,
                     "Unpacking " + inst.url + " to " + toolPath + " on "
                             + node.getDisplayName())) {
-                toolPath.child(".timestamp").delete(); // we don't use the
-                                                       // timestamp
-                // TODO remove unnecessary files (docs, man pages)..
-                // ./doc ./cmake-*/
+                // we don't use the timestamp..
+                toolPath.child(".timestamp").delete();
+                // pull up extra subdir...
                 FilePath base = findPullUpDirectory(toolPath);
                 if (base != null && !base.equals(toolPath)) {
-                    // remove anything that might get into the way..
-
+                    String bName = base.getName();
+                    // remove anything that might get in the way..
+                    for (FilePath f : toolPath.list()) {
+                        if (!f.getName().equals(bName))
+                            f.deleteRecursive();
+                    }
                     base.moveAllChildrenTo(toolPath);
+                }
+                // remove unnecessary files (docs, man pages)..
+                try {
+                    toolPath.child("doc").deleteRecursive();
+                } catch (IOException ignore) {
+                }
+                try {
+                    toolPath.child("man").deleteRecursive();
+                } catch (IOException ignore) {
                 }
                 // leave a record for the next up-to-date check
                 toolPath.child(".installedFrom").write(inst.url, "UTF-8");
-                // TODO expected.act(new
+                // TODO may be needed for executable flag: toolPath.act(new
                 // ZipExtractionInstaller.ChmodRecAPlusX());
             }
         }
@@ -157,7 +172,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             InterruptedException {
         FilePath newRoot = super.findPullUpDirectory(root);
         if (newRoot != null) {
-            return root;// super found a directory
+            return newRoot;// super found a directory
         }
 
         final class PrefixFileFilter implements FileFilter, Serializable {
@@ -174,16 +189,20 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     return true;
                 return false;
             }
-
         }
         // 3.x archives from cmake.org have more than the "cmake-<version>"
         // directory
-        final List<FilePath> dirs = root.list(new PrefixFileFilter("cmake-"
-                + id + "-"));
+        final String prefix = "cmake-" + id + "-";
+        final List<FilePath> dirs = root.list(new PrefixFileFilter(prefix));
         if (dirs.size() == 1) {
             final FilePath dir = dirs.get(0);
             if (dir.isDirectory())
                 return dir;
+        } else {
+            String.format(
+                    "Expected a single directory '%s*' in archive, but got %d",
+                    prefix, dirs.size());
+            logger.warning(id);
         }
         return null;
     }
