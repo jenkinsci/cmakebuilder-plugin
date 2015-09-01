@@ -32,8 +32,8 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class CmakeTool extends ToolInstallation implements
         NodeSpecific<CmakeTool>, EnvironmentSpecific<CmakeTool> {
-//    private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
-//            .getName());
+    // private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
+    // .getName());
 
     /**
      * Tool name of the default tool (usually found on the executable search
@@ -71,12 +71,22 @@ public class CmakeTool extends ToolInstallation implements
     public CmakeTool forNode(Node node, TaskListener log) throws IOException,
             InterruptedException {
         return new CmakeTool(getName(), translateFor(node, log),
-                Collections.<ToolProperty<?>> emptyList());
+                getProperties().toList());
     }
 
     public CmakeTool forEnvironment(EnvVars environment) {
         return new CmakeTool(getName(), environment.expand(getHome()),
-                Collections.<ToolProperty<?>> emptyList());
+                getProperties().toList());
+    }
+
+    @Override
+    public void buildEnvVars(EnvVars env) {
+        // TODO Auto-generated function stub
+        String home = getHome();
+        if (home == null) {
+            return;
+        }
+        env.put("PATH+CMAKE", home + "/bin");
     }
 
     /**
@@ -135,6 +145,15 @@ public class CmakeTool extends ToolInstallation implements
         @Override
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws FormException {
+            // reject empty tool names...
+            List<CmakeTool> cmakes = req.bindJSONToList(CmakeTool.class,
+                    json.get("tool"));
+            for (CmakeTool tool : cmakes) {
+                if (Util.fixEmpty(tool.getName()) == null)
+                    throw new FormException(getDisplayName()
+                            + " installation requires a name", "_.name");
+            }
+
             super.configure(req, json);
             save();
             return true;
@@ -145,10 +164,8 @@ public class CmakeTool extends ToolInstallation implements
          */
         @Override
         public List<? extends ToolInstaller> getDefaultInstallers() {
-            return super.getDefaultInstallers();
-            // Collections.singletonList(new ZipExtractionInstaller() );
+            return Collections.singletonList(new CmakeInstaller(null));
         }
 
-    }
-
+    } // DescriptorImpl
 }

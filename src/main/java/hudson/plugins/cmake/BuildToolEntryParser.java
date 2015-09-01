@@ -35,7 +35,11 @@ public class BuildToolEntryParser extends MasterToSlaveFileCallable<String> {
     private static final long serialVersionUID = 1L;
 
     /**
+<<<<<<< HEAD
      * Parses the cache file and returns value of the {@code "CMAKE_MAKE_PROGRAM"}
+=======
+     * Parses the cache file and returns value of the {@code "CMAKE_BUILD_TOOL"}
+>>>>>>> refs/heads/autoinstall
      * entry.
      *
      * @return the entry value or {@code null} if the file could not be parsed

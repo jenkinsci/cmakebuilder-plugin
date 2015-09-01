@@ -13,6 +13,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.tools.InstallSourceProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -203,9 +204,14 @@ public class CmakeBuilder extends Builder {
         final EnvVars envs = build.getEnvironment(listener);
         envs.overrideAll(build.getBuildVariables());
         // Get the CMake version for this node, installing it if necessary
-        installToUse = installToUse.forNode(Computer.currentComputer()
-                .getNode(), listener);
-        installToUse = installToUse.forEnvironment(envs);
+        installToUse = (CmakeTool) installToUse.translate(Computer
+                .currentComputer().getNode(), envs, listener);
+        InstallSourceProperty isp = installToUse.getProperties().get(
+                InstallSourceProperty.class);
+        if (isp != null) {
+            // cmake was downloaded and installed
+
+        }
         final String cmakeBin = installToUse.getHome();
 
         final FilePath workSpace = build.getWorkspace();
