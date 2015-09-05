@@ -11,9 +11,11 @@ import hudson.model.Node;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
+import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +67,24 @@ public class CmakeTool extends ToolInstallation implements
      *         "cmake" or "/usr/bin/cmake")
      */
     public String getCmakeExe() {
+        // return what was entered on the global config page
         return getHome();
+    }
+
+    /**
+     * Overwritten to add the path to cmake`s bin directory, if tool was
+     * downloaded.
+     */
+    @Override
+    public void buildEnvVars(EnvVars env) {
+        if (getProperties().get(InstallSourceProperty.class) != null) {
+            // cmake was downloaded and installed
+            String home = getHome();
+            if (home != null) {
+                home = new File(home).getParent();
+                env.put("PATH+CMAKE", home);
+            }
+        }
     }
 
     public CmakeTool forNode(Node node, TaskListener log) throws IOException,
@@ -77,16 +96,6 @@ public class CmakeTool extends ToolInstallation implements
     public CmakeTool forEnvironment(EnvVars environment) {
         return new CmakeTool(getName(), environment.expand(getHome()),
                 getProperties().toList());
-    }
-
-    @Override
-    public void buildEnvVars(EnvVars env) {
-        // TODO Auto-generated function stub
-        String home = getHome();
-        if (home == null) {
-            return;
-        }
-        env.put("PATH+CMAKE", home + "/bin");
     }
 
     /**

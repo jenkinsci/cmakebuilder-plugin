@@ -203,19 +203,15 @@ public class CmakeBuilder extends Builder {
         }
         final EnvVars envs = build.getEnvironment(listener);
         envs.overrideAll(build.getBuildVariables());
+
         // Get the CMake version for this node, installing it if necessary
         installToUse = (CmakeTool) installToUse.translate(Computer
                 .currentComputer().getNode(), envs, listener);
-        InstallSourceProperty isp = installToUse.getProperties().get(
-                InstallSourceProperty.class);
-        if (isp != null) {
-            // cmake was downloaded and installed
+        // add CMAKEROOT/bin to PATH for sub-processes, if autoinstalled
+        installToUse.buildEnvVars(exportedEnvVars);
 
-        }
-        final String cmakeBin = installToUse.getHome();
-
+        final String cmakeBin = installToUse.getCmakeExe();
         final FilePath workSpace = build.getWorkspace();
-
         try {
             /*
              * Determine remote build directory path. Clean it, if requested.
