@@ -13,7 +13,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.tools.InstallSourceProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -454,7 +453,7 @@ public class CmakeBuilder extends Builder {
             FilePath ws = project.getSomeWorkspace();
             if (ws == null)
                 return FormValidation.ok();
-            return ws.validateRelativePath(value, true, false);
+            return ws.validateRelativePath(value, false, false);
         }
 
         @Override
