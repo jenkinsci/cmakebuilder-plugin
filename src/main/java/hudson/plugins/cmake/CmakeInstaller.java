@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -330,6 +332,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * Cmake versions. See file hudson.plugins.cmake.CmakeInstaller
      */
     @Extension
+    @Restricted(NoExternalUse.class)
     public static final class CmakeInstallableList {
         // initialize with an empty array just in case JSON doesn't have the
         // list field (which shouldn't happen.)
@@ -338,6 +341,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     } // CmakeInstallableList
 
     // Needs to be public for JSON deserialisation
+    @Restricted(NoExternalUse.class)
     public static class CmakeVariant {
         public String url;
         // these come frome the JSON file and finally from cmake´s download site
@@ -377,7 +381,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     if (nodeOsArch.equals("amd64")
                             && (arch.equals("universal") || arch
                                     .equals("x86_64"))) {
-                        return true; // allow both i386 and x86_64
+                        return true; // allow both 32 bit and 64 bit
                     }
                     return false;
                 case Windows:
@@ -402,6 +406,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     }
 
     // Needs to be public for JSON deserialisation
+    @Restricted(NoExternalUse.class)
     public static class CmakeInstallable extends Installable {
         public CmakeVariant[] variants = new CmakeVariant[0];
 
