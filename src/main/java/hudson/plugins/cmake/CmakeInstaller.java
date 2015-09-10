@@ -235,7 +235,6 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             if (d == null)
                 return Collections.emptyList();
             Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
-            // classMap.put("versions", CmakeVariant.class);
             classMap.put("variants", CmakeVariant.class);
             return Arrays.asList(((CmakeInstallableList) JSONObject.toBean(d,
                     CmakeInstallableList.class, classMap)).list);

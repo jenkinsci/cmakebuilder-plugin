@@ -204,8 +204,7 @@ public class CmakeBuilder extends Builder {
         envs.overrideAll(build.getBuildVariables());
 
         // Get the CMake version for this node, installing it if necessary
-        installToUse = (CmakeTool) installToUse.translate(Computer
-                .currentComputer().getNode(), envs, listener);
+        installToUse = (CmakeTool) installToUse.translate(build, listener);
         // add CMAKEROOT/bin to PATH for sub-processes, if autoinstalled
         installToUse.buildEnvVars(exportedEnvVars);
 
