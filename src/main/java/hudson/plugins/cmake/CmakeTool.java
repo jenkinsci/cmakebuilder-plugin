@@ -79,10 +79,14 @@ public class CmakeTool extends ToolInstallation implements
     public void buildEnvVars(EnvVars env) {
         if (getProperties().get(InstallSourceProperty.class) != null) {
             // cmake was downloaded and installed
-            String home = getHome();
+            String home = getHome(); // the home on the slave!!!
             if (home != null) {
-                home = new File(home).getParent();
-                env.put("PATH+CMAKE", home);
+                // home= dirname(home) as a cross-platform version...
+                int idx;
+                if ((idx = home.lastIndexOf('/')) != -1
+                        || (idx = home.lastIndexOf('\\')) != -1 && idx > 1) {
+                    env.put("PATH+CMAKE", home.substring(0, idx));
+                }
             }
         }
     }
