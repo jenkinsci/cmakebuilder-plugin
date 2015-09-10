@@ -9,7 +9,6 @@ package hudson.plugins.cmake;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
@@ -52,10 +51,10 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     public FilePath performInstallation(ToolInstallation tool, Node node,
             TaskListener log) throws IOException, InterruptedException {
         // Gather properties for the node to install on
-        String[] nodeProperties = node.getChannel().call(
+        final String[] nodeProperties = node.getChannel().call(
                 new GetSystemProperties("os.name", "os.arch"));
 
-        Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
+        final Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
         if (inst == null) {
             String msg = String
                     .format("%s [%s]: No tool download known for OS `%s` and arch `%s`.",
@@ -64,9 +63,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             throw new AbortException(msg);
         }
 
-        FilePath toolPath = preferredLocation(tool, node);
-        toolPath = fixPreferredLocation(toolPath, id);
-
+        final FilePath toolPath = getFixedPreferredLocation(tool, node);
         if (!isUpToDate(toolPath, inst)) {
             if (toolPath.installIfNecessaryFrom(
                     new URL(inst.url),
@@ -138,27 +135,28 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
 
     /**
      * Fixes the value returned by {@link ToolInstaller#preferredLocation} to
-     * use the specified <strong>installer ID</strong> instead of the
-     * ToolInstallation {@link ToolInstallation#getName name}. This fix avoids
-     * unneccessary downloads when users change the name of the tool on the
-     * global config page.
+     * use the <strong>installer ID</strong> instead of the ToolInstallation
+     * {@link ToolInstallation#getName name}. This fix avoids unneccessary
+     * downloads when users change the name of the tool on the global config
+     * page.
      *
-     * @param location
-     *            preferred location of the tool being installed
-     * @param installerID
-     *            usually the value of {@link DownloadFromUrlInstaller#id}
+     * @param tool
+     *            the tool being installed
+     * @param node
+     *            the computer on which to install the tool
      *
-     * @return the fixed file path, if {@code location} ends with
-     *         {@link ToolInstallation#getName}, else the unchanged
-     *         {@code location}
+     * @return a fixed file path (a path within the local Jenkins work area), if
+     *         {@code tool#getHome()} is {@code null}, else the unchanged
+     *         {@code ToolInstaller#preferredLocation()}
      */
-    protected FilePath fixPreferredLocation(FilePath location,
-            String installerID) {
-        String name = Util.fixEmptyAndTrim(tool.getName());
-        if (location.getName().equals(name)) {
-            return location.sibling(sanitize(installerID));
+    private FilePath getFixedPreferredLocation(ToolInstallation tool, Node node) {
+        final FilePath toolPath = preferredLocation(tool, node);
+        if (tool.getHome() == null) {
+            // jenkins wants to download, having preferredLocation jam in
+            // the NAME instead of the ID
+            return toolPath.sibling(sanitize(id));
         }
-        return location;
+        return toolPath;
     }
 
     private static String sanitize(String s) {
@@ -166,7 +164,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     }
 
     /**
-     * Overwritten since 3.x archives from cmake.org have more than the
+     * Overwritten since 3.x archives from cmake.org have more than just the
      * "cmake-<version>" directory
      */
     @Override
@@ -174,7 +172,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             InterruptedException {
         FilePath newRoot = super.findPullUpDirectory(root);
         if (newRoot != null) {
-            return newRoot;// super found a directory
+            return newRoot; // super found a unique directory
         }
 
         final class PrefixFileFilter implements FileFilter, Serializable {
