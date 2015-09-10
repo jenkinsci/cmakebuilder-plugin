@@ -15,7 +15,6 @@ import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
