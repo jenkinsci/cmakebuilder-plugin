@@ -54,7 +54,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final String[] nodeProperties = node.getChannel().call(
                 new GetSystemProperties("os.name", "os.arch"));
 
-        final Installable inst = getInstallable(nodeProperties[0], nodeProperties[1]);
+        final Installable inst = getInstallable(nodeProperties[0],
+                nodeProperties[1]);
         if (inst == null) {
             String msg = String
                     .format("%s [%s]: No tool download known for OS `%s` and arch `%s`.",
@@ -375,7 +376,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
                         return true;
                     }
-                    if (nodeOsArch.equals("amd64")
+                    if ((nodeOsArch.equals("amd64") || nodeOsArch
+                            .equals("x86_64"))
                             && (arch.equals("universal") || arch
                                     .equals("x86_64"))) {
                         return true; // allow both 32 bit and 64 bit
