@@ -9,17 +9,18 @@ package hudson.plugins.cmake;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.FilePath.FileCallable;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
+import hudson.remoting.VirtualChannel;
 import hudson.tools.ToolInstaller;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,9 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -54,8 +58,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final String[] nodeProperties = node.getChannel().call(
                 new GetSystemProperties("os.name", "os.arch"));
 
-        final Installable inst = getInstallable(nodeProperties[0],
-                nodeProperties[1]);
+        final Installable inst = getInstallable(
+                OsFamily.valueOfOsName(nodeProperties[0]), nodeProperties[1]);
         if (inst == null) {
             String msg = String
                     .format("%s [%s]: No tool download known for OS `%s` and arch `%s`.",
@@ -65,21 +69,24 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         }
 
         final FilePath toolPath = getFixedPreferredLocation(tool, node);
+        // FilePath base0 = findPullUpDirectory(toolPath);
         if (!isUpToDate(toolPath, inst)) {
-            if (toolPath.installIfNecessaryFrom(
-                    new URL(inst.url),
-                    log,
-                    "Unpacking " + inst.url + " to " + toolPath + " on "
-                            + node.getDisplayName())) {
+            String msg = String.format("%s [%s]: Unpacking %s to %s on %s",
+                    getDescriptor().getDisplayName(), tool.getName(), inst.url,
+                    toolPath, node.getDisplayName());
+            if (toolPath.installIfNecessaryFrom(new URL(inst.url), log, msg)) {
                 // we don't use the timestamp..
                 toolPath.child(".timestamp").delete();
                 // pull up extra subdir...
+                msg = String.format("%s [%s]: Inspecting unpacked files at %s",
+                        getDescriptor().getDisplayName(), tool.getName(),
+                        toolPath);
+                log.getLogger().println(msg);
                 FilePath base = findPullUpDirectory(toolPath);
                 if (base != null && !base.equals(toolPath)) {
-                    String bName = base.getName();
                     // remove anything that might get in the way..
                     for (FilePath f : toolPath.list()) {
-                        if (!f.getName().equals(bName))
+                        if (!base.getRemote().startsWith(f.getRemote()))
                             f.deleteRecursive();
                     }
                     base.moveAllChildrenTo(toolPath);
@@ -107,13 +114,14 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * Overloaded to select the OS-ARCH specific variant and to fill in the
      * variant´s URL.
      *
-     * @param nodeOsName
-     *            the value of the JVM system property "os.name" of the node
+     * @param nodeOsFamily
+     *            the value of the JVM system property "os.name" of the node,
+     *            represented as an enum
      * @param nodeOsArch
      *            the value of the JVM system property "os.arch" of the node
      * @return null if no such matching variant is found.
      */
-    public Installable getInstallable(String nodeOsName, String nodeOsArch)
+    public Installable getInstallable(OsFamily nodeOsFamily, String nodeOsArch)
             throws IOException {
         List<CmakeInstallable> installables = ((DescriptorImpl) getDescriptor())
                 .getInstallables();
@@ -122,9 +130,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             if (id.equals(inst.id)) {
                 // Filter variants to install by system-properties
                 // for the node to install on
-                OsFamily osFamily = OsFamily.valueOfOsName(nodeOsName);
                 for (CmakeVariant variant : inst.variants) {
-                    if (variant.appliesTo(osFamily, nodeOsArch)) {
+                    if (variant.appliesTo(nodeOsFamily, nodeOsArch)) {
                         // fill in URL for download machinery
                         inst.url = variant.url;
                         return inst;
@@ -169,48 +176,99 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * "cmake-<version>" directory
      */
     @Override
-    protected FilePath findPullUpDirectory(FilePath root) throws IOException,
-            InterruptedException {
-        FilePath newRoot = super.findPullUpDirectory(root);
-        if (newRoot != null) {
-            return newRoot; // super found a unique directory
-        }
-
-        final class PrefixFileFilter implements FileFilter, Serializable {
-            private static final long serialVersionUID = 1L;
-            final String prefix;
-
-            PrefixFileFilter(String prefix) {
-                this.prefix = prefix;
-            }
-
-            @Override
-            public boolean accept(File pathname) {
-                if (pathname.getName().startsWith(prefix))
-                    return true;
-                return false;
-            }
-        }
-        // 3.x archives from cmake.org have more than the "cmake-<version>"
-        // directory
-        final String prefix = "cmake-" + id + "-";
-        final List<FilePath> dirs = root.list(new PrefixFileFilter(prefix));
-        if (dirs.size() == 1) {
-            final FilePath dir = dirs.get(0);
-            if (dir.isDirectory())
-                return dir;
-        } else {
-            String.format(
-                    "Expected a single directory '%s*' in archive, but got %d",
-                    prefix, dirs.size());
-            logger.warning(id);
-        }
-        return null;
+    protected FilePath findPullUpDirectory(final FilePath root)
+            throws IOException, InterruptedException {
+        // 3.x archives from cmake.org have more than just the "cmake-<version>"
+        // directory at the top level
+        final String glTopDir = "cmake-" + id + "-*";
+        FileCallable<FilePath> callable = new RootDirScanner(glTopDir);
+        return root.act(callable);
     }
 
     // //////////////////////////////////////////////////////////////////
     // inner classes
     // //////////////////////////////////////////////////////////////////
+
+    /**
+     * Scans the downloaded and expanded archive for the location of the cmake
+     * binary.
+     *
+     * @author Martin Weber
+     */
+    private static class RootDirScanner extends
+            MasterToSlaveFileCallable<FilePath> {
+        private static final long serialVersionUID = 1L;
+        /** Ant includes that matches the files and dirs */
+        private final String includes;
+
+        /**
+         * @param glTopDir
+         *            Ant includes that matches the requested top directory
+         *            inside the unpacked archive
+         */
+        private RootDirScanner(String glTopDir) {
+            // glob to match the cmake binary
+            final String glBinCmake = glTopDir + "/**/bin/cmake";
+            // glob to match the cmake binary on windows
+            final String glBinCmakeW = glTopDir + "/**/bin/cmake.exe";
+            // glob to match the shared files of cmake
+            final String glShare = glTopDir + "/**/share";
+            this.includes = glBinCmake + ',' + glBinCmakeW + ',' + glShare;
+        }
+
+        /**
+         * @param baseDir
+         *            the base dir to start scan from
+         * @return the top level directory of the files needed to run cmake,
+         *         ignoring any extra files in the archive
+         */
+        @Override
+        public FilePath invoke(File baseDir, VirtualChannel channel)
+                throws IOException, InterruptedException {
+            FileSet fs = Util.createFileSet(baseDir, includes, null);
+            if (baseDir.exists()) {
+                DirectoryScanner ds = fs
+                        .getDirectoryScanner(new org.apache.tools.ant.Project());
+                // we expect only one file here: '**/bin/cmake'
+                final String[] cmakeBinFiles = ds.getIncludedFiles();
+                // we expect only one directory here: '**/share'
+                final String[] shareDirs = ds.getIncludedDirectories();
+                if (cmakeBinFiles.length > 1) {
+                    String msg = String
+                            .format("Unkown layout of downloaded CMake archive: "
+                                    + "Multiple candidates for cmake executable: %s",
+                                    Arrays.toString(cmakeBinFiles));
+                    throw new AbortException(msg);
+                } else if (cmakeBinFiles.length == 0) {
+                    String msg = "Unkown layout of downloaded CMake archive: "
+                            + "No candidate for cmake executable";
+                    throw new AbortException(msg);
+                }
+                // detemine top directory
+                String topDir = new File(cmakeBinFiles[0]).getParent();
+                if (topDir != null) {
+                    topDir = new File(topDir).getParent();
+                    if (topDir != null) {
+                        // check if there is a 'share' directory
+                        final String share = new File(topDir, "share")
+                                .getPath();
+                        for (String d : shareDirs) {
+                            if (d.equals(share)) {
+                                // fine: share dir found
+                                File file = new File(baseDir, topDir);
+                                return new FilePath(file);
+                            }
+                        }
+                    }
+                }
+            } else {
+                String msg = "Unkown layout of downloaded CMake archive: "
+                        + "No `bin` and/or `share` subdirectory found";
+                throw new AbortException(msg);
+            }
+            return null;
+        }
+    }
 
     @Extension
     public static final class DescriptorImpl extends
