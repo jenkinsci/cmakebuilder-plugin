@@ -71,14 +71,14 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final FilePath toolPath = getFixedPreferredLocation(tool, node);
         // FilePath base0 = findPullUpDirectory(toolPath);
         if (!isUpToDate(toolPath, inst)) {
-            String msg = String.format("%s [%s]: Unpacking %s to %s on %s",
+            String msg = String.format("%s [%s]: Unpacking %s to %s on %s...",
                     getDescriptor().getDisplayName(), tool.getName(), inst.url,
                     toolPath, node.getDisplayName());
             if (toolPath.installIfNecessaryFrom(new URL(inst.url), log, msg)) {
                 // we don't use the timestamp..
                 toolPath.child(".timestamp").delete();
                 // pull up extra subdir...
-                msg = String.format("%s [%s]: Inspecting unpacked files at %s",
+                msg = String.format("%s [%s]: Inspecting unpacked files at %s...",
                         getDescriptor().getDisplayName(), tool.getName(),
                         toolPath);
                 log.getLogger().println(msg);
@@ -102,8 +102,6 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 }
                 // leave a record for the next up-to-date check
                 toolPath.child(".installedFrom").write(inst.url, "UTF-8");
-                // TODO may be needed for executable flag: toolPath.act(new
-                // ZipExtractionInstaller.ChmodRecAPlusX());
             }
         }
 
