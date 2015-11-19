@@ -272,8 +272,9 @@ public class CmakeBuilder extends Builder {
                     toolCall = buildBuildToolCallWithCmake(cmakeBin,
                             theBuildDir, step.getCommandArguments(envs));
                 }
-                if (0 != launcher.launch().pwd(theBuildDir)
-                        .envs(step.getEnvironmentVars(envs, listener))
+                final EnvVars stepEnv = new EnvVars(envs).overrideAll(step
+                        .getEnvironmentVars(envs, listener));
+                if (0 != launcher.launch().pwd(theBuildDir).envs(stepEnv)
                         .stdout(listener).cmds(toolCall).join()) {
                     return false; // invokation failed
                 }
