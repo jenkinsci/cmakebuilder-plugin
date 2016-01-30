@@ -6,7 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-public class FormRoundTripTest {
+public class CmakeBuilderFormRoundTripTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();

@@ -27,7 +27,7 @@ import org.jvnet.hudson.test.TestBuilder;
  *
  * @author Martin Weber
  */
-public class JobBuildTest {
+public class CmakeBuilderBuildTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
