@@ -119,7 +119,7 @@ public class CmakeBuilderBuildTest {
         cmb.setCleanBuild(true);
         cmb.setSourceDir("${SOURCEDIR}");
         cmb.setBuildDir("${BUILDDIR}");
-        cmb.setCmakeArgs("${CMAKEARGS}");
+        cmb.setArguments("${CMAKEARGS}");
         cmb.setPreloadScript("${PRESCRIPT}");
 
         p.getBuildersList().add(cmb);
