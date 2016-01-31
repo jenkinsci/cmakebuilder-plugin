@@ -1,8 +1,5 @@
 package hudson.plugins.cmake;
 
-import org.kohsuke.stapler.DataBoundSetter;
-
-import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
@@ -16,14 +13,13 @@ import jenkins.model.Jenkins;
  * directory for invocation and the arguments to pass to {@code cmake},
  * 
  * @author Martin weber
- *
  */
 public abstract class AbstractCmakeBuilder extends Builder {
 
     /** the name of the cmake tool installation to use for this build step */
     private String installationName;
     private String workingDir;
-    private String cmakeArgs;
+    private String toolArgs;
 
     /**
      * Minimal constructor.
@@ -52,12 +48,12 @@ public abstract class AbstractCmakeBuilder extends Builder {
         return this.workingDir;
     }
 
-    public void setCmakeArgs(String cmakeArgs) {
-        this.cmakeArgs = Util.fixEmptyAndTrim(cmakeArgs);
+    public void setArguments(String toolArgs) {
+        this.toolArgs = Util.fixEmptyAndTrim(toolArgs);
     }
 
-    public String getCmakeArgs() {
-        return this.cmakeArgs;
+    public String getArguments() {
+        return this.toolArgs;
     }
 
     /**
@@ -83,7 +79,8 @@ public abstract class AbstractCmakeBuilder extends Builder {
      * Constructs a directory under the workspace on the slave.
      *
      * @param path
-     *            the directory´s relative path {@code null} to return the workspace directory
+     *            the directory´s relative path {@code null} to return the
+     *            workspace directory
      *
      * @return the full path of the directory on the remote machine.
      */
@@ -104,11 +101,6 @@ public abstract class AbstractCmakeBuilder extends Builder {
      */
     public abstract static class DescriptorImpl
             extends BuildStepDescriptor<Builder> {
-        /**
-         * the cmake tool installations
-         */
-        @CopyOnWrite
-        private volatile CmakeTool[] installations = new CmakeTool[0];
 
         public DescriptorImpl(Class<? extends Builder> clazz) {
             super(clazz);

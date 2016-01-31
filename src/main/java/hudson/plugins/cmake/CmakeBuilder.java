@@ -11,7 +11,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -121,13 +120,13 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     public void setCmakeArgs(String cmakeArgs) {
         // because of: error: @DataBoundConstructor may not be used on an
         // abstract class
-        super.setCmakeArgs(cmakeArgs);
+        super.setArguments(cmakeArgs);
     }
 
     public String getCmakeArgs() {
         // because of: error: @DataBoundConstructor may not be used on an
         // abstract class
-        return super.getCmakeArgs();
+        return super.getArguments();
     }
 
     /**
@@ -355,11 +354,6 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     @Extension
     public static final class DescriptorImpl
             extends AbstractCmakeBuilder.DescriptorImpl {
-        /**
-         * the cmake tool installations
-         */
-        @CopyOnWrite
-        private volatile CmakeTool[] installations = new CmakeTool[0];
 
         public DescriptorImpl() {
             super(CmakeBuilder.class);
