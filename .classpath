@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
-        <classpathentry including="**/*.java" kind="src" path="src/test/java"/>
-        <classpathentry excluding="**/*.java" kind="src" path="src/test/resources"/>
+	<classpathentry including="**/*.java" kind="src" path="src/test/java"/>
+	<classpathentry excluding="**/*.java" kind="src" path="src/test/resources"/>
 	<classpathentry kind="var" path="M2_REPO/javax/enterprise/cdi-api/1.0/cdi-api-1.0.jar" sourcepath="M2_REPO/javax/enterprise/cdi-api/1.0/cdi-api-1.0-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" sourcepath="M2_REPO/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/inject/javax.inject/1/javax.inject-1.jar" sourcepath="M2_REPO/javax/inject/javax.inject/1/javax.inject-1-sources.jar"/>
@@ -92,7 +92,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/samba/jcifs/jcifs/1.2.19/jcifs-1.2.19.jar" sourcepath="M2_REPO/org/samba/jcifs/jcifs/1.2.19/jcifs-1.2.19-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jfree/jcommon/1.0.12/jcommon-1.0.12.jar" sourcepath="M2_REPO/jfree/jcommon/1.0.12/jcommon-1.0.12-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jenkins-ci/main/jenkins-core/1.580.3/jenkins-core-1.580.3.jar" sourcepath="M2_REPO/org/jenkins-ci/main/jenkins-core/1.580.3/jenkins-core-1.580.3-sources.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/jenkins-ci/main/jenkins-test-harness/1.580.3/jenkins-test-harness-1.580.3.jar" sourcepath="M2_REPO/org/jenkins-ci/main/jenkins-test-harness/1.580.3/jenkins-test-harness-1.580.3-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/jenkins-ci/main/jenkins-test-harness/1.580.3/jenkins-test-harness-1.580.3.jar" sourcepath="/M2_REPO/org/jenkins-ci/main/jenkins-test-harness/1.580.3/jenkins-test-harness-1.580.3-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jenkins-ci/main/jenkins-war/1.580.3/jenkins-war-1.580.3-war-for-test.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mortbay/jetty/jetty/6.1.26/jetty-6.1.26.jar" sourcepath="M2_REPO/org/mortbay/jetty/jetty/6.1.26/jetty-6.1.26-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26.jar" sourcepath="M2_REPO/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26-sources.jar"/>

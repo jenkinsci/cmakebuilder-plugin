@@ -36,6 +36,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     @DataBoundConstructor
     public CToolBuilder(String installationName) {
         super(installationName);
+        setToolId("cmake");
     }
 
     @DataBoundSetter
