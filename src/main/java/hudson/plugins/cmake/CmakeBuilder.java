@@ -148,8 +148,6 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
 
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
             BuildListener listener) throws InterruptedException, IOException {
-        EnvVars exportedEnvVars = new EnvVars();
-
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
@@ -162,8 +160,6 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
 
         // Get the CMake version for this node, installing it if necessary
         installToUse = (CmakeTool) installToUse.translate(build, listener);
-        // add CMAKEROOT/bin to PATH for sub-processes, if auto-installed
-        installToUse.buildEnvVars(exportedEnvVars);
 
         final String cmakeBin = installToUse.getCmakeExe();
         final FilePath workSpace = build.getWorkspace();
@@ -207,12 +203,17 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                         "WARNING: Failed to get value for variable `%1s` from %2$s.",
                         CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
                         cacheFile.getRemote());
+            } else {
+                // add CMAKE_BUILD_TOOL variable for toolSteps
+                envs.put(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
+                // add CMAKE_BUILD_TOOL to env for other build-steps
+                EnvVars exportedEnvVars = new EnvVars();
+                exportedEnvVars.put(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
+                        buildTool);
+                // export environment
+                build.getEnvironments()
+                        .add(Environment.create(exportedEnvVars));
             }
-            // add variable
-            exportedEnvVars.putIfNotNull(
-                    CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
-            // export our environment
-            build.getEnvironments().add(Environment.create(exportedEnvVars));
 
             /* invoke each build tool step in build dir */
             for (BuildToolStep step : toolSteps) {
@@ -223,7 +224,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                     // the log
                     final String buildToolMacro = Util.replaceMacro("${"
                             + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
-                            exportedEnvVars);
+                            envs);
                     toolCall = buildBuildToolCall(buildToolMacro,
                             step.getCommandArguments(envs));
                 } else {
@@ -235,7 +236,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                         .overrideAll(step.getEnvironmentVars(envs, listener));
                 if (0 != launcher.launch().pwd(theBuildDir).envs(stepEnv)
                         .stdout(listener).cmds(toolCall).join()) {
-                    return false; // invokation failed
+                    return false; // invocation failed
                 }
             }
         } catch (IOException e) {
