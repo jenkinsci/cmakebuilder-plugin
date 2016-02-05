@@ -91,7 +91,6 @@ public class CToolBuilder extends AbstractCmakeBuilder {
         installToUse = (CmakeTool) installToUse.translate(build, listener);
 
         final String cmakeBin = installToUse.getCmakeExe();
-        final FilePath workSpace = build.getWorkspace();
         // strip off the last path segment (usually 'cmake')
         String bindir;
         {
@@ -112,17 +111,18 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
         try {
             /* Determine remote working directory path. Create it. */
+            final FilePath workSpace = build.getWorkspace();
             final String workDir = getWorkingDir();
-            final FilePath theBuildDir = makeRemotePath(workSpace,
+            final FilePath theWorkDir = makeRemotePath(workSpace,
                     Util.replaceMacro(workDir, envs));
             if (workDir != null) {
-                theBuildDir.mkdirs();
+                theWorkDir.mkdirs();
             }
 
             /* Invoke tool in working dir */
             ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
                     Util.replaceMacro(getArguments(), envs));
-            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
+            if (0 != launcher.launch().pwd(theWorkDir).envs(envs)
                     .stdout(listener).cmds(cmakeCall).join()) {
                 return false; // invocation failed
             }
@@ -146,12 +146,12 @@ public class CToolBuilder extends AbstractCmakeBuilder {
      * @return the argument list, never {@code null}
      */
     private static ArgumentListBuilder buildToolCall(final String toolBin,
-            String... toolArgs) {
+            String toolArgs) {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(toolBin);
         if (toolArgs != null) {
-            args.add(toolArgs);
+            args.addTokenized(toolArgs);
         }
         return args;
     }
