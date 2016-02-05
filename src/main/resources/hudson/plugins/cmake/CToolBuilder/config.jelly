@@ -1,9 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
-  <f:entry title="${%CMake installation}" field="installationName">
+  <f:entry title="${%Tool}" field="toolId">
     <f:select />
   </f:entry>
-  <f:entry title="${%Tool}" field="toolId">
+  <f:entry title="${%CMake installation}" field="installationName">
     <f:select />
   </f:entry>
   <f:entry title="${%Arguments}" field="arguments">
