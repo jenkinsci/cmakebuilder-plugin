@@ -2,5 +2,6 @@
   This view is used to render the plugin list page. 
 -->
 <div>
-  This plugin can be used to build cmake based projects.
+  Integrates the <a href="https://cmake.org/">CMake tool suite</a> to Jenkins.
+  Supports to build cmake based projects.
 </div>
