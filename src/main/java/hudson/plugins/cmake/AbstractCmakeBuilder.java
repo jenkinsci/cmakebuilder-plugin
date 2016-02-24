@@ -40,19 +40,19 @@ public abstract class AbstractCmakeBuilder extends Builder {
         return this.installationName;
     }
 
-    public void setWorkingDir(String workingDir) {
+    protected void setWorkingDir(String workingDir) {
         this.workingDir = Util.fixEmptyAndTrim(workingDir);
     }
 
-    public String getWorkingDir() {
+    protected String getWorkingDir() {
         return this.workingDir;
     }
 
-    public void setArguments(String toolArgs) {
+    protected void setArguments(String toolArgs) {
         this.toolArgs = Util.fixEmptyAndTrim(toolArgs);
     }
 
-    public String getArguments() {
+    protected String getArguments() {
         return this.toolArgs;
     }
 

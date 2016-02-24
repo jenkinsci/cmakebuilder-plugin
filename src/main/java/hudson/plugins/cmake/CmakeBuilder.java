@@ -45,6 +45,12 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     private String preloadScript;
     private boolean cleanBuild;
 
+    // for backward compatibility with < 2.4.9
+    // see
+    // https://wiki.jenkins-ci.org/display/JENKINS/Hint+on+retaining+backward+compatibility
+    private transient String buildDir;
+    private transient String cmakeArgs;
+
     private List<BuildToolStep> toolSteps = new ArrayList<BuildToolStep>(0);
 
     /**
@@ -61,6 +67,18 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     public CmakeBuilder(String installationName, String generator) {
         super(installationName);
         this.generator = Util.fixNull(generator);
+    }
+
+    // for backward compatibility with < 2.4.
+    protected Object readResolve() {
+        // convert to new format
+        if (buildDir != null) {
+            super.setWorkingDir(buildDir);
+        }
+        if (cmakeArgs != null) {
+            super.setArguments(cmakeArgs);
+        }
+        return this;
     }
 
     public String getGenerator() {
