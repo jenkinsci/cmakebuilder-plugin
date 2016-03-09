@@ -14,7 +14,7 @@
   <packaging>hpi</packaging>
 
   <name>CMake plugin</name>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/cmakebuilder+Plugin</url>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/CMake+Plugin</url>
   <licenses>
     <license>
       <name>MIT license</name>
