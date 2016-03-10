@@ -1,26 +1,17 @@
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertNotNull;
-import hudson.Launcher;
-import hudson.model.BuildListener;
+import java.util.List;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
 import hudson.model.FreeStyleBuild;
-import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import hudson.slaves.DumbSlave;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * Tests the CToolBuilder in a running job.
