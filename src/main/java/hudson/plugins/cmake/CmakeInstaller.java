@@ -62,7 +62,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 OsFamily.valueOfOsName(nodeProperties[0]), nodeProperties[1]);
         if (inst == null) {
             String msg = String
-                    .format("%s [%s]: No tool download known for OS `%s` and arch `%s`.",
+                    .format("%s [%s]: No cmake download known for OS `%s` and arch `%s`.",
                             getDescriptor().getDisplayName(), tool.getName(),
                             nodeProperties[0], nodeProperties[1]);
             throw new AbortException(msg);
