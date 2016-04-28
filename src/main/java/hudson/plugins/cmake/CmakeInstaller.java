@@ -6,19 +6,6 @@
  *******************************************************************************/
 package hudson.plugins.cmake;
 
-import hudson.AbortException;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.FilePath.FileCallable;
-import hudson.Util;
-import hudson.model.TaskListener;
-import hudson.model.DownloadService.Downloadable;
-import hudson.model.Node;
-import hudson.remoting.VirtualChannel;
-import hudson.tools.ToolInstaller;
-import hudson.tools.DownloadFromUrlInstaller;
-import hudson.tools.ToolInstallation;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -29,22 +16,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import hudson.AbortException;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.FilePath.FileCallable;
+import hudson.Util;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.model.DownloadService.Downloadable;
+import hudson.remoting.VirtualChannel;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolInstaller;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.security.MasterToSlaveCallable;
+import net.sf.json.JSONObject;
+
 /**
  * Automatic Cmake installer from cmake.org.
  */
 public class CmakeInstaller extends DownloadFromUrlInstaller {
-    private static Logger logger = Logger.getLogger(CmakeInstaller.class
-            .getName());
+    private static Logger logger = Logger
+            .getLogger(CmakeInstaller.class.getName());
 
     @DataBoundConstructor
     public CmakeInstaller(String id) {
@@ -55,16 +54,21 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     public FilePath performInstallation(ToolInstallation tool, Node node,
             TaskListener log) throws IOException, InterruptedException {
         // Gather properties for the node to install on
-        final String[] nodeProperties = node.getChannel().call(
-                new GetSystemProperties("os.name", "os.arch"));
+        final VirtualChannel channel = node.getChannel();
+        if (channel == null) {
+            throw new AbortException(
+                    "Node '" + node.getDisplayName() + "' went offline");
+        }
+        final String[] nodeProperties = channel
+                .call(new GetSystemProperties("os.name", "os.arch"));
 
         final Installable inst = getInstallable(
                 OsFamily.valueOfOsName(nodeProperties[0]), nodeProperties[1]);
         if (inst == null) {
-            String msg = String
-                    .format("%s [%s]: No cmake download known for OS `%s` and arch `%s`.",
-                            getDescriptor().getDisplayName(), tool.getName(),
-                            nodeProperties[0], nodeProperties[1]);
+            String msg = String.format(
+                    "%s [%s]: No cmake download known for OS `%s` and arch `%s`.",
+                    getDescriptor().getDisplayName(), tool.getName(),
+                    nodeProperties[0], nodeProperties[1]);
             throw new AbortException(msg);
         }
 
@@ -78,7 +82,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 // we don't use the timestamp..
                 toolPath.child(".timestamp").delete();
                 // pull up extra subdir...
-                msg = String.format("%s [%s]: Inspecting unpacked files at %s...",
+                msg = String.format(
+                        "%s [%s]: Inspecting unpacked files at %s...",
                         getDescriptor().getDisplayName(), tool.getName(),
                         toolPath);
                 log.getLogger().println(msg);
@@ -155,7 +160,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      *         {@code tool#getHome()} is {@code null}, else the unchanged
      *         {@code ToolInstaller#preferredLocation()}
      */
-    private FilePath getFixedPreferredLocation(ToolInstallation tool, Node node) {
+    private FilePath getFixedPreferredLocation(ToolInstallation tool,
+            Node node) {
         final FilePath toolPath = preferredLocation(tool, node);
         if (tool.getHome() == null) {
             // jenkins wants to download, having preferredLocation jam in
@@ -193,8 +199,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      *
      * @author Martin Weber
      */
-    private static class RootDirScanner extends
-            MasterToSlaveFileCallable<FilePath> {
+    private static class RootDirScanner
+            extends MasterToSlaveFileCallable<FilePath> {
         private static final long serialVersionUID = 1L;
         /** Ant includes that matches the files and dirs */
         private final String includes;
@@ -225,17 +231,17 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 throws IOException, InterruptedException {
             FileSet fs = Util.createFileSet(baseDir, includes, null);
             if (baseDir.exists()) {
-                DirectoryScanner ds = fs
-                        .getDirectoryScanner(new org.apache.tools.ant.Project());
+                DirectoryScanner ds = fs.getDirectoryScanner(
+                        new org.apache.tools.ant.Project());
                 // we expect only one file here: '**/bin/cmake'
                 final String[] cmakeBinFiles = ds.getIncludedFiles();
                 // we expect only one directory here: '**/share'
                 final String[] shareDirs = ds.getIncludedDirectories();
                 if (cmakeBinFiles.length > 1) {
-                    String msg = String
-                            .format("Unkown layout of downloaded CMake archive: "
+                    String msg = String.format(
+                            "Unkown layout of downloaded CMake archive: "
                                     + "Multiple candidates for cmake executable: %s",
-                                    Arrays.toString(cmakeBinFiles));
+                            Arrays.toString(cmakeBinFiles));
                     throw new AbortException(msg);
                 } else if (cmakeBinFiles.length == 0) {
                     String msg = "Unkown layout of downloaded CMake archive: "
@@ -269,8 +275,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     }
 
     @Extension
-    public static final class DescriptorImpl extends
-            DownloadFromUrlInstaller.DescriptorImpl<CmakeInstaller> {
+    public static final class DescriptorImpl
+            extends DownloadFromUrlInstaller.DescriptorImpl<CmakeInstaller> {
         @Override
         public String getDisplayName() {
             return "Install from cmake.org";
@@ -296,7 +302,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         }
 
         @Override
-        public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
+        public boolean isApplicable(
+                Class<? extends ToolInstallation> toolType) {
             return toolType == CmakeTool.class;
         }
     } // DescriptorImpl
@@ -305,8 +312,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * A Callable that gets the values of the given Java system properties from
      * the (remote) node.
      */
-    private static class GetSystemProperties extends
-            MasterToSlaveCallable<String[], InterruptedException> {
+    private static class GetSystemProperties
+            extends MasterToSlaveCallable<String[], InterruptedException> {
         private static final long serialVersionUID = 1L;
 
         private final String[] properties;
@@ -325,8 +332,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     } // GetSystemProperties
 
     private static enum OsFamily {
-        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX("IRIX64"), AIX, HPUX(
-                "HP-UX");
+        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX(
+                "IRIX64"), AIX, HPUX("HP-UX");
         private final String cmakeOrgName;
 
         /**
@@ -432,10 +439,10 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
                         return true;
                     }
-                    if ((nodeOsArch.equals("amd64") || nodeOsArch
-                            .equals("x86_64"))
-                            && (arch.equals("universal") || arch
-                                    .equals("x86_64"))) {
+                    if ((nodeOsArch.equals("amd64")
+                            || nodeOsArch.equals("x86_64"))
+                            && (arch.equals("universal")
+                                    || arch.equals("x86_64"))) {
                         return true; // allow both 32 bit and 64 bit
                     }
                     return false;

@@ -64,14 +64,16 @@ public abstract class AbstractCmakeBuilder extends Builder {
      *         found
      */
     protected CmakeTool getSelectedInstallation() {
-        CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) Jenkins
-                .getInstance().getDescriptor(CmakeTool.class);
-        for (CmakeTool i : descriptor.getInstallations()) {
-            if (installationName != null
-                    && i.getName().equals(installationName))
-                return i;
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            final CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
+                    .getDescriptor(CmakeTool.class);
+            for (CmakeTool i : descriptor.getInstallations()) {
+                if (installationName != null
+                        && i.getName().equals(installationName))
+                    return i;
+            }
         }
-
         return null;
     }
 
@@ -111,10 +113,13 @@ public abstract class AbstractCmakeBuilder extends Builder {
          */
         public ListBoxModel doFillInstallationNameItems() {
             ListBoxModel items = new ListBoxModel();
-            CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) Jenkins
-                    .getInstance().getDescriptor(CmakeTool.class);
-            for (CmakeTool inst : descriptor.getInstallations()) {
-                items.add(inst.getName());// , "" + inst.getPid());
+            final Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
+                        .getDescriptor(CmakeTool.class);
+                for (CmakeTool inst : descriptor.getInstallations()) {
+                    items.add(inst.getName());// , "" + inst.getPid());
+                }
             }
             return items;
         }

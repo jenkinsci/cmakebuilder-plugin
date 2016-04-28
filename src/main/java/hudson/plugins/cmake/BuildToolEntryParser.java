@@ -12,6 +12,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,30 +33,31 @@ public class BuildToolEntryParser extends MasterToSlaveFileCallable<String> {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Parses the cache file and returns value of the {@code "CMAKE_MAKE_PROGRAM"}
-     * entry.
+     * Parses the cache file and returns value of the
+     * {@code "CMAKE_MAKE_PROGRAM"} entry.
      *
      * @return the entry value or {@code null} if the file could not be parsed
      */
     @Override
     public String invoke(File cmakeCacheFile, VirtualChannel channel)
             throws IOException, InterruptedException {
-            BufferedInputStream is = new BufferedInputStream(
-                    new FileInputStream(cmakeCacheFile));
-            List<SimpleCMakeCacheEntry> result = new ArrayList<SimpleCMakeCacheEntry>(
-                    1);
-            final CMakeCacheFileParser parser = new CMakeCacheFileParser();
+        InputStreamReader isr = new InputStreamReader(
+                new BufferedInputStream(new FileInputStream(cmakeCacheFile)),
+                Charset.defaultCharset());
+        List<SimpleCMakeCacheEntry> result = new ArrayList<SimpleCMakeCacheEntry>(
+                1);
+        final CMakeCacheFileParser parser = new CMakeCacheFileParser();
 
-            parser.parse(is, new EntryFilter() {
+        parser.parse(isr, new EntryFilter() {
 
-                @Override
-                public boolean accept(String key) {
-                    return "CMAKE_MAKE_PROGRAM".equals(key);
-                }
-            }, result, null);
-            if (result.size() > 0) {
-                return result.get(0).getValue();
+            @Override
+            public boolean accept(String key) {
+                return "CMAKE_MAKE_PROGRAM".equals(key);
             }
+        }, result, null);
+        if (result.size() > 0) {
+            return result.get(0).getValue();
+        }
         return null;
     }
 }
