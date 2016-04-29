@@ -1,31 +1,32 @@
-<div>CMake´s <a href="http://www.cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html#cmake-generators">
+<div>CMake´s <a href="http://www.cmake.org/cmake/help/latest/manual/cmake-generators.7.html#cmake-generators" target="_blank">
 buildscript generator</a> to use (e.g. <code>Unix Makefiles</code>).</br>
 Possible generators include:
  <ul>
- <li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Borland Makefiles.html">Borland Makefiles</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/MSYS Makefiles.html">MSYS Makefiles</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/MinGW Makefiles.html">MinGW Makefiles</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/NMake Makefiles.html">NMake Makefiles</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/NMake Makefiles JOM.html">NMake Makefiles JOM</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Ninja.html">Ninja</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Unix Makefiles.html">Unix Makefiles</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Watcom WMake.html">Watcom WMake</a></li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Visual Studio 10 2010.html">Visual Studio 10 2010</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed)</li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Visual Studio 11 2012.html">Visual Studio 11 2012</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed)</li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Visual Studio 12 2013.html">Visual Studio 12 2013</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed)</li>
-<li><a class="reference internal" href="http://www.cmake.org/cmake/help/v3.0/generator/Xcode.html">Xcode</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed)</li>
+ <li><a href="http://www.cmake.org/cmake/help/latest/generator/Borland Makefiles.html">Borland Makefiles</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/MSYS Makefiles.html">MSYS Makefiles</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/MinGW Makefiles.html">MinGW Makefiles</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/NMake Makefiles.html">NMake Makefiles</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/NMake Makefiles JOM.html">NMake Makefiles JOM</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Ninja.html">Ninja</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Unix Makefiles.html">Unix Makefiles</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Watcom WMake.html">Watcom WMake</a></li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Visual Studio 10 2010.html">Visual Studio 10 2010</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed,
+ <a href="https://issues.jenkins-ci.org/browse/JENKINS-29142" target="_blank">generation failure workaround</a>)</li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Visual Studio 11 2012.html">Visual Studio 11 2012</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed,
+ <a href="https://issues.jenkins-ci.org/browse/JENKINS-29142" target="_blank">generation failure workaround</a>)</li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Visual Studio 12 2013.html">Visual Studio 12 2013</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed,
+ <a href="https://issues.jenkins-ci.org/browse/JENKINS-29142" target="_blank">generation failure workaround</a>)</li>
+<li><a href="http://www.cmake.org/cmake/help/latest/generator/Xcode.html">Xcode</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed,
+ <a href="https://issues.jenkins-ci.org/browse/JENKINS-29142" target="_blank">generation failure workaround</a>)</li>
  </ul>
  <p>
- The build tool chosen by CMake corresponds to the specified script generator
- and is exposed in the
- <code><strong>CMAKE_BUILD_TOOL</strong></code> build environment variable for any generator
- except the <em>Visual Studio</em> and <em>Xcode</em> generators
- (these generators do not set <code>CMAKE_MAKE_PROGRAM</code> at buildscript generation time).<br>
- The actual value of <code><strong>CMAKE_BUILD_TOOL</strong></code> is retrieved
- from the generated CMake cache file (<code>CMakeCache.txt</code>).<br>
- Subsequent build steps may use <code>${CMAKE_BUILD_TOOL}</code> 
- to execute the generated scripts.
+ The build tool corresponding to the specified script generator is exposed in the
+ <code><strong>CMAKE_BUILD_TOOL</strong></code> build variable,
+ except for the <em>Visual Studio</em> and <em>Xcode</em> generators
+ (the actual value of <code><strong>CMAKE_BUILD_TOOL</strong></code> is retrieved
+ from the generated CMake cache file, but these generators do not set
+ <code>CMAKE_MAKE_PROGRAM</code> at buildscript <strong>generation</strong> time).<br>
  </p> 
- <p><strong>HINT</strong>: This field does not require quotes if the name of the
- generator contains spaces.</p>
+ <p><strong>HINT</strong>: This field does not require quotes if the
+ generator name contains spaces.</p>
 </div>
