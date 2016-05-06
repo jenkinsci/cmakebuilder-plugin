@@ -52,7 +52,7 @@ public class CmakeBuilderBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT);
         cmb.setCleanBuild(true);
         cmb.setSourceDir("src");
         cmb.setBuildDir("src");
@@ -76,7 +76,7 @@ public class CmakeBuilderBuildTest {
                 .get("cmakebuilder-test-slave"));
         p.setAssignedLabel(slave.getSelfLabel());
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT);
         cmb.setCleanBuild(true);
         cmb.setSourceDir("src");
         cmb.setBuildDir("src");
@@ -102,7 +102,7 @@ public class CmakeBuilderBuildTest {
         StringParameterDefinition pd3 = new StringParameterDefinition(
                 "BUILDTYPE", "Release");
         StringParameterDefinition pd4 = new StringParameterDefinition(
-                "BUILDGENERATOR", "Unix Makefiles");
+                "BUILDGENERATOR");
         StringParameterDefinition pd5 = new StringParameterDefinition(
                 "BUILDTOOL", "make");
         StringParameterDefinition pd6 = new StringParameterDefinition(
@@ -165,7 +165,7 @@ public class CmakeBuilderBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT);
         cmb.setCleanBuild(true);
         cmb.setSourceDir("src");
         cmb.setBuildDir("build/debug");
@@ -198,7 +198,7 @@ public class CmakeBuilderBuildTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
-        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT, "Unix Makefiles");
+        CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT);
         cmb.setCleanBuild(true);
         cmb.setSourceDir("src");
         cmb.setBuildDir("build/debug");

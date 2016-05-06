@@ -38,7 +38,10 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
      */
     public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL";
 
-    /** allowed to be empty but not {@code null} */
+    /**
+     * the name of cmake´s buildscript generator or {@code null} if the default
+     * generator should be used
+     */
     private String generator;
     private String sourceDir;
     private String buildType;
@@ -59,14 +62,27 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
      * @param installationName
      *            the name of the cmake tool installation from the global config
      *            page.
+     */
+    @DataBoundConstructor
+    public CmakeBuilder(String installationName) {
+        super(installationName);
+    }
+
+    /**
+     * Old constructor.
+     *
+     * @param installationName
+     *            the name of the cmake tool installation from the global config
+     *            page.
      * @param generator
      *            the name of cmake´s buildscript generator. May be empty but
      *            not {@code null}
+     * @deprecated to minimize number of mandatory field values.
      */
-    @DataBoundConstructor
+    @Deprecated
     public CmakeBuilder(String installationName, String generator) {
         super(installationName);
-        this.generator = Util.fixNull(generator);
+        setGenerator(generator);
     }
 
     // for backward compatibility with < 2.4.
@@ -81,8 +97,23 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         return this;
     }
 
+    /**
+     * Sets the name of the build-script generator.
+     * 
+     * @param generator
+     *            the name of cmake´s build-script generator or {@code null} or
+     *            empty if the default generator should be used
+     */
+    @DataBoundSetter
+    public void setGenerator(String generator) {
+        generator = Util.fixEmptyAndTrim(generator);
+        this.generator = DescriptorImpl.getDefaultGenerator().equals(generator)
+                ? null : generator;
+    }
+
     public String getGenerator() {
-        return this.generator;
+        return this.generator == null ? DescriptorImpl.getDefaultGenerator()
+                : generator;
     }
 
     @DataBoundSetter
@@ -203,7 +234,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             FilePath theSourceDir = makeRemotePath(workSpace,
                     Util.replaceMacro(sourceDir, envs));
             ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
-                    Util.replaceMacro(this.generator, envs),
+                    Util.replaceMacro(getGenerator(), envs),
                     Util.replaceMacro(this.preloadScript, envs), theSourceDir,
                     Util.replaceMacro(this.buildType, envs),
                     Util.replaceMacro(getCmakeArgs(), envs));
@@ -380,24 +411,18 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         }
 
         /**
+         * Gets the default generator to use if the builder`s generator field is
+         * <code>null</code>.
+         */
+        public static String getDefaultGenerator() {
+            return "Unix Makefiles";
+        }
+
+        /**
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
             return "CMake Build";
-        }
-
-        /**
-         * Performs on-the-fly validation of the form field 'generator'.
-         *
-         * @param value
-         */
-        public FormValidation doCheckGenerator(
-                @QueryParameter final String value)
-                        throws IOException, ServletException {
-            if (value.length() == 0) {
-                return FormValidation.error("Please set a generator name");
-            }
-            return FormValidation.ok();
         }
 
         /**
@@ -408,7 +433,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         public FormValidation doCheckSourceDir(
                 @AncestorInPath AbstractProject<?, ?> project,
                 @QueryParameter final String value)
-                        throws IOException, ServletException {
+                throws IOException, ServletException {
             FilePath ws = project.getSomeWorkspace();
             if (ws == null)
                 return FormValidation.ok();

@@ -15,8 +15,7 @@ public class CmakeBuilderFormRoundTripTest {
     public void checkValidation() throws Exception {
 
         FreeStyleProject p = j.createFreeStyleProject();
-        CmakeBuilder before = new CmakeBuilder(CmakeTool.DEFAULT,
-                "Unix Makefiles");
+        CmakeBuilder before = new CmakeBuilder(CmakeTool.DEFAULT);
         p.getBuildersList().add(before);
 
         j.submit(j.createWebClient().getPage(p, "configure")

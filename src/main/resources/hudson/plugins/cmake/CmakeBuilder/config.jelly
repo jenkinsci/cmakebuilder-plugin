@@ -4,7 +4,7 @@
     <f:select />
   </f:entry>
   <f:entry title="Script Generator" field="generator">
-    <f:textbox default="Unix Makefiles" />
+    <f:textbox default="${descriptor.defaultGenerator}" />
   </f:entry>
   <f:entry title="Source Directory" field="sourceDir">
     <f:textbox />
@@ -27,9 +27,8 @@
       <f:expandableTextbox />
     </f:entry>
   </f:advanced>
-  <!--
-  -->
-  <f:entry title="${%Build tool}&lt;br>${%invocations}" field="runTool" >
+
+  <f:entry title="${%Build tool}" field="runTool" >
     <f:repeatable field="steps" header="${%Run build tool}" add="${%Add build tool invocation}">
       <table width="100%">
         <st:include page="config.jelly" class="hudson.plugins.cmake.BuildToolStep" />
