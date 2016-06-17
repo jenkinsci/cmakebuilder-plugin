@@ -27,6 +27,12 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     private String toolId;
 
     /**
+     * Exit codes of the tool that indicate a failure but should be ignored, 
+     * thus causing the build to proceed.<br>
+     */
+    private String ignoredExitCodes;
+    
+    /**
      * Minimal constructor.
      *
      * @param installationName
@@ -46,6 +52,21 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
     public String getToolId() {
         return toolId;
+    }
+
+    /**
+     * Gets the exit codes of the tool that indicate a failure but should be
+     * ignored, thus causing the build to proceed.
+     *
+     * @return the ignoredExitCodes property value or <code>null</code>
+     */
+    @DataBoundSetter
+    public String getIgnoredExitCodes() {
+        return ignoredExitCodes;
+    }
+
+    public void setIgnoredExitCodes(String ignoredExitCodes) {
+        this.ignoredExitCodes = Util.fixEmptyAndTrim(ignoredExitCodes);
     }
 
     @DataBoundSetter
@@ -122,8 +143,10 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             /* Invoke tool in working dir */
             ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
                     Util.replaceMacro(getArguments(), envs));
-            if (0 != launcher.launch().pwd(theWorkDir).envs(envs)
-                    .stdout(listener).cmds(cmakeCall).join()) {
+            final int exitCode;
+            if (0 != (exitCode=launcher.launch().pwd(theWorkDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join())) {
+               // TODO  ignoredExitCodes
                 return false; // invocation failed
             }
         } catch (IOException e) {

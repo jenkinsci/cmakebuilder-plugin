@@ -12,4 +12,7 @@
   <f:entry title="${%Working Directory}" field="workingDir">
     <f:textbox />
   </f:entry>
+  <f:entry title="${%Ignore exit codes}" field="ignoredExitCodes">
+    <f:textbox />
+  </f:entry>
 </j:jelly>
