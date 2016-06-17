@@ -27,9 +27,6 @@ public abstract class AbstractCmakeBuilder extends Builder {
      * @param installationName
      *            the name of the cmake tool installation from the global config
      *            page.
-     * @param generator
-     *            the name of cmake´s buildscript generator. May be empty but
-     *            not {@code null}
      */
     public AbstractCmakeBuilder(String installationName) {
         this.installationName = Util.fixEmptyAndTrim(installationName);

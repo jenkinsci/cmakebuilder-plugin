@@ -48,7 +48,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     private String preloadScript;
     private boolean cleanBuild;
 
-    // for backward compatibility with < 2.4.9
+    // for backward compatibility with < 2.4.0
     // see
     // https://wiki.jenkins-ci.org/display/JENKINS/Hint+on+retaining+backward+compatibility
     private transient String buildDir;
