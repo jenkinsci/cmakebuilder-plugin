@@ -108,6 +108,25 @@ public class CToolBuilderBuildTest {
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
         j.assertBuildStatusSuccess(build);
+    }
+
+    /**
+     * Verifies that failure exit codes get ignored.
+     */
+    @Test
+    public void testIgnoreFailureExitCodes() throws Exception {
+        // TODO useless with ctest v 2.8.11, which seems to never exit with failure code...
+        FreeStyleProject p = j.createFreeStyleProject();
+        CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
+        cmb.setToolId("ctest");
+        cmb.setIgnoredExitCodes("");
+        cmb.setArguments("-version");
+        p.getBuildersList().add(cmb);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        System.out.println(JenkinsRule.getLog(build));
+        j.assertBuildStatusSuccess(build);
 
     }
+
 }

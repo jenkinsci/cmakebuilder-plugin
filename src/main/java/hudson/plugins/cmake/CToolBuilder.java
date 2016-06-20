@@ -1,9 +1,14 @@
 package hudson.plugins.cmake;
 
 import java.io.IOException;
+import java.util.Iterator;
 
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -11,9 +16,11 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.ModelObject;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 /**
@@ -27,11 +34,16 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     private String toolId;
 
     /**
-     * Exit codes of the tool that indicate a failure but should be ignored, 
+     * Exit codes of the tool that indicate a failure but should be ignored,
      * thus causing the build to proceed.<br>
      */
     private String ignoredExitCodes;
-    
+
+    /**
+     * Parsed and cached exit codes to ignore.
+     */
+    private transient IntSet ignoredExitCodesParsed;
+
     /**
      * Minimal constructor.
      *
@@ -67,6 +79,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
     public void setIgnoredExitCodes(String ignoredExitCodes) {
         this.ignoredExitCodes = Util.fixEmptyAndTrim(ignoredExitCodes);
+
     }
 
     @DataBoundSetter
@@ -144,9 +157,27 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
                     Util.replaceMacro(getArguments(), envs));
             final int exitCode;
-            if (0 != (exitCode=launcher.launch().pwd(theWorkDir).envs(envs)
+            if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
                     .stdout(listener).cmds(cmakeCall).join())) {
-               // TODO  ignoredExitCodes
+                // should this failure be ignored?
+                if (ignoredExitCodes != null) {
+                    boolean ok = false;
+                    if (ignoredExitCodesParsed == null) {
+                        // parse and cache
+                        final IntSet ints = new IntSet();
+                        ints.setValues(ignoredExitCodes);
+                        ignoredExitCodesParsed = ints;
+                    }
+                    for (Iterator<Integer> iter = ignoredExitCodesParsed
+                            .iterator(); iter.hasNext();) {
+                        if (exitCode == iter.next()) {
+                            // ignore this failure exit code
+                            ok = true;
+                            break;
+                        }
+                    }
+                   return ok;
+                }
                 return false; // invocation failed
             }
         } catch (IOException e) {
@@ -221,6 +252,22 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             return items;
         }
 
+        /**
+         * Performs on-the-fly validation of the form field 'ignoredExitCodes'.
+         *
+         * @param value
+         */
+        public FormValidation doCheckIgnoredExitCodes(
+                @AncestorInPath AbstractProject<?, ?> project,
+                @QueryParameter final String value)
+                throws IOException, ServletException {
+            try {
+                new IntSet().setValues(Util.fixEmptyAndTrim(value));
+            } catch (IllegalArgumentException iae) {
+                return FormValidation.error(iae.getLocalizedMessage());
+            }
+            return FormValidation.ok();
+        }
     } // DescriptorImpl
 
     /**
