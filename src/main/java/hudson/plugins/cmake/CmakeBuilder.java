@@ -249,7 +249,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
                 listener.getLogger().printf(
-                        "WARNING: Failed to get value for variable `%1s` from %2$s.",
+                        "WARNING: Failed to get value for variable `%1s` from %2$s.%n",
                         CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
                         cacheFile.getRemote());
             } else {
