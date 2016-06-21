@@ -10,6 +10,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import hudson.slaves.DumbSlave;
 
@@ -115,18 +116,20 @@ public class CToolBuilderBuildTest {
      */
     @Test
     public void testIgnoreFailureExitCodes() throws Exception {
-        // TODO useless with ctest v 2.8.11, which seems to never exit with failure code...
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
-        cmb.setToolId("ctest");
-        cmb.setIgnoredExitCodes("");
-        cmb.setArguments("-version");
+        // useless with ctest v 2.8.11, which seems to never exit with failure code...
+        cmb.setToolId("cpack");
         p.getBuildersList().add(cmb);
-
+        // fail build
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
-        j.assertBuildStatusSuccess(build);
-
+        j.assertBuildStatus(Result.FAILURE,build);
+        // ignore exit status 
+        cmb.setIgnoredExitCodes("1");
+        build = p.scheduleBuild2(0).get();
+        System.out.println(JenkinsRule.getLog(build));
+        j.assertBuildStatus(Result.SUCCESS,build);
     }
 
 }

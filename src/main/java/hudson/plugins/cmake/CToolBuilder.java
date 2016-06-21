@@ -72,11 +72,11 @@ public class CToolBuilder extends AbstractCmakeBuilder {
      *
      * @return the ignoredExitCodes property value or <code>null</code>
      */
-    @DataBoundSetter
     public String getIgnoredExitCodes() {
         return ignoredExitCodes;
     }
 
+    @DataBoundSetter
     public void setIgnoredExitCodes(String ignoredExitCodes) {
         this.ignoredExitCodes = Util.fixEmptyAndTrim(ignoredExitCodes);
 
@@ -173,10 +173,14 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                         if (exitCode == iter.next()) {
                             // ignore this failure exit code
                             ok = true;
+                            listener.getLogger()
+                                    .printf("%1s exited with failure code %2$s,"
+                                            + " build step is configurd to ignore that.%n",
+                                            getToolId(), exitCode);
                             break;
                         }
                     }
-                   return ok;
+                    return ok;
                 }
                 return false; // invocation failed
             }
