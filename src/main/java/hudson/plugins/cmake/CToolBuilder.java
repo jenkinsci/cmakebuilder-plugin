@@ -161,7 +161,6 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                     .stdout(listener).cmds(cmakeCall).join())) {
                 // should this failure be ignored?
                 if (ignoredExitCodes != null) {
-                    boolean ok = false;
                     if (ignoredExitCodesParsed == null) {
                         // parse and cache
                         final IntSet ints = new IntSet();
@@ -172,15 +171,16 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                             .iterator(); iter.hasNext();) {
                         if (exitCode == iter.next()) {
                             // ignore this failure exit code
-                            ok = true;
-                            listener.getLogger()
-                                    .printf("%1s exited with failure code %2$s,"
-                                            + " build step is configurd to ignore that.%n",
-                                            getToolId(), exitCode);
-                            break;
+                            listener.getLogger().printf(
+                                    "%1s exited with failure code %2$s, ignored.%n",
+                                    getToolId(), exitCode);
+                            return true; // no failure
                         }
                     }
-                    return ok;
+                    // invocation failed, not ignored
+                    listener.getLogger().printf(
+                            "%1s exited with failure code %2$s%n", getToolId(),
+                            exitCode);
                 }
                 return false; // invocation failed
             }
