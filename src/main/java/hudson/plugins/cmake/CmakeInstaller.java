@@ -177,7 +177,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
 
     /**
      * Overwritten since 3.x archives from cmake.org have more than just the
-     * "cmake-<version>" directory
+     * {@code "cmake-<version>"} directory
      */
     @Override
     protected FilePath findPullUpDirectory(final FilePath root)

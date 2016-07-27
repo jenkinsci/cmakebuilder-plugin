@@ -174,7 +174,7 @@ public class CMakeCacheFileParser {
      * <p>
      * Instances of this interface may be passed to the
      * {@link CMakeCacheFileParser#CMakeCacheFileParser()} constructor of the
-     * {@code CMakeCacheFileParser}</code> class.
+     * {@code CMakeCacheFileParser} class.
      *
      * @author Martin Weber
      */
