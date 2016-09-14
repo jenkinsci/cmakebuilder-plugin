@@ -99,7 +99,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
 
     /**
      * Sets the name of the build-script generator.
-     * 
+     *
      * @param generator
      *            the name of cmake´s build-script generator or {@code null} or
      *            empty if the default generator should be used
@@ -323,7 +323,9 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(cmakeBin);
-        args.add("-G").add(generator);
+        if (generator != null && !generator.isEmpty()) {
+            args.add("-G").add(generator);
+        }
         if (preloadScript != null) {
             args.add("-C").add(preloadScript);
         }
@@ -415,7 +417,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
          * <code>null</code>.
          */
         public static String getDefaultGenerator() {
-            return "Unix Makefiles";
+            return "";
         }
 
         /**
