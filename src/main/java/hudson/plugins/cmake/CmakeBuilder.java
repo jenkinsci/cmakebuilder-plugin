@@ -323,7 +323,9 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(cmakeBin);
-        args.add("-G").add(generator);
+        if (generator != null && !generator.isEmpty()) {
+            args.add("-G").add(generator);
+        }
         if (preloadScript != null) {
             args.add("-C").add(preloadScript);
         }
