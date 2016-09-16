@@ -106,14 +106,11 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
      */
     @DataBoundSetter
     public void setGenerator(String generator) {
-        generator = Util.fixEmptyAndTrim(generator);
-        this.generator = DescriptorImpl.getDefaultGenerator().equals(generator)
-                ? null : generator;
+        this.generator = Util.fixEmptyAndTrim(generator);
     }
 
     public String getGenerator() {
-        return this.generator == null ? DescriptorImpl.getDefaultGenerator()
-                : generator;
+        return generator;
     }
 
     @DataBoundSetter
@@ -303,7 +300,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
      *            the name of the cmake binary, either as an absolute or
      *            relative file system path.
      * @param generator
-     *            the name of the build-script generator
+     *            the name of the build-script generator or {@code null}
      * @param preloadScript
      *            name of the pre-load a script to populate the cache or
      *            {@code null}
@@ -323,7 +320,9 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(cmakeBin);
-        args.add("-G").add(generator);
+        if (generator != null) {
+            args.add("-G").add(generator);
+        }
         if (preloadScript != null) {
             args.add("-C").add(preloadScript);
         }
@@ -408,14 +407,6 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         public DescriptorImpl() {
             super(CmakeBuilder.class);
             load();
-        }
-
-        /**
-         * Gets the default generator to use if the builder`s generator field is
-         * <code>null</code>.
-         */
-        public static String getDefaultGenerator() {
-            return "Unix Makefiles";
         }
 
         /**

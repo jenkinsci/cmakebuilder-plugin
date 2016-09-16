@@ -4,7 +4,7 @@
     <f:select />
   </f:entry>
   <f:entry title="Script Generator" field="generator">
-    <f:textbox default="${descriptor.defaultGenerator}" />
+    <f:textbox />
   </f:entry>
   <f:entry title="Source Directory" field="sourceDir">
     <f:textbox />

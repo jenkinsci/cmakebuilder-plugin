@@ -1,5 +1,5 @@
 <div>CMake´s <a href="http://www.cmake.org/cmake/help/latest/manual/cmake-generators.7.html#cmake-generators" target="_blank">
-buildscript generator</a> to use (e.g. <code>Unix Makefiles</code>).</br>
+buildscript generator</a> to use (e.g. <code>Unix Makefiles</code>). Leave empty to let CMake choose a generator.</br>
 Possible generators include:
  <ul>
  <li><a href="http://www.cmake.org/cmake/help/latest/generator/Borland Makefiles.html">Borland Makefiles</a></li>
@@ -19,6 +19,8 @@ Possible generators include:
 <li><a href="http://www.cmake.org/cmake/help/latest/generator/Xcode.html">Xcode</a> (<code><strong>CMAKE_BUILD_TOOL</strong></code> not exposed,
  <a href="https://issues.jenkins-ci.org/browse/JENKINS-29142" target="_blank">generation failure workaround</a>)</li>
  </ul>
+ <p><strong>HINT</strong>: This field does not require quotes if the
+ generator name contains spaces.</p>
  <p>
  The build tool corresponding to the specified script generator is exposed in the
  <code><strong>CMAKE_BUILD_TOOL</strong></code> build variable,
@@ -27,6 +29,4 @@ Possible generators include:
  from the generated CMake cache file, but these generators do not set
  <code>CMAKE_MAKE_PROGRAM</code> at buildscript <strong>generation</strong> time).<br>
  </p> 
- <p><strong>HINT</strong>: This field does not require quotes if the
- generator name contains spaces.</p>
 </div>
