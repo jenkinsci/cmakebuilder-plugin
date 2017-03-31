@@ -168,17 +168,19 @@ public class CmakeBuilderBuildTest {
         cmb.setSourceDir("src");
         cmb.setBuildDir("build/debug");
         p.getBuildersList().add(cmb);
+        ArrayList<BuildToolStep> steps = new ArrayList<BuildToolStep>(2);
         // let the build invoke 'make clean all'..
         BuildToolStep step = new BuildToolStep();
         final String makeTargets = "clean all";
         step.setArgs(makeTargets);
-        cmb.getSteps().add(step);
+        steps.add(step);
         // let the build invoke 'make rebuild_cache'..
         step = new BuildToolStep();
         String makeTargets2 = "rebuild_cache";
         step.setArgs(makeTargets2);
-        cmb.getSteps().add(step);
-
+        steps.add(step);
+        cmb.setSteps(steps);
+        
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
         j.assertLogContains(makeTargets, build);
@@ -201,18 +203,20 @@ public class CmakeBuilderBuildTest {
         cmb.setSourceDir("src");
         cmb.setBuildDir("build/debug");
         p.getBuildersList().add(cmb);
+        ArrayList<BuildToolStep> steps = new ArrayList<BuildToolStep>(2);
         // let the build invoke 'cmake --build <dir> clean all'..
         BuildToolStep step = new BuildToolStep();
         step.setWithCmake(true);
         final String makeTargets = "--target all";
         step.setArgs(makeTargets);
-        cmb.getSteps().add(step);
+        steps.add(step);
         // let the build invoke 'cmake --build <dir> rebuild_cache'..
         step = new BuildToolStep();
         step.setWithCmake(true);
         String makeTargets2 = "--target rebuild_cache";
         step.setArgs(makeTargets2);
-        cmb.getSteps().add(step);
+        steps.add(step);
+        cmb.setSteps(steps);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
