@@ -54,7 +54,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     private transient String buildDir;
     private transient String cmakeArgs;
 
-    private List<BuildToolStep> toolSteps = new ArrayList<BuildToolStep>(0);
+    private List<BuildToolStep> toolSteps;
 
     /**
      * Minimal constructor.
@@ -262,27 +262,29 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             }
 
             /* invoke each build tool step in build dir */
-            for (BuildToolStep step : toolSteps) {
-                ArgumentListBuilder toolCall;
-                if (!step.getWithCmake()) {
-                    // invoke directly
-                    // if buildTool == null, let the unexpanded macro show up in
-                    // the log
-                    final String buildToolMacro = Util.replaceMacro("${"
-                            + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
-                            envs);
-                    toolCall = buildBuildToolCall(buildToolMacro,
-                            step.getCommandArguments(envs));
-                } else {
-                    // invoke through 'cmake --build <dir>'
-                    toolCall = buildBuildToolCallWithCmake(cmakeBin,
-                            theBuildDir, step.getCommandArguments(envs));
-                }
-                final EnvVars stepEnv = new EnvVars(envs)
-                        .overrideAll(step.getEnvironmentVars(envs, listener));
-                if (0 != launcher.launch().pwd(theBuildDir).envs(stepEnv)
-                        .stdout(listener).cmds(toolCall).join()) {
-                    return false; // invocation failed
+            if( toolSteps != null) {
+                for (BuildToolStep step : toolSteps) {
+                    ArgumentListBuilder toolCall;
+                    if (!step.getWithCmake()) {
+                        // invoke directly
+                        // if buildTool == null, let the unexpanded macro show up in
+                        // the log
+                        final String buildToolMacro = Util.replaceMacro("${"
+                                + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
+                                envs);
+                        toolCall = buildBuildToolCall(buildToolMacro,
+                                step.getCommandArguments(envs));
+                    } else {
+                        // invoke through 'cmake --build <dir>'
+                        toolCall = buildBuildToolCallWithCmake(cmakeBin,
+                                theBuildDir, step.getCommandArguments(envs));
+                    }
+                    final EnvVars stepEnv = new EnvVars(envs)
+                            .overrideAll(step.getEnvironmentVars(envs, listener));
+                    if (0 != launcher.launch().pwd(theBuildDir).envs(stepEnv)
+                            .stdout(listener).cmds(toolCall).join()) {
+                        return false; // invocation failed
+                    }
                 }
             }
         } catch (IOException e) {
