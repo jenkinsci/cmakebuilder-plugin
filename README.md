@@ -19,8 +19,7 @@ To perform the actual build, it can detect the actual build tool corresponding t
 
 To ease the pain of provisioning Jenkins worker nodes, it can
 
-- download a recent version of cmake on demand from [cmake.org·] (https://cmake.org/files/) and use that exclusively for the build.
+- download a recent version of cmake on demand from [cmake.org](https://cmake.org/files/) and use that exclusively for the build.
 Jenkins admins may configure the per-build-step-selectable CMake versions on the Jenkins` global configuration page. (Thanks to cmake.org for constantly providing portable/relocatable binaries for public download.)
 
 Issues are tracked at the [Jenkins issue Tracker](https://issues.jenkins-ci.org/issues/?jql=component%20%3D%20cmakebuilder-plugin).
-
