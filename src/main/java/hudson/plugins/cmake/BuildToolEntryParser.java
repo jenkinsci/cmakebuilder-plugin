@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Martin Weber.
+ * Copyright (c) 2015-2017 Martin Weber.
  *
  * Contributors:
  *      Martin Weber - Initial implementation
@@ -44,17 +44,19 @@ public class BuildToolEntryParser extends MasterToSlaveFileCallable<String> {
         InputStreamReader isr = new InputStreamReader(
                 new BufferedInputStream(new FileInputStream(cmakeCacheFile)),
                 Charset.defaultCharset());
-        List<SimpleCMakeCacheEntry> result = new ArrayList<SimpleCMakeCacheEntry>(
-                1);
+        List<SimpleCMakeCacheEntry> result = new ArrayList<>(1);
         final CMakeCacheFileParser parser = new CMakeCacheFileParser();
+        try {
+            parser.parse(isr, new EntryFilter() {
 
-        parser.parse(isr, new EntryFilter() {
-
-            @Override
-            public boolean accept(String key) {
-                return "CMAKE_MAKE_PROGRAM".equals(key);
-            }
-        }, result, null);
+                @Override
+                public boolean accept(String key) {
+                    return "CMAKE_MAKE_PROGRAM".equals(key);
+                }
+            }, result, null);
+        } finally {
+            isr.close();
+        }
         if (result.size() > 0) {
             return result.get(0).getValue();
         }
