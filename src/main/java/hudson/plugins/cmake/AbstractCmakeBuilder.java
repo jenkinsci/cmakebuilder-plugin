@@ -11,7 +11,7 @@ import jenkins.model.Jenkins;
 /**
  * A Builder that holds information about a cmake installation, the working
  * directory for invocation and the arguments to pass to {@code cmake},
- * 
+ *
  * @author Martin weber
  */
 public abstract class AbstractCmakeBuilder extends Builder {
@@ -61,17 +61,7 @@ public abstract class AbstractCmakeBuilder extends Builder {
      *         found
      */
     protected CmakeTool getSelectedInstallation() {
-        final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins != null) {
-            final CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
-                    .getDescriptor(CmakeTool.class);
-            for (CmakeTool i : descriptor.getInstallations()) {
-                if (installationName != null
-                        && i.getName().equals(installationName))
-                    return i;
-            }
-        }
-        return null;
+        return InstallationUtils.getInstallationByName(installationName);
     }
 
     /**
@@ -109,16 +99,7 @@ public abstract class AbstractCmakeBuilder extends Builder {
          * Determines the values of the Cmake installation drop-down list box.
          */
         public ListBoxModel doFillInstallationNameItems() {
-            ListBoxModel items = new ListBoxModel();
-            final Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins != null) {
-                CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
-                        .getDescriptor(CmakeTool.class);
-                for (CmakeTool inst : descriptor.getInstallations()) {
-                    items.add(inst.getName());// , "" + inst.getPid());
-                }
-            }
-            return items;
+            return InstallationUtils.doFillInstallationNameItems();
         }
 
         @Override
