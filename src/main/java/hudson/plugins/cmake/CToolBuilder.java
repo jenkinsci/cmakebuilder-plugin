@@ -147,7 +147,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             /* Determine remote working directory path. Create it. */
             final FilePath workSpace = build.getWorkspace();
             final String workDir = getWorkingDir();
-            final FilePath theWorkDir = makeRemotePath(workSpace,
+            final FilePath theWorkDir = LaunchUtils.makeRemotePath(workSpace,
                     Util.replaceMacro(workDir, envs));
             if (workDir != null) {
                 theWorkDir.mkdirs();

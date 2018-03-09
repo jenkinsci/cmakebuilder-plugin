@@ -1,12 +1,10 @@
 package hudson.plugins.cmake;
 
-import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ListBoxModel;
-import jenkins.model.Jenkins;
 
 /**
  * A Builder that holds information about a cmake installation, the working
@@ -62,23 +60,6 @@ public abstract class AbstractCmakeBuilder extends Builder {
      */
     protected CmakeTool getSelectedInstallation() {
         return InstallationUtils.getInstallationByName(installationName);
-    }
-
-    /**
-     * Constructs a directory under the workspace on the slave.
-     *
-     * @param path
-     *            the directory´s relative path {@code null} to return the
-     *            workspace directory
-     *
-     * @return the full path of the directory on the remote machine.
-     */
-    public static FilePath makeRemotePath(FilePath workSpace, String path) {
-        if (path == null) {
-            return workSpace;
-        }
-        FilePath file = workSpace.child(path);
-        return file;
     }
 
     // //////////////////////////////////////////////////////////////////

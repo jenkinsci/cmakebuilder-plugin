@@ -5,6 +5,7 @@
  */
 package hudson.plugins.cmake;
 
+import hudson.FilePath;
 import hudson.util.ArgumentListBuilder;
 
 /**
@@ -37,6 +38,23 @@ class LaunchUtils {
             args.addTokenized(toolArgs);
         }
         return args;
+    }
+
+    /**
+     * Constructs a directory below the workspace on a node.
+     *
+     * @param path
+     *            the directory´s relative path {@code null} to return the
+     *            workspace directory
+     *
+     * @return the full path of the directory on the remote machine.
+     */
+    static FilePath makeRemotePath(FilePath workSpace, String path) {
+        if (path == null) {
+            return workSpace;
+        }
+        FilePath file = workSpace.child(path);
+        return file;
     }
 
 

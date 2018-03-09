@@ -1,7 +1,6 @@
 package hudson.plugins.cmake;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -215,7 +214,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
              * Create it.
              */
             final String buildDir = getWorkingDir();
-            FilePath theBuildDir = makeRemotePath(workSpace,
+            FilePath theBuildDir = LaunchUtils.makeRemotePath(workSpace,
                     Util.replaceMacro(buildDir, envs));
             if (buildDir != null) {
                 if (this.cleanBuild && !buildDir.equals(sourceDir)) {
@@ -228,7 +227,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             }
 
             /* Invoke cmake in build dir */
-            FilePath theSourceDir = makeRemotePath(workSpace,
+            FilePath theSourceDir = LaunchUtils.makeRemotePath(workSpace,
                     Util.replaceMacro(sourceDir, envs));
             ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
                     Util.replaceMacro(getGenerator(), envs),
