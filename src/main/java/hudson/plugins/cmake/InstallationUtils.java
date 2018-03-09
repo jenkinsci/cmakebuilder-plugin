@@ -9,7 +9,7 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 
 /**
- * Utility function for instaaltions of the cmake suite.
+ * Utility functions for installations of the cmake suite.
  *
  * @author Martin Weber
  */
