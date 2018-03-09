@@ -26,7 +26,7 @@ import hudson.util.ListBoxModel;
 /**
  * Provides a build step that allows to invoke selected tools of the cmake-suite
  * ({@code cmake}, {@code cpack} and {@code ctest}) with arbitrary arguments.
- * 
+ *
  * @author Martin Weber
  */
 public class CToolBuilder extends AbstractCmakeBuilder {
@@ -154,7 +154,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             }
 
             /* Invoke tool in working dir */
-            ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
+            ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(bindir + getToolId(),
                     Util.replaceMacro(getArguments(), envs));
             final int exitCode;
             if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
@@ -193,28 +193,6 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     }
 
     /**
-     * Constructs the command line to invoke the tool.
-     *
-     * @param toolBin
-     *            the name of the build tool binary, either as an absolute or
-     *            relative file system path.
-     * @param toolArgs
-     *            additional arguments, separated by spaces to pass to cmake or
-     *            {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildToolCall(final String toolBin,
-            String toolArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(toolBin);
-        if (toolArgs != null) {
-            args.addTokenized(toolArgs);
-        }
-        return args;
-    }
-
-    /**
      * Overridden for better type safety.
      */
     @Override
@@ -226,7 +204,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     // inner classes
     // //////////////////////////////////////////////////////////////////
     /**
-     * Descriptor for {@link CmakeBuilder}. Used as a singleton. The class is
+     * Descriptor for {@link CToolBuilder}. Used as a singleton. The class is
      * marked as public so that it can be accessed from views.
      */
     @Extension
@@ -276,7 +254,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
     /**
      * Represents one of the tools of the CMake-suite.
-     * 
+     *
      * @author Martin Weber
      */
     private static class Tool implements ModelObject {
