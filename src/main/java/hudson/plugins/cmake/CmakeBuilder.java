@@ -98,7 +98,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
 
     /**
      * Sets the name of the build-script generator.
-     * 
+     *
      * @param generator
      *            the name of cmake´s build-script generator or {@code null} or
      *            empty if the default generator should be used
@@ -229,7 +229,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             /* Invoke cmake in build dir */
             FilePath theSourceDir = LaunchUtils.makeRemotePath(workSpace,
                     Util.replaceMacro(sourceDir, envs));
-            ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
+            ArgumentListBuilder cmakeCall = LaunchUtils.buildCMakeCall(cmakeBin,
                     Util.replaceMacro(getGenerator(), envs),
                     Util.replaceMacro(this.preloadScript, envs), theSourceDir,
                     Util.replaceMacro(this.buildType, envs),
@@ -271,11 +271,11 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                         final String buildToolMacro = Util.replaceMacro("${"
                                 + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
                                 envs);
-                        toolCall = buildBuildToolCall(buildToolMacro,
+                        toolCall = LaunchUtils.buildBuildToolCall(buildToolMacro,
                                 step.getCommandArguments(envs));
                     } else {
                         // invoke through 'cmake --build <dir>'
-                        toolCall = buildBuildToolCallWithCmake(cmakeBin,
+                        toolCall = LaunchUtils.buildBuildToolCallWithCmake(cmakeBin,
                                 theBuildDir, step.getCommandArguments(envs));
                     }
                     final EnvVars stepEnv = new EnvVars(envs)
@@ -292,98 +292,6 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Constructs the command line to invoke cmake.
-     *
-     * @param cmakeBin
-     *            the name of the cmake binary, either as an absolute or
-     *            relative file system path.
-     * @param generator
-     *            the name of the build-script generator or {@code null}
-     * @param preloadScript
-     *            name of the pre-load a script to populate the cache or
-     *            {@code null}
-     * @param theSourceDir
-     *            source directory, must not be {@code null}
-     * @param buildType
-     *            build type argument for cmake or {@code null} to pass none
-     * @param cmakeArgs
-     *            additional arguments, separated by spaces to pass to cmake or
-     *            {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildCMakeCall(final String cmakeBin,
-            final String generator, final String preloadScript,
-            final FilePath theSourceDir, final String buildType,
-            final String cmakeArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(cmakeBin);
-        if (generator != null) {
-            args.add("-G").add(generator);
-        }
-        if (preloadScript != null) {
-            args.add("-C").add(preloadScript);
-        }
-        if (buildType != null) {
-            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType);
-        }
-        if (cmakeArgs != null) {
-            args.addTokenized(cmakeArgs);
-        }
-        args.add(theSourceDir.getRemote());
-        return args;
-    }
-
-    /**
-     * Constructs the command line to invoke the actual build tool.
-     *
-     * @param toolBin
-     *            the name of the build tool binary, either as an absolute or
-     *            relative file system path.
-     * @param toolArgs
-     *            addional arguments, separated by spaces to pass to cmake or
-     *            {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildBuildToolCall(final String toolBin,
-            String... toolArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(toolBin);
-        if (toolArgs != null) {
-            args.add(toolArgs);
-        }
-        return args;
-    }
-
-    /**
-     * Constructs the command line to have the actual build tool invoked with
-     * cmake.
-     *
-     * @param cmakeBin
-     *            the name of the cmake tool binary, either as an absolute or
-     *            relative file system path.
-     * @param theBuildDir
-     *            the build directory path
-     * @param toolArgs
-     *            addional build tool arguments, separated by spaces to pass to
-     *            cmake or {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildBuildToolCallWithCmake(
-            final String cmakeBin, FilePath theBuildDir, String... toolArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(cmakeBin);
-        args.add("--build");
-        args.add(theBuildDir.getRemote());
-        if (toolArgs != null) {
-            args.add(toolArgs);
-        }
-        return args;
     }
 
     /**
