@@ -123,25 +123,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
         // Get the CMake version for this node, installing it if necessary
         installToUse = (CmakeTool) installToUse.translate(build, listener);
-
-        final String cmakeBin = installToUse.getCmakeExe();
-        // strip off the last path segment (usually 'cmake')
-        String bindir;
-        {
-            int idx;
-            if (launcher.isUnix()) {
-                idx = cmakeBin.lastIndexOf('/');
-            } else {
-                if ((idx = cmakeBin.lastIndexOf('\\')) != -1
-                        || (idx = cmakeBin.lastIndexOf('/')) != -1)
-                    ;
-            }
-            if (idx >= 0) {
-                bindir = cmakeBin.substring(0, idx + 1);
-            } else {
-                bindir = "";
-            }
-        }
+        final String bindir = installToUse.getBindir();
 
         try {
             /* Determine remote working directory path. Create it. */

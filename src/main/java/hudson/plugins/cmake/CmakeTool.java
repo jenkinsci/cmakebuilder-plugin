@@ -1,29 +1,29 @@
 package hudson.plugins.cmake;
 
 import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.Util;
-import hudson.init.Initializer;
-import hudson.model.EnvironmentSpecific;
-import hudson.model.TaskListener;
-import hudson.model.Node;
-import hudson.slaves.NodeSpecific;
-import hudson.tools.ToolInstaller;
-import hudson.tools.ToolProperty;
-import hudson.tools.InstallSourceProperty;
-import hudson.tools.ToolDescriptor;
-import hudson.tools.ToolInstallation;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.Util;
+import hudson.init.Initializer;
+import hudson.model.EnvironmentSpecific;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.slaves.NodeSpecific;
+import hudson.tools.InstallSourceProperty;
+import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolInstaller;
+import hudson.tools.ToolProperty;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * Information about Cmake installation. A CmakeTool is used to select between
@@ -45,6 +45,14 @@ public class CmakeTool extends ToolInstallation implements
     private static final long serialVersionUID = 1;
 
     /**
+     * the parent directory of the [@code cmake} tool from the installation or
+     * {@code null} if this object has not been retrieved through
+     * {@link #forNode(Node, TaskListener)}. This is used to determine the file
+     * system path of any of the tools of the cmake suite (cmake/cpack/ctest) on the node.
+     */
+    private transient String bindir;
+
+    /**
      * Constructor for CmakeTool.
      *
      * @param name
@@ -62,12 +70,39 @@ public class CmakeTool extends ToolInstallation implements
     }
 
     /**
+     * @see #CmakeTool(String, String, List)
+     *
+     * @param bindir
+     *            the parent directory of the [@code cmake} tool from the
+     *            installation. This is used to determine the file system path
+     *            of any of the tools of the cmake suite (cmake/cpack/ctest).
+     */
+    private CmakeTool(String name, String home,
+            List<ToolProperty<?>> properties, String bindir) {
+        this(name, home, properties);
+        this.bindir = bindir;
+    }
+
+    /**
      * @return {@link java.lang.String} that will be used to execute cmake (e.g.
      *         "cmake" or "/usr/bin/cmake")
      */
     public String getCmakeExe() {
         // return what was entered on the global config page
         return getHome();
+    }
+
+    /**
+     * Gets the parent directory of the [@code cmake} tool from the installation
+     * or {@code null}. This may be used to determine the file system path of
+     * any of the tools of the cmake suite (cmake/cpack/ctest).
+     *
+     * @return the directory including a trailing, node specific directory
+     *         separator character or {@code null} if this object has not been
+     *         retrieved through {@link #forNode(Node, TaskListener)}
+     */
+    public String getBindir() {
+        return bindir;
     }
 
     /**
@@ -78,27 +113,29 @@ public class CmakeTool extends ToolInstallation implements
     public void buildEnvVars(EnvVars env) {
         if (getProperties().get(InstallSourceProperty.class) != null) {
             // cmake was downloaded and installed
-            String home = getHome(); // the home on the slave!!!
-            if (home != null) {
-                // home= dirname(home) as a cross-platform version...
-                int idx;
-                if ((idx = home.lastIndexOf('/')) != -1
-                        || (idx = home.lastIndexOf('\\')) != -1 && idx > 1) {
-                    env.put("PATH+CMAKE", home.substring(0, idx));
-                }
+            if (bindir != null && !bindir.isEmpty()) {
+                env.put("PATH+CMAKE", bindir);
             }
         }
     }
 
     public CmakeTool forNode(Node node, TaskListener log) throws IOException,
             InterruptedException {
-        return new CmakeTool(getName(), translateFor(node, log),
-                getProperties().toList());
+        String home = translateFor(node, log); // the home on the slave!!!
+        String bindir = "";
+        // think of this as a cross-platform version of 'dirname(home)'...
+        int idx;
+        if ((idx = home.lastIndexOf('/')) != -1
+                || (idx = home.lastIndexOf('\\')) != -1) {
+            bindir = home.substring(0, idx + 1);
+        }
+
+        return new CmakeTool(getName(), home, getProperties().toList(), bindir);
     }
 
     public CmakeTool forEnvironment(EnvVars environment) {
         return new CmakeTool(getName(), environment.expand(getHome()),
-                getProperties().toList());
+                getProperties().toList(), bindir);
     }
 
     /**
