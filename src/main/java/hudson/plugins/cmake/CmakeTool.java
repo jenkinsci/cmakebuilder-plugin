@@ -9,6 +9,7 @@ import java.util.List;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
@@ -67,6 +68,7 @@ public class CmakeTool extends ToolInstallation implements
             List<? extends ToolProperty<?>> properties) {
         super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim(home),
                 properties);
+        bindir= null;
     }
 
     /**
@@ -144,6 +146,7 @@ public class CmakeTool extends ToolInstallation implements
      *
      */
     @Initializer(after = EXTENSIONS_AUGMENTED)
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "Older Jenkins may return null here")
     public static void onLoaded() {
 
         Jenkins jenkinsInstance = Jenkins.getInstance();
