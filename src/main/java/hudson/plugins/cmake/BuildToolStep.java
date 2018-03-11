@@ -15,6 +15,7 @@ import hudson.model.Descriptor;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +29,9 @@ import org.kohsuke.stapler.DataBoundSetter;
  *
  * @author Martin Weber
  */
-public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> {
+public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String args;
     private String vars;
@@ -67,7 +70,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> {
         if (vars == null)
             return Collections.emptyMap();
 
-        Map<String, String> env = new HashMap<String, String>(2, 1.0f);
+        Map<String, String> env = new HashMap<>(2, 1.0f);
         String varsEx = Util.replaceMacro(vars, buildEnvironment);
         LineNumberReader reader = new LineNumberReader(new StringReader(varsEx));
         try {
