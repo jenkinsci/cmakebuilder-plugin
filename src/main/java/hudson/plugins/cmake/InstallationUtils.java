@@ -27,9 +27,10 @@ class InstallationUtils {
         if (jenkins != null) {
             CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
                     .getDescriptor(CmakeTool.class);
-            for (CmakeTool inst : descriptor.getInstallations()) {
-                items.add(inst.getName());
-            }
+            if (descriptor != null)
+                for (CmakeTool inst : descriptor.getInstallations()) {
+                    items.add(inst.getName());
+                }
         }
         return items;
     }
@@ -47,11 +48,12 @@ class InstallationUtils {
         if (jenkins != null) {
             final CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
                     .getDescriptor(CmakeTool.class);
-            for (CmakeTool i : descriptor.getInstallations()) {
-                if (installationName != null
-                        && i.getName().equals(installationName))
-                    return i;
-            }
+            if (descriptor != null)
+                for (CmakeTool i : descriptor.getInstallations()) {
+                    if (installationName != null
+                            && i.getName().equals(installationName))
+                        return i;
+                }
         }
         return null;
     }
