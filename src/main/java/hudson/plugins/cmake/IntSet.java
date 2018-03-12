@@ -1,5 +1,6 @@
 package hudson.plugins.cmake;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -11,24 +12,23 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections.iterators.IteratorChain;
 
 /**
- * A set of of exit codes (int values) that should be ignored on failure.
+ * A set of int values that can be expressed as a String.
  *
  * @author Martin Weber
  */
 public class IntSet {
-    /** restrictions on allowed numbers or {@code null} if unrestricted */
+    /** values in this Set or {@code null} if empty */
     private Set<IntRange> ranges;
 
     /**
-     * Constructs a new object that does not impose any restrictions on the
-     * numbers.
+     * Constructs a new object that does not contain any number.
      */
     public IntSet() {
     }
 
     /**
-     * Parses the given range specification string and sets the restrictions on
-     * the numbers accordingly.
+     * Constructs a new object that contains the values from the given range
+     * specification string.
      *
      * @param rangeSpecification
      *            the range, expressed as a String. Allowed numbers can be
@@ -37,8 +37,30 @@ public class IntSet {
      *            <li>a comma separated list, e.g. {@code 20,21,50},</li>
      *            <li>a range, e.g. {@code 50-70},</li>
      *            <li>a combination of the above,</li>
-     *            <li>{@code null} for any arbitrary number,</li>
-     *            <li>the empty string for any arbitrary number.</li>
+     *            <li>{@code null} for an empty range</li>
+     *            <li>the empty string for empty range.</li>
+     *            </ul>
+     * @throws IllegalArgumentException
+     *             if the given range specification string is invalid
+     * @see #toSpecificationString()
+     */
+    public IntSet(String rangeSpecification) {
+        setValues(rangeSpecification);
+    }
+
+    /**
+     * Parses the given range specification string and sets the values in the
+     * set accordingly.
+     *
+     * @param rangeSpecification
+     *            the range, expressed as a String. Allowed numbers can be
+     *            specified as
+     *            <ul>
+     *            <li>a comma separated list, e.g. {@code 20,21,50},</li>
+     *            <li>a range, e.g. {@code 50-70},</li>
+     *            <li>a combination of the above,</li>
+     *            <li>{@code null} for an empty range</li>
+     *            <li>the empty string for empty range.</li>
      *            </ul>
      * @throws IllegalArgumentException
      *             if the given range specification string is invalid
@@ -50,7 +72,7 @@ public class IntSet {
         if (rangeSpecification == null
                 || (rangeSpecification = rangeSpecification.trim())
                         .length() == 0) {
-            // unrestricted..
+            // empty..
             ranges = null;
         } else {
             final Matcher matcher = Pattern
@@ -88,25 +110,39 @@ public class IntSet {
             }
 
             if (ranges0.isEmpty()) {
-                // unrestricted..
+                // empty..
                 ranges = null;
             } else {
-                // we have restrictions
                 ranges = ranges0;
             }
         }
     }
 
     /**
-     * Gets whether this IntSet has restrictions on the allowed numbers.
+     * Gets whether this IntSet is empty.
      *
      * @see #setValues(String)
      * @see #iterator()
-     * @return {@code true} if restrictions have been set, otherwise
+     * @return {@code true} if this IntSet is empty, otherwise
      *         {@code false}
      */
     public boolean isEmpty() {
-        return ranges != null;
+        return ranges == null;
+    }
+
+    /**
+     * Gets whether the specified value is contained in this set of values.
+     */
+    public boolean contains(int value) {
+        if (ranges == null) {
+            return false;
+        }
+        for (Iterator<Integer> iter = iterator(); iter.hasNext();) {
+            if (value == iter.next()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -114,13 +150,12 @@ public class IntSet {
      * parsed by {@link #setValues(String)}.
      *
      * @return a range specification string, never {@code null}. The empty
-     *         string is returned when no restrictions on the numbers
-     *         apply.
+     *         string is returned when this set is empty.
      * @see #setValues(String)
      */
     public String toSpecificationString() {
         if (ranges == null) {
-            return ""; // no restrictions
+            return ""; // no values
         }
         final StringBuilder sb = new StringBuilder();
         for (Iterator<IntRange> iter = ranges.iterator(); iter.hasNext();) {
@@ -142,16 +177,16 @@ public class IntSet {
     }
 
     /**
-     * Gets an iterator over all allowed numbers, if restrictions apply.
+     * Gets an iterator over all values.
      *
      * @see #setValues(String)
      * @see #isEmpty()
-     * @return the iterator or {@code null} no restrictions apply
+     * @return the iterator
      */
     @SuppressWarnings("unchecked")
     public Iterator<Integer> iterator() {
         if (ranges == null) {
-            return null; // no restrictions
+            return Collections.emptyIterator(); // no values
         }
 
         IteratorChain chain = new IteratorChain();

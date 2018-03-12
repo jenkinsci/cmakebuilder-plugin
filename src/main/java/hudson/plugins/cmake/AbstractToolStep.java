@@ -78,6 +78,7 @@ public class AbstractToolStep extends AbstractStep {
     @DataBoundSetter
     public void setIgnoredExitCodes(String ignoredExitCodes) {
         this.ignoredExitCodes = Util.fixEmptyAndTrim(ignoredExitCodes);
+        ignoredExitCodesParsed = null;
     }
 
     /*
@@ -150,26 +151,18 @@ public class AbstractToolStep extends AbstractStep {
                 return Integer.valueOf(exitCode);
             }
             // should this failure be ignored?
-            if (step.getIgnoredExitCodes() != null) {
-                if (step.ignoredExitCodesParsed == null) {
-                    // parse and cache
-                    final IntSet ints = new IntSet();
-                    ints.setValues(step.ignoredExitCodes);
-                    step.ignoredExitCodesParsed = ints;
-                }
-                for (Iterator<Integer> iter = step.ignoredExitCodesParsed
-                        .iterator(); iter.hasNext();) {
-                    if (exitCode == iter.next()) {
-                        // ignore this failure exit code
-                        listener.getLogger().printf(
-                                "%1s exited with failure code %2$s, ignored.%n",
-                                step.getCommandBasename(), exitCode);
-                        return Integer.valueOf(exitCode); // no failure
-                    }
-                }
-                // invocation failed, not ignored
+            if (step.ignoredExitCodesParsed == null) {
+                step.ignoredExitCodesParsed = new IntSet(step.ignoredExitCodes);
             }
-            // invocation failed
+            if (step.ignoredExitCodesParsed.contains(exitCode)) {
+                // ignore this failure exit code
+                // ignore this failure exit code
+                listener.getLogger().printf(
+                        "%1s exited with failure code %2$s, ignored.%n",
+                        step.getCommandBasename(), exitCode);
+                return Integer.valueOf(exitCode); // no failure
+            }
+            // invocation failed, not ignored
             throw new AbortException(
                     String.format("%1s exited with failure code %2$s%n",
                             step.getCommandBasename(), exitCode));

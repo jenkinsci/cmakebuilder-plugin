@@ -79,7 +79,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     @DataBoundSetter
     public void setIgnoredExitCodes(String ignoredExitCodes) {
         this.ignoredExitCodes = Util.fixEmptyAndTrim(ignoredExitCodes);
-
+        ignoredExitCodesParsed= null;
     }
 
     @DataBoundSetter
@@ -136,34 +136,27 @@ public class CToolBuilder extends AbstractCmakeBuilder {
             }
 
             /* Invoke tool in working dir */
-            ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(bindir + getToolId(),
+            ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(
+                    bindir + getToolId(),
                     Util.replaceMacro(getArguments(), envs));
             final int exitCode;
             if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
                     .stdout(listener).cmds(cmakeCall).join())) {
                 // should this failure be ignored?
-                if (ignoredExitCodes != null) {
-                    if (ignoredExitCodesParsed == null) {
-                        // parse and cache
-                        final IntSet ints = new IntSet();
-                        ints.setValues(ignoredExitCodes);
-                        ignoredExitCodesParsed = ints;
-                    }
-                    for (Iterator<Integer> iter = ignoredExitCodesParsed
-                            .iterator(); iter.hasNext();) {
-                        if (exitCode == iter.next()) {
-                            // ignore this failure exit code
-                            listener.getLogger().printf(
-                                    "%1s exited with failure code %2$s, ignored.%n",
-                                    getToolId(), exitCode);
-                            return true; // no failure
-                        }
-                    }
-                    // invocation failed, not ignored
-                    listener.getLogger().printf(
-                            "%1s exited with failure code %2$s%n", getToolId(),
-                            exitCode);
+                if (ignoredExitCodesParsed == null) {
+                    ignoredExitCodesParsed = new IntSet(ignoredExitCodes);
                 }
+                if (ignoredExitCodesParsed.contains(exitCode)) {
+                    // ignore this failure exit code
+                    listener.getLogger().printf(
+                            "%1s exited with failure code %2$s, ignored.%n",
+                            getToolId(), exitCode);
+                    return true; // no failure
+                }
+                // invocation failed, not ignored
+                listener.getLogger().printf(
+                        "%1s exited with failure code %2$s%n", getToolId(),
+                        exitCode);
                 return false; // invocation failed
             }
         } catch (IOException e) {
