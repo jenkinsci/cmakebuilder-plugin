@@ -3,7 +3,6 @@ package hudson.plugins.cmake;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -57,7 +56,7 @@ public class IntSetTest {
   public final void testToSpecificationStringOrder() {
     final String rangeIn = "30,10,20";
     testee.setValues(rangeIn);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", "10,20,30",
         testee.toSpecificationString());
     // we expect port 10, 20, 30 in exactly that order
@@ -80,7 +79,7 @@ public class IntSetTest {
   public final void testToSpecificationStringListDuplicates() {
     final String rangeIn = "30,10,20,10,20,30";
     testee.setValues(rangeIn);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", "10,20,30",
         testee.toSpecificationString());
     // we expect port 10, 20, 30 in exactly that order
@@ -103,7 +102,7 @@ public class IntSetTest {
   public final void testRestrictToList() {
     final String rangeIn = "10,20,30";
     testee.setValues(rangeIn);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", rangeIn,
         testee.toSpecificationString());
     // we expect port 10, 20, 30 in exactly that order
@@ -126,7 +125,7 @@ public class IntSetTest {
   public final void testRestrictToRange() {
     final String rangeIn = "30-35";
     testee.setValues(rangeIn);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", rangeIn,
         testee.toSpecificationString());
     // we expect port 10, 20, 30 in exactly that order
@@ -155,7 +154,7 @@ public class IntSetTest {
   public final void testRestrictToRangeDuplicates() {
     final String rangeIn = "30-35,30-35,30-35";
     testee.setValues(rangeIn);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", "30-35",
         testee.toSpecificationString());
     // we expect port 10, 20, 30 in exactly that order
@@ -186,7 +185,7 @@ public class IntSetTest {
     testee.setValues(rangeIn);
     Iterator<Integer> iter = testee.iterator();
     assertNotNull("iterator()", iter);
-    assertTrue("isRestricted()", testee.isEmpty());
+    assertFalse("isEmpty()", testee.isEmpty());
     assertEquals("toSpecificationString()", rangeIn,
         testee.toSpecificationString());
   }
@@ -202,8 +201,7 @@ public class IntSetTest {
       // invalid port range "1-"
       fail("IllegalArgumentException expected");
     } catch (IllegalArgumentException expected) {
-      assertNull("iterator()", testee.iterator());
-      assertFalse("isRestricted()", testee.isEmpty());
+      assertTrue("isEmpty()", testee.isEmpty());
       assertEquals("toSpecificationString()", "", testee.toSpecificationString());
     }
     try {
@@ -211,8 +209,7 @@ public class IntSetTest {
       // invalid port range "1-"
       fail("IllegalArgumentException expected");
     } catch (IllegalArgumentException expected) {
-      assertNull("iterator()", testee.iterator());
-      assertFalse("isRestricted()", testee.isEmpty());
+      assertTrue("isEmpty()", testee.isEmpty());
       assertEquals("toSpecificationString()", "", testee.toSpecificationString());
     }
     try {
@@ -220,8 +217,7 @@ public class IntSetTest {
       // invalid port number "0"
       fail("IllegalArgumentException expected");
     } catch (IllegalArgumentException expected) {
-      assertNull("iterator()", testee.iterator());
-      assertFalse("isRestricted()", testee.isEmpty());
+      assertTrue("isEmpty()", testee.isEmpty());
       assertEquals("toSpecificationString()", "", testee.toSpecificationString());
     }
     try {
@@ -229,10 +225,31 @@ public class IntSetTest {
       // invalid port number "0"
       fail("IllegalArgumentException expected");
     } catch (IllegalArgumentException expected) {
-      assertNull("iterator()", testee.iterator());
-      assertFalse("isRestricted()", testee.isEmpty());
+      assertTrue("isEmpty()", testee.isEmpty());
       assertEquals("toSpecificationString()", "", testee.toSpecificationString());
     }
+  }
+
+  /**
+   * Test method for
+   * {@link hudson.plugins.cmake.IntSet#contains(int)}.
+   */
+  @Test
+  public final void testContains() {
+      final String rangeIn = "30,10,20";
+      testee.setValues(rangeIn);
+      assertFalse(testee.isEmpty());
+      assertTrue(testee.contains(30));
+      assertTrue(testee.contains(10));
+      assertTrue(testee.contains(20));
+      assertFalse(testee.contains(1));
+
+      testee.setValues("");
+      assertTrue(testee.isEmpty());
+      assertFalse(testee.contains(30));
+      testee.setValues(null);
+      assertTrue(testee.isEmpty());
+      assertFalse(testee.contains(30));
   }
 
 }
