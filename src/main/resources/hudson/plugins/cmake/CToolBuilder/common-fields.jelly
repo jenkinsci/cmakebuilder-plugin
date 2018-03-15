@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <f:entry title="${%CMake installation}" field="installationName">
+    <f:select />
+  </f:entry>
+  <f:entry title="${%Arguments}" field="arguments" help="/plugin/cmakebuilder/html/help/tool/arguments.html">
+    <f:expandableTextbox />
+  </f:entry>
+  <f:entry title="${%Working Directory}" field="workingDir"
+    help="/plugin/cmakebuilder/html/help/tool/workingDir.html">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="${%Ignore exit codes}" field="ignoredExitCodes"
+    help="/plugin/cmakebuilder/html/help/tool/ignoredExitCodes.html">
+    <f:textbox />
+  </f:entry>
+</j:jelly>

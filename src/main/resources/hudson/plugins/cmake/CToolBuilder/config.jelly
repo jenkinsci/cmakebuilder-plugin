@@ -3,16 +3,5 @@
   <f:entry title="${%Tool}" field="toolId">
     <f:select />
   </f:entry>
-  <f:entry title="${%CMake installation}" field="installationName">
-    <f:select />
-  </f:entry>
-  <f:entry title="${%Arguments}" field="arguments">
-    <f:expandableTextbox />
-  </f:entry>
-  <f:entry title="${%Working Directory}" field="workingDir">
-    <f:textbox />
-  </f:entry>
-  <f:entry title="${%Ignore exit codes}" field="ignoredExitCodes">
-    <f:textbox />
-  </f:entry>
+  <st:include page="common-fields.jelly" class="hudson.plugins.cmake.CToolBuilder" />
 </j:jelly>

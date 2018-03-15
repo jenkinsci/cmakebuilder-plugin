@@ -1,0 +1,7 @@
+Help files for input fields for cmake/cpack/ctest 
+(no script generation as with CmakeBuilder or CmakebuilderStep)
+go here.
+Reference them from the config.jelly in a 'f:entry' tag with attribute
+help="/plugin/cmakebuilder/html/help/tool/<whatever.html>".
+              ^^^^^^^^^^^^
+              artifactId as in the pom.xml
