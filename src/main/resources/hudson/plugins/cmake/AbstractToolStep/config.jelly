@@ -1,16 +1,5 @@
 <?jelly escape-by-default='true'?>
+<!-- cmake/cpack/ctest, but for pipeline -->
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
-  <st:include page="/hudson/plugins/cmake/AbstractStep/config.jelly"/>
-  <f:entry title="${%Arguments}" field="arguments"
-    help="/plugin/cmakebuilder-plugin/tool/arguments.html">
-    <f:expandableTextbox />
-  </f:entry>
-  <f:entry title="${%Working Directory}" field="workingDir"
-    help="/descriptor/hudson.plugins.cmake.CToolBuilder/help/workingDir">
-    <f:textbox />
-  </f:entry>
-  <f:entry title="${%Ignore exit codes}" field="ignoredExitCodes"
-    help="/plugin/cmakebuilder-plugin/hudson/plugins/cmake/CToolBuilder/help-ignoredExitCodes.html">
-    <f:textbox />
-  </f:entry>
+  <st:include page="common-fields.jelly" class="hudson.plugins.cmake.CToolBuilder" />
 </j:jelly>

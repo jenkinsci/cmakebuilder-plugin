@@ -3,32 +3,32 @@
   <f:entry title="${%CMake installation}" field="installationName">
     <f:select />
   </f:entry>
-  <f:entry title="Script Generator" field="generator">
+  <f:entry title="Script Generator" field="generator" help="/plugin/cmakebuilder/html/help/builder/generator.html">
     <f:textbox />
   </f:entry>
-  <f:entry title="Source Directory" field="sourceDir">
+  <f:entry title="Source Directory" field="sourceDir"  help="/plugin/cmakebuilder/html/help/builder/sourceDir.html">
     <f:textbox />
   </f:entry>
-  <f:entry title="Build Type" field="buildType">
+  <f:entry title="Build Type" field="buildType" help="/plugin/cmakebuilder/html/help/builder/buildType.html">
     <f:textbox />
   </f:entry>
-  <f:entry title="Build Directory" field="buildDir">
+  <f:entry title="Build Directory" field="buildDir" help="/plugin/cmakebuilder/html/help/builder/buildDir.html">
     <f:textbox />
   </f:entry>
-  <f:entry title="Clean Build" field="cleanBuild">
+  <f:entry title="Clean Build" field="cleanBuild" help="/plugin/cmakebuilder/html/help/builder/cleanBuild.html">
     <f:checkbox />
   </f:entry>
 
   <f:advanced>
-    <f:entry title="Preload Script" field="preloadScript">
+    <f:entry title="Preload Script" field="preloadScript" help="/plugin/cmakebuilder/html/help/builder/preloadScript.html">
       <f:textbox />
     </f:entry>
-    <f:entry title="Other CMake Arguments" field="cmakeArgs">
+    <f:entry title="Other CMake Arguments" field="cmakeArgs" help="/plugin/cmakebuilder/html/help/builder/cmakeArgs.html">
       <f:expandableTextbox />
     </f:entry>
   </f:advanced>
 
-  <f:entry title="${%Build tool}" field="runTool" >
+  <f:entry title="${%Build tool}" field="runTool" help="/plugin/cmakebuilder/html/help/builder/runTool.html">
     <f:repeatable field="steps" header="${%Run build tool}" add="${%Add build tool invocation}">
       <table width="100%">
         <st:include page="config.jelly" class="hudson.plugins.cmake.BuildToolStep" />
