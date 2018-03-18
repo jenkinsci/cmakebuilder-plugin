@@ -1,0 +1,7 @@
+Help files for input fields for cmake
+(script generation with CmakeBuilder or CmakebuilderStep)
+go here.
+Reference them from the config.jelly 'f:entry' tag with attribute
+help="/plugin/cmakebuilder/html/help/builder/<whatever.html>".
+              ^^^^^^^^^^^^
+              artifactId as in the pom.xml

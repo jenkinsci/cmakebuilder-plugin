@@ -54,13 +54,13 @@ public class CmakeBuilderStep extends AbstractStep {
     /**
      * Minimal constructor.
      *
-     * @param installationName
+     * @param installation
      *            the name of the cmake tool installation from the global config
      *            page.
      */
     @DataBoundConstructor
-    public CmakeBuilderStep(String installationName) {
-        super(installationName);
+    public CmakeBuilderStep(String installation) {
+        super(installation);
     }
 
     /**
@@ -404,21 +404,6 @@ public class CmakeBuilderStep extends AbstractStep {
         @Override
         public String getDisplayName() {
             return "Generate build-scripts with cmake and run the build tool";
-        }
-
-        /**
-         * Performs on-the-fly validation of the form field 'sourceDir'.
-         *
-         * @param value
-         */
-        public FormValidation doCheckSourceDir(
-                @AncestorInPath AbstractProject<?, ?> project,
-                @QueryParameter final String value)
-                throws IOException, ServletException {
-            FilePath ws = project.getSomeWorkspace();
-            if (ws == null)
-                return FormValidation.ok();
-            return ws.validateRelativePath(value, false, false);
         }
 
     } // DescriptorImpl

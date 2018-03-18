@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
-<!-- cmake/cpack/ctest, but for pipeline -->
+<!-- cmake build-script generation and build, but for pipeline -->
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
   <st:include page="config.jelly" class="hudson.plugins.cmake.AbstractStep" />
-  <st:include page="common-fields.jelly" class="hudson.plugins.cmake.CToolBuilder" />
+  <st:include page="/hudson/plugins/cmake/CmakeBuilder/common-fields.jelly" from="${descriptor}" />
 </j:jelly>
