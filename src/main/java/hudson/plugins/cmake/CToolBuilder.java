@@ -146,40 +146,45 @@ public class CToolBuilder extends AbstractCmakeBuilder implements SimpleBuildSte
             }
         }
 
-        /* Determine remote working directory path. Create it. */
-        final String workDir = getWorkingDir();
-        final FilePath theWorkDir = makeRemotePath(workspace,
-            Util.replaceMacro(workDir, envVars));
-        if (workDir != null) {
-            theWorkDir.mkdirs();
-        }
-
-        /* Invoke tool in working dir */
-        ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
-            Util.replaceMacro(getArguments(), envVars));
-        final int exitCode;
-        if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envVars)
-            .stdout(listener).cmds(cmakeCall).join())) {
-            // should this failure be ignored?
-            if (ignoredExitCodes != null) {
-                if (ignoredExitCodesParsed == null) {
-                    // parse and cache
-                    final IntSet ints = new IntSet();
-                    ints.setValues(ignoredExitCodes);
-                    ignoredExitCodesParsed = ints;
-                }
-                for (Iterator<Integer> iter = ignoredExitCodesParsed
-                    .iterator(); iter.hasNext();) {
-                    if (exitCode == iter.next()) {
-                        // ignore this failure exit code
-                        listener.getLogger().printf(
-                            "%1s exited with failure code %2$s, ignored.%n",
-                            getToolId(), exitCode);
-                    }
-                }
-                // invocation failed, not ignored
-                throw new AbortException(getToolId() + " exited with failure code " + exitCode);
+        try {
+            /* Determine remote working directory path. Create it. */
+            final String workDir = getWorkingDir();
+            final FilePath theWorkDir = makeRemotePath(workspace,
+                Util.replaceMacro(workDir, envVars));
+            if (workDir != null) {
+                theWorkDir.mkdirs();
             }
+
+            /* Invoke tool in working dir */
+            ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
+                Util.replaceMacro(getArguments(), envVars));
+            final int exitCode;
+            if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envVars)
+                .stdout(listener).cmds(cmakeCall).join())) {
+                // should this failure be ignored?
+                if (ignoredExitCodes != null) {
+                    if (ignoredExitCodesParsed == null) {
+                        // parse and cache
+                        final IntSet ints = new IntSet();
+                        ints.setValues(ignoredExitCodes);
+                        ignoredExitCodesParsed = ints;
+                    }
+                    for (Iterator<Integer> iter = ignoredExitCodesParsed
+                        .iterator(); iter.hasNext(); ) {
+                        if (exitCode == iter.next()) {
+                            // ignore this failure exit code
+                            listener.getLogger().printf(
+                                "%1s exited with failure code %2$s, ignored.%n",
+                                getToolId(), exitCode);
+                        }
+                    }
+                    // invocation failed, not ignored
+                    throw new AbortException(getToolId() + " exited with failure code " + exitCode);
+                }
+            }
+        } catch (IOException e) {
+            Util.displayIOException(e, listener);
+            listener.error(e.getLocalizedMessage());
         }
     }
 
