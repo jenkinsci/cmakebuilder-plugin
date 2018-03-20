@@ -2,3 +2,4 @@ target/
 work/*
 *.swp
 /work/
+.idea/
