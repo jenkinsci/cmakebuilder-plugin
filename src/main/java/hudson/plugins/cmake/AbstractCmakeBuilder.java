@@ -3,6 +3,8 @@ package hudson.plugins.cmake;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ListBoxModel;
@@ -89,6 +91,13 @@ public abstract class AbstractCmakeBuilder extends Builder {
         }
         FilePath file = workSpace.child(path);
         return file;
+    }
+
+    static Node workspaceToNode(FilePath workspace) {
+        Computer computer = workspace.toComputer();
+        Node node = null;
+        if (computer != null) node = computer.getNode();
+        return node != null ? node : Jenkins.getInstance();
     }
 
     // //////////////////////////////////////////////////////////////////

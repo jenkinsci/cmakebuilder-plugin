@@ -29,16 +29,13 @@
   </f:advanced>
 
   <f:entry title="${%Build tool}" field="runTool" >
-    <f:repeatable field="steps" header="${%Run build tool}" add="${%Add build tool invocation}">
-      <table width="100%">
-        <st:include page="config.jelly" class="hudson.plugins.cmake.BuildToolStep" />
-        <f:entry>
-          <div align="right">
-            <f:repeatableDeleteButton />
-          </div>
-        </f:entry>
-      </table>
-    </f:repeatable>
+    <f:repeatableProperty field="steps" header="${%Run build tool}" add="${%Add build tool invocation}">
+      <f:entry title="">
+        <div align="right">
+          <f:repeatableDeleteButton />
+        </div>
+      </f:entry>
+    </f:repeatableProperty>
   </f:entry>
   <!--
   -->

@@ -3,13 +3,16 @@ package hudson.plugins.cmake;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -19,9 +22,12 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.ModelObject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * Provides a build step that allows to invoke selected tools of the cmake-suite
@@ -29,7 +35,7 @@ import hudson.util.ListBoxModel;
  * 
  * @author Martin Weber
  */
-public class CToolBuilder extends AbstractCmakeBuilder {
+public class CToolBuilder extends AbstractCmakeBuilder implements SimpleBuildStep {
     /** the ID of the tool in the CMake-suite to invoke {@link Tool}. */
     private String toolId;
 
@@ -108,21 +114,18 @@ public class CToolBuilder extends AbstractCmakeBuilder {
         return super.getArguments();
     }
 
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-            BuildListener listener) throws InterruptedException, IOException {
 
+    @Override
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
-            listener.fatalError("There is no CMake installation selected."
-                    + " Please review the build step configuration.");
-            return false;
+            throw new AbortException("There is no CMake installation selected. Please review the run step configuration.");
         }
-        final EnvVars envs = build.getEnvironment(listener);
-        envs.overrideAll(build.getBuildVariables());
+        final EnvVars envVars = run.getEnvironment(listener);
 
         // Get the CMake version for this node, installing it if necessary
-        installToUse = (CmakeTool) installToUse.translate(build, listener);
+        installToUse = (CmakeTool) installToUse.translate(workspaceToNode(workspace), envVars, listener);
 
         final String cmakeBin = installToUse.getCmakeExe();
         // strip off the last path segment (usually 'cmake')
@@ -133,7 +136,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                 idx = cmakeBin.lastIndexOf('/');
             } else {
                 if ((idx = cmakeBin.lastIndexOf('\\')) != -1
-                        || (idx = cmakeBin.lastIndexOf('/')) != -1)
+                    || (idx = cmakeBin.lastIndexOf('/')) != -1)
                     ;
             }
             if (idx >= 0) {
@@ -145,20 +148,19 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
         try {
             /* Determine remote working directory path. Create it. */
-            final FilePath workSpace = build.getWorkspace();
             final String workDir = getWorkingDir();
-            final FilePath theWorkDir = makeRemotePath(workSpace,
-                    Util.replaceMacro(workDir, envs));
+            final FilePath theWorkDir = makeRemotePath(workspace,
+                Util.replaceMacro(workDir, envVars));
             if (workDir != null) {
                 theWorkDir.mkdirs();
             }
 
             /* Invoke tool in working dir */
             ArgumentListBuilder cmakeCall = buildToolCall(bindir + getToolId(),
-                    Util.replaceMacro(getArguments(), envs));
+                Util.replaceMacro(getArguments(), envVars));
             final int exitCode;
-            if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
-                    .stdout(listener).cmds(cmakeCall).join())) {
+            if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envVars)
+                .stdout(listener).cmds(cmakeCall).join())) {
                 // should this failure be ignored?
                 if (ignoredExitCodes != null) {
                     if (ignoredExitCodesParsed == null) {
@@ -168,28 +170,22 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                         ignoredExitCodesParsed = ints;
                     }
                     for (Iterator<Integer> iter = ignoredExitCodesParsed
-                            .iterator(); iter.hasNext();) {
+                        .iterator(); iter.hasNext(); ) {
                         if (exitCode == iter.next()) {
                             // ignore this failure exit code
                             listener.getLogger().printf(
-                                    "%1s exited with failure code %2$s, ignored.%n",
-                                    getToolId(), exitCode);
-                            return true; // no failure
+                                "%1s exited with failure code %2$s, ignored.%n",
+                                getToolId(), exitCode);
                         }
                     }
                     // invocation failed, not ignored
-                    listener.getLogger().printf(
-                            "%1s exited with failure code %2$s%n", getToolId(),
-                            exitCode);
+                    throw new AbortException(getToolId() + " exited with failure code " + exitCode);
                 }
-                return false; // invocation failed
             }
         } catch (IOException e) {
             Util.displayIOException(e, listener);
             listener.error(e.getLocalizedMessage());
-            return false;
         }
-        return true;
     }
 
     /**
@@ -230,6 +226,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
      * marked as public so that it can be accessed from views.
      */
     @Extension
+    @Symbol("ctool")
     public static final class DescriptorImpl
             extends AbstractCmakeBuilder.DescriptorImpl {
 
