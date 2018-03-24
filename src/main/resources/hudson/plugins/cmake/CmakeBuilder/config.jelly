@@ -3,5 +3,5 @@
   <f:entry title="${%CMake installation}" field="installationName">
     <f:select />
   </f:entry>
-  <st:include page="common-fields.jelly" class="hudson.plugins.cmake.CMakeBuilder" />
+  <st:include page="/hudson/plugins/cmake/CmakeBuilder/common-fields.jelly" from="${descriptor}" />
 </j:jelly>

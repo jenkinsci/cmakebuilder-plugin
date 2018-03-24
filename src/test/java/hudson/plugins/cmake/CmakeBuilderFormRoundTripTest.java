@@ -2,7 +2,6 @@ package hudson.plugins.cmake;
 
 import hudson.model.FreeStyleProject;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -13,7 +12,6 @@ public class CmakeBuilderFormRoundTripTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @Ignore("Errors with workflow-step-api 2.10 and jenkins-core 1.642.3 (descriptor cannot be found)")
     public void checkValidation() throws Exception {
 
         FreeStyleProject p = j.createFreeStyleProject();
