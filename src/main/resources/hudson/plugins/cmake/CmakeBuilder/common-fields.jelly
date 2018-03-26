@@ -10,7 +10,7 @@
     <f:textbox />
   </f:entry>
   <f:entry title="Build Directory" field="buildDir" help="/plugin/cmakebuilder/html/help/builder/buildDir.html">
-    <f:textbox />
+    <f:textbox default="build"/>
   </f:entry>
   <f:entry title="Clean Build" field="cleanBuild" help="/plugin/cmakebuilder/html/help/builder/cleanBuild.html">
     <f:checkbox />

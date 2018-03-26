@@ -4,7 +4,7 @@
     <f:checkbox />
   </f:entry>
   <f:entry title="${%Arguments}" field="args">
-    <f:textbox />
+    <f:textbox default="all"/>
   </f:entry>
   <f:entry title="${%Env. Variables}" field="envVars">
     <f:expandableTextbox />
