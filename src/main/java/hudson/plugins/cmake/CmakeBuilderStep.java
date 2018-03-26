@@ -5,18 +5,14 @@
  */
 package hudson.plugins.cmake;
 
-import java.io.IOException;
 import java.util.List;
-
-import javax.servlet.ServletException;
+import java.util.Map;
 
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -24,11 +20,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractProject;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.FormValidation;
 
 /**
  * Generates the build scripts with <tt>cmake</tt> and runs the appropriate
@@ -363,7 +357,6 @@ public class CmakeBuilderStep extends AbstractStep {
                     ArgumentListBuilder toolCall;
                     if (!toolStep.getWithCmake()) {
                         // invoke directly
-
                         toolCall = buildBuildToolCall(buildTool,
                                 toolStep.getCommandArguments(envs));
                     } else {
@@ -372,8 +365,11 @@ public class CmakeBuilderStep extends AbstractStep {
                                 theBuildDir,
                                 toolStep.getCommandArguments(envs));
                     }
+                    final Map<String, String> stepEnv = toolStep
+                            .getEnvironmentVars(envs, listener);
                     if (0 != (exitCode = launcher.launch().pwd(theBuildDir)
-                            .stdout(listener).cmds(toolCall).join())) {
+                            .envs(stepEnv).stdout(listener).cmds(toolCall)
+                            .join())) {
                         throw new AbortException(String.format(
                                 "%1s exited with failure code %2$s%n",
                                 buildTool, exitCode));
