@@ -2,6 +2,8 @@ package hudson.plugins.cmake;
 
 import hudson.model.FreeStyleProject;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -26,8 +28,8 @@ public class CmakeBuilderFormRoundTripTest {
         j.assertEqualBeans(
                 before,
                 after,
-                "installationName,generator,sourceDir,buildDir,buildType,cleanBuild,preloadScript,cmakeArgs");
-
+                "installationName,generator,sourceDir,buildType,cleanBuild,preloadScript,cmakeArgs");
+        assertEquals(after.getBuildDir(),"build");
     }
 
 }
