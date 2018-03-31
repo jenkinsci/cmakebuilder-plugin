@@ -1,11 +1,9 @@
 package hudson.plugins.cmake;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -16,7 +14,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.ModelObject;
 import hudson.util.ArgumentListBuilder;
@@ -215,7 +212,6 @@ public class CToolBuilder extends AbstractCmakeBuilder {
          * @param value
          */
         public FormValidation doCheckIgnoredExitCodes(
-                @AncestorInPath AbstractProject<?, ?> project,
                 @QueryParameter final String value)
                 throws IOException, ServletException {
             try {
