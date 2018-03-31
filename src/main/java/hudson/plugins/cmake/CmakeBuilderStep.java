@@ -33,6 +33,7 @@ import hudson.util.ArgumentListBuilder;
  */
 public class CmakeBuilderStep extends AbstractStep {
 
+    private static final long serialVersionUID = 1L;
     /**
      * the name of cmake´s buildscript generator or {@code null} if the default
      * generator should be used
