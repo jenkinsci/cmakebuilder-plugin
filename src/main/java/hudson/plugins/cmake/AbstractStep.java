@@ -9,11 +9,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import org.jenkinsci.plugins.workflow.steps.Step;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
-import org.jenkinsci.plugins.workflow.steps.StepExecution;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -26,20 +22,15 @@ import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
 
 /**
- * A Step that holds information about a cmake installation, the working
- * directory for invocation and the arguments to pass to {@code cmake},<br>
- * NOTE: Actually, this class is NOT abstract, but we want to re-use the
- * {@code @DataBoundSetter} methods defined here.
+ * A Step that holds information about a cmake installation,
  *
  * @author Martin weber
  */
-public class AbstractStep extends Step implements Serializable {
+public abstract class AbstractStep extends Step implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** the name of the cmake tool installation to use for this build step */
     private String installation;
-    private String workingDir;
-    private String toolArgs;
 
     /**
      * Minimal constructor.
@@ -48,7 +39,6 @@ public class AbstractStep extends Step implements Serializable {
      *            the name of the cmake tool installation from the global config
      *            page.
      */
-    @DataBoundConstructor
     public AbstractStep(String installation) {
         this.installation = Util.fixEmptyAndTrim(installation);
     }
@@ -56,34 +46,6 @@ public class AbstractStep extends Step implements Serializable {
     /** Gets the name of the cmake installation to use for this build step */
     public String getInstallation() {
         return this.installation;
-    }
-
-    @DataBoundSetter
-    public void setWorkingDir(String workingDir) {
-        this.workingDir = Util.fixEmptyAndTrim(workingDir);
-    }
-
-    public String getWorkingDir() {
-        return this.workingDir;
-    }
-
-    @DataBoundSetter
-    public void setArguments(String toolArgs) {
-        this.toolArgs = Util.fixEmptyAndTrim(toolArgs);
-    }
-
-    public String getArguments() {
-        return this.toolArgs;
-    }
-
-    /**
-     * This should be overwritten. It is only implemented because of compile
-     * error "@DataBoundConstructor may not be used on an abstract class"
-     */
-    @Override
-    public StepExecution start(StepContext context) throws Exception {
-        throw new UnsupportedOperationException(
-                "Implemnetors MUST overwrite this in their sub-class");
     }
 
     /**

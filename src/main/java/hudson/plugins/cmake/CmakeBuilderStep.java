@@ -38,8 +38,10 @@ public class CmakeBuilderStep extends AbstractStep {
      * generator should be used
      */
     private String generator;
+    private String buildDir;
     private String sourceDir;
     private String buildType;
+    private String cmakeArgs;
     private String preloadScript;
     private boolean cleanBuild;
 
@@ -84,11 +86,11 @@ public class CmakeBuilderStep extends AbstractStep {
 
     @DataBoundSetter
     public void setBuildDir(String buildDir) {
-        super.setWorkingDir(buildDir);
+        this.buildDir= Util.fixEmptyAndTrim(buildDir);
     }
 
     public String getBuildDir() {
-        return super.getWorkingDir();
+        return buildDir;
     }
 
     @DataBoundSetter
@@ -120,15 +122,11 @@ public class CmakeBuilderStep extends AbstractStep {
 
     @DataBoundSetter
     public void setCmakeArgs(String cmakeArgs) {
-        // because of: error: @DataBoundConstructor may not be used on an
-        // abstract class
-        super.setArguments(cmakeArgs);
+        this.cmakeArgs= Util.fixEmptyAndTrim(cmakeArgs);
     }
 
     public String getCmakeArgs() {
-        // because of: error: @DataBoundConstructor may not be used on an
-        // abstract class
-        return super.getArguments();
+        return cmakeArgs;
     }
 
     /**
@@ -299,7 +297,7 @@ public class CmakeBuilderStep extends AbstractStep {
              * Determine remote build directory path. Clean it, if requested.
              * Create it.
              */
-            final String buildDir = step.getWorkingDir();
+            final String buildDir = step.getBuildDir();
             FilePath theBuildDir = LaunchUtils.makeRemotePath(workSpace,
                     buildDir);
             if (buildDir != null) {

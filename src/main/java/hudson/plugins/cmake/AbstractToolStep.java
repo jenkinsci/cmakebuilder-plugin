@@ -6,7 +6,6 @@
 package hudson.plugins.cmake;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 
@@ -53,6 +52,10 @@ public class AbstractToolStep extends AbstractStep {
      */
     private transient IntSet ignoredExitCodesParsed;
 
+    private String workingDir;
+
+    private String toolArgs;
+
     /**
      * Minimal constructor.
      *
@@ -91,6 +94,24 @@ public class AbstractToolStep extends AbstractStep {
     @Override
     public StepExecution start(StepContext context) throws Exception {
         return new Execution(this, context);
+    }
+
+    @DataBoundSetter
+    public void setWorkingDir(String workingDir) {
+        this.workingDir = Util.fixEmptyAndTrim(workingDir);
+    }
+
+    public String getWorkingDir() {
+        return this.workingDir;
+    }
+
+    @DataBoundSetter
+    public void setArguments(String toolArgs) {
+        this.toolArgs = Util.fixEmptyAndTrim(toolArgs);
+    }
+
+    public String getArguments() {
+        return this.toolArgs;
     }
 
     // //////////////////////////////////////////////////////////////////
