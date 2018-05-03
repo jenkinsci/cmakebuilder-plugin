@@ -139,6 +139,7 @@ public class AbstractToolStep extends AbstractStep {
             final TaskListener listener = context.get(TaskListener.class);
             final Launcher launcher = context.get(Launcher.class);
             final Node node = context.get(Node.class);
+            final EnvVars env = context.get(EnvVars.class);
 
             CmakeTool installToUse = step.getSelectedInstallation();
             // Raise an error if the cmake installation isn't found
@@ -167,7 +168,7 @@ public class AbstractToolStep extends AbstractStep {
             ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(
                     bindir + step.getCommandBasename(), step.getArguments());
             final int exitCode;
-            if (0 == (exitCode = launcher.launch().pwd(theWorkDir)
+            if (0 == (exitCode = launcher.launch().pwd(theWorkDir).envs(env)
                     .stdout(listener).cmds(cmakeCall).join())) {
                 return Integer.valueOf(exitCode);
             }

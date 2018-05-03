@@ -278,6 +278,7 @@ public class CmakeBuilderStep extends AbstractStep {
             final TaskListener listener = context.get(TaskListener.class);
             final Launcher launcher = context.get(Launcher.class);
             final Node node = context.get(Node.class);
+            final EnvVars env = context.get(EnvVars.class);
 
             CmakeTool installToUse = step.getSelectedInstallation();
             // Raise an error if the cmake installation isn't found
@@ -290,7 +291,7 @@ public class CmakeBuilderStep extends AbstractStep {
 
             // Get the CMake version for this node, installing it if necessary
             installToUse = installToUse.forNode(node, listener)
-                    .forEnvironment(context.get(EnvVars.class));
+                    .forEnvironment(env);
 
             final String cmakeBin = installToUse.getCmakeExe();
             final FilePath workSpace = context.get(FilePath.class);
@@ -319,8 +320,9 @@ public class CmakeBuilderStep extends AbstractStep {
                     step.getGenerator(), step.getPreloadScript(), theSourceDir,
                     step.getBuildType(), step.getCmakeArgs());
             // invoke cmake
+
             int exitCode;
-            if (0 != (exitCode = launcher.launch().pwd(theBuildDir)
+            if (0 != (exitCode = launcher.launch().pwd(theBuildDir).envs(env)
                     .stdout(listener).cmds(cmakeCall).join())) {
                 // invocation failed
                 throw new AbortException(
@@ -364,8 +366,8 @@ public class CmakeBuilderStep extends AbstractStep {
                                 theBuildDir,
                                 toolStep.getCommandArguments(envs));
                     }
-                    final Map<String, String> stepEnv = toolStep
-                            .getEnvironmentVars(envs, listener);
+                    final EnvVars stepEnv = new EnvVars(envs).overrideAll(
+                            toolStep.getEnvironmentVars(envs, listener));
                     if (0 != (exitCode = launcher.launch().pwd(theBuildDir)
                             .envs(stepEnv).stdout(listener).cmds(toolCall)
                             .join())) {
