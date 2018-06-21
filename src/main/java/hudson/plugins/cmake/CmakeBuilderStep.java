@@ -293,7 +293,8 @@ public class CmakeBuilderStep extends AbstractStep {
             installToUse = installToUse.forNode(node, listener)
                     .forEnvironment(env);
 
-            final String cmakeBin = installToUse.getCmakeExe();
+            final String cmakeBin = installToUse.getAbsoluteCommand(node,
+                    "cmake");
             final FilePath workSpace = context.get(FilePath.class);
             /*
              * Determine remote build directory path. Clean it, if requested.

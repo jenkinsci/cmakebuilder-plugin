@@ -110,7 +110,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             }
         }
 
-        return toolPath.child("bin/cmake");
+        return toolPath.child("bin");
     }
 
     /**

@@ -1,7 +1,10 @@
 <div>
-    Name of the cmake executable. This can be just <em>cmake</em> to find the tool on the system´s
+    Path to the directory where the executables of the cmake suite reside. This can be <em>empty</em> to find the tools on the system´s
     executable search path (aka $PATH) or an absolute file system path.<p>
     If you have multiple build nodes, consider to let Jenkins install this tool
     for you automatically from cmake.org,
+    </p>
+    <p>Migration note: As of version 2.6.0, it is no longer possible to specify a tool name here (e.g. mingw32-cmake).
+    Consider using a toolchain file instead.
     </p>
 </div>

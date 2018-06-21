@@ -206,7 +206,8 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         // Get the CMake version for this node, installing it if necessary
         installToUse = (CmakeTool) installToUse.translate(build, listener);
 
-        final String cmakeBin = installToUse.getCmakeExe();
+        final String cmakeBin = installToUse
+                .getAbsoluteCommand(build.getBuiltOn(), "cmake");
         final FilePath workSpace = build.getWorkspace();
         try {
             /*

@@ -153,8 +153,6 @@ public class AbstractToolStep extends AbstractStep {
             // Get the CMake version for this node, installing it if necessary
             installToUse = installToUse.forNode(node, listener)
                     .forEnvironment(context.get(EnvVars.class));
-            final String bindir = installToUse.getBindir();
-
             /* Determine remote working directory path. Create it. */
             final FilePath workSpace = context.get(FilePath.class);
             final String workDir = step.getWorkingDir();
@@ -165,8 +163,11 @@ public class AbstractToolStep extends AbstractStep {
             }
 
             /* Invoke tool in working dir */
-            ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(
-                    bindir + step.getCommandBasename(), step.getArguments());
+            ArgumentListBuilder cmakeCall = LaunchUtils
+                    .buildCommandline(
+                            installToUse.getAbsoluteCommand(node,
+                                    step.getCommandBasename()),
+                            step.getArguments());
             final int exitCode;
             if (0 == (exitCode = launcher.launch().pwd(theWorkDir).envs(env)
                     .stdout(listener).cmds(cmakeCall).join())) {

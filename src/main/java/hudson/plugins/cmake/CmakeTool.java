@@ -5,6 +5,7 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -14,6 +15,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
 import hudson.init.Initializer;
+import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.TaskListener;
@@ -34,8 +36,8 @@ import net.sf.json.JSONObject;
  */
 public class CmakeTool extends ToolInstallation implements
         NodeSpecific<CmakeTool>, EnvironmentSpecific<CmakeTool> {
-    // private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
-    // .getName());
+    private static final Logger LOGGER = Logger.getLogger(CmakeTool.class
+     .getName());
 
     /**
      * Tool name of the default tool (usually found on the executable search
@@ -46,20 +48,14 @@ public class CmakeTool extends ToolInstallation implements
     private static final long serialVersionUID = 1;
 
     /**
-     * the parent directory of the [@code cmake} tool from the installation or
-     * {@code null} if this object has not been retrieved through
-     * {@link #forNode(Node, TaskListener)}. This is used to determine the file
-     * system path of any of the tools of the cmake suite (cmake/cpack/ctest) on the node.
-     */
-    private transient String bindir;
-
-    /**
      * Constructor for CmakeTool.
      *
      * @param name
      *            Tool name (for example, "cmake2.6.4" or "cmake2.8.12")
      * @param home
-     *            Tool location (usually "cmake")
+     *            the parent directory of the {@code cmake} tool from the
+     *            installation. This is used to determine the file system path
+     *            of any of the tools of the cmake suite (cmake/cpack/ctest).
      * @param properties
      *            {@link java.util.List} of properties for this tool
      */
@@ -68,43 +64,37 @@ public class CmakeTool extends ToolInstallation implements
             List<? extends ToolProperty<?>> properties) {
         super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim(home),
                 properties);
-        bindir= null;
     }
 
     /**
-     * @see #CmakeTool(String, String, List)
+     * Gets the absolute file system path on the specified node with the
+     * basename appended. Takes the node specific directory separators into
+     * account when constructing the path.<br>
+     * Should be invoked after {@link #forNode(Node, TaskListener)} was called.
      *
-     * @param bindir
-     *            the parent directory of the [@code cmake} tool from the
-     *            installation. This is used to determine the file system path
-     *            of any of the tools of the cmake suite (cmake/cpack/ctest).
-     */
-    private CmakeTool(String name, String home,
-            List<ToolProperty<?>> properties, String bindir) {
-        this(name, home, properties);
-        this.bindir = bindir;
-    }
-
-    /**
-     * @return {@link java.lang.String} that will be used to execute cmake (e.g.
-     *         "cmake" or "/usr/bin/cmake")
-     */
-    public String getCmakeExe() {
-        // return what was entered on the global config page
-        return getHome();
-    }
-
-    /**
-     * Gets the parent directory of the [@code cmake} tool from the installation
-     * or {@code null}. This may be used to determine the file system path of
-     * any of the tools of the cmake suite (cmake/cpack/ctest).
+     * @param node
+     *            Node that this tool is used in.
+     * @param basename
+     *            the basename of the command to run (cmake, cpack or ctest).
      *
-     * @return the directory including a trailing, node specific directory
-     *         separator character or {@code null} if this object has not been
-     *         retrieved through {@link #forNode(Node, TaskListener)}
+     * @return the absolute file system path on the node or just the basename,
+     *         if {@link #getHome()} returns null
      */
-    public String getBindir() {
-        return bindir;
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "if (computer != null && !computer.isUnix()): WTF")
+    public String getAbsoluteCommand(Node node, String basename) {
+        String home = getHome();
+        if (home != null && !home.isEmpty()) {
+            // append the node-specific dir-separator
+            String sep = "/";
+            final Computer computer = node.toComputer();
+            if (computer != null && !computer.isUnix()) {
+                sep = "\\";
+            }
+            if (!home.endsWith(sep))
+                home += sep;
+            return home += basename;
+        }
+        return basename;
     }
 
     /**
@@ -113,31 +103,21 @@ public class CmakeTool extends ToolInstallation implements
      */
     @Override
     public void buildEnvVars(EnvVars env) {
-        if (getProperties().get(InstallSourceProperty.class) != null) {
-            // cmake was downloaded and installed
-            if (bindir != null && !bindir.isEmpty()) {
-                env.put("PATH+CMAKE", bindir);
-            }
+        final String home = getHome();
+        if (home != null && !home.isEmpty()) {
+            env.put("PATH+CMAKE", home);
         }
     }
 
     public CmakeTool forNode(Node node, TaskListener log) throws IOException,
             InterruptedException {
-        String home = translateFor(node, log); // the home on the slave!!!
-        String bindir = "";
-        // think of this as a cross-platform version of 'dirname(home)'...
-        int idx;
-        if ((idx = home.lastIndexOf('/')) != -1
-                || (idx = home.lastIndexOf('\\')) != -1) {
-            bindir = home.substring(0, idx + 1);
-        }
-
-        return new CmakeTool(getName(), home, getProperties().toList(), bindir);
+        final String home = translateFor(node, log); // the home on the node!!!
+        return new CmakeTool(getName(), home, getProperties().toList());
     }
 
     public CmakeTool forEnvironment(EnvVars environment) {
         return new CmakeTool(getName(), environment.expand(getHome()),
-                getProperties().toList(), bindir);
+                getProperties().toList());
     }
 
     /**
@@ -156,20 +136,73 @@ public class CmakeTool extends ToolInstallation implements
         DescriptorImpl descriptor = (DescriptorImpl) jenkinsInstance
                 .getDescriptor(CmakeTool.class);
         CmakeTool[] installations = getInstallations(descriptor);
-
-        if (installations != null && installations.length > 0) {
-            // No need to initialize if there's already something
-            return;
+        if (installations.length > 0) {
+            // migrate legacy InSearchPath installations
+            tryMigrateLegacy(descriptor, installations);
+        } else {
+            // no installations configured yet, create a default installation
+            CmakeTool tool = new CmakeTool(DEFAULT, null,
+                    Collections.<ToolProperty<?>> emptyList());
+            descriptor.setInstallations(new CmakeTool[] { tool });
+            descriptor.save();
         }
+    }
 
-        CmakeTool tool = new CmakeTool(DEFAULT, "cmake",
-                Collections.<ToolProperty<?>> emptyList());
-        descriptor.setInstallations(new CmakeTool[] { tool });
-        descriptor.save();
+    /**
+     * Migrates each legacy InSearchPath installations that have just 'cmake' as
+     * home to one which has home == null and migrates non-automatically
+     * installed ones that have a trailing command name ('cmake').<br>
+     * NOTE: Jenkins does not invoke a {@link hudson.tools.ToolInstallation.ToolConverter}
+     * for non-automatically installed tools.
+     *
+     * @since 2.6.0
+     */
+    private static void tryMigrateLegacy(DescriptorImpl descriptor,
+            CmakeTool[] installations) {
+        boolean mustSave = false;
+        for (int i = 0; i < installations.length; i++) {
+            CmakeTool inst = installations[i];
+            if (inst.getProperties()
+                    .get(InstallSourceProperty.class) == null) {
+                // not automatically installed
+                String home = inst.getHome();
+                if (home != null) {
+                    if (home.equals("cmake")) {
+                        // the legacy DEFAULT
+                        CmakeTool newInst = new CmakeTool(inst.getName(),
+                                null, inst.getProperties());
+                        installations[i] = newInst;
+                        mustSave = true;
+                    } else if (home.endsWith("/cmake")
+                            || home.endsWith("\\cmake")) {
+                        // user given path
+                        // strip trailing '/cmake'
+                        home = home.substring(0, home.length() - 6);
+                        CmakeTool newInst = new CmakeTool(inst.getName(),
+                                home, inst.getProperties());
+                        installations[i] = newInst;
+                        mustSave = true;
+                    } else {
+                        // migration impossible, log warning
+                        String msg = String.format("Could not migrate CMake installation '%s'"
+                                + " to a format compatible with the zip-installer. "
+                                + "Please remove the command name in '%s' "
+                                + "on the global tool configuration page.",
+                                inst.getName(), inst.getHome());
+                        LOGGER.warning(msg);
+                    }
+                }
+            }
+        }
+        if (mustSave) {
+            // save migrated
+            descriptor.setInstallations(installations);
+            descriptor.save();
+        }
     }
 
     private static CmakeTool[] getInstallations(DescriptorImpl descriptor) {
-        CmakeTool[] installations = null;
+        CmakeTool[] installations;
         try {
             installations = descriptor.getInstallations();
         } catch (NullPointerException e) {

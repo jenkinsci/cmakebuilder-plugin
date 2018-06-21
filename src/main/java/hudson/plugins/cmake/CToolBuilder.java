@@ -120,7 +120,6 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
         // Get the CMake version for this node, installing it if necessary
         installToUse = (CmakeTool) installToUse.translate(build, listener);
-        final String bindir = installToUse.getBindir();
 
         try {
             /* Determine remote working directory path. Create it. */
@@ -134,7 +133,8 @@ public class CToolBuilder extends AbstractCmakeBuilder {
 
             /* Invoke tool in working dir */
             ArgumentListBuilder cmakeCall = LaunchUtils.buildCommandline(
-                    bindir + getToolId(),
+                    installToUse.getAbsoluteCommand(build.getBuiltOn(),
+                            getToolId()),
                     Util.replaceMacro(getArguments(), envs));
             final int exitCode;
             if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
