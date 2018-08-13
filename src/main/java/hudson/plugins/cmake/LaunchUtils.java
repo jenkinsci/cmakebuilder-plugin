@@ -85,13 +85,13 @@ class LaunchUtils {
     
         args.add(cmakeBin);
         if (generator != null) {
-            args.add("-G").add(generator);
+            args.add("-G").add(generator); //$NON-NLS-1$
         }
         if (preloadScript != null) {
-            args.add("-C").add(preloadScript);
+            args.add("-C").add(preloadScript); //$NON-NLS-1$
         }
         if (buildType != null) {
-            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType);
+            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (cmakeArgs != null) {
             args.addTokenized(cmakeArgs);
@@ -141,7 +141,7 @@ class LaunchUtils {
         ArgumentListBuilder args = new ArgumentListBuilder();
     
         args.add(cmakeBin);
-        args.add("--build");
+        args.add("--build"); //$NON-NLS-1$
         args.add(theBuildDir.getRemote());
         if (toolArgs != null) {
             args.add(toolArgs);

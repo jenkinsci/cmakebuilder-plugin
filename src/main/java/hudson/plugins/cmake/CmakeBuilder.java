@@ -35,7 +35,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
      * build-scripts have been generated for (e.g. /usr/bin/make or
      * /usr/bin/ninja)
      */
-    public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL";
+    public static final String ENV_VAR_NAME_CMAKE_BUILD_TOOL = "CMAKE_BUILD_TOOL"; //$NON-NLS-1$
 
     /**
      * the name of cmake´s buildscript generator or {@code null} if the default
@@ -196,8 +196,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
-            listener.fatalError("There is no CMake installation selected."
-                    + " Please review the build step configuration.");
+            listener.fatalError(Messages.getString("No_installation_selected")); //$NON-NLS-1$
             return false;
         }
         final EnvVars envs = build.getEnvironment(listener);
@@ -207,7 +206,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
         installToUse = (CmakeTool) installToUse.translate(build, listener);
 
         final String cmakeBin = installToUse
-                .getAbsoluteCommand(build.getBuiltOn(), "cmake");
+                .getAbsoluteCommand(build.getBuiltOn(), "cmake"); //$NON-NLS-1$
         final FilePath workSpace = build.getWorkspace();
         try {
             /*
@@ -220,8 +219,8 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             if (buildDir != null) {
                 if (this.cleanBuild && !buildDir.equals(sourceDir)) {
                     // avoid deleting source dir
-                    listener.getLogger().println(
-                            "Cleaning build dir... " + theBuildDir.getRemote());
+                    listener.getLogger().format(
+                            Messages.getString("Cleaning_build_dir"), theBuildDir.getRemote()); //$NON-NLS-1$
                     theBuildDir.deleteRecursive();
                 }
                 theBuildDir.mkdirs();
@@ -242,11 +241,11 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             }
 
             /* parse CMakeCache.txt to get the actual build tool */
-            FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
+            FilePath cacheFile = theBuildDir.child("CMakeCache.txt"); //$NON-NLS-1$
             String buildTool = cacheFile.act(new BuildToolEntryParser());
             if (buildTool == null) {
                 listener.getLogger().printf(
-                        "WARNING: Failed to get value for variable `%1s` from %2$s.%n",
+                        Messages.getString("Failed_to_get_var_value"), //$NON-NLS-1$
                         CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
                         cacheFile.getRemote());
             } else {
@@ -269,8 +268,8 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                         // invoke directly
                         // if buildTool == null, let the unexpanded macro show up in
                         // the log
-                        final String buildToolMacro = Util.replaceMacro("${"
-                                + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}",
+                        final String buildToolMacro = Util.replaceMacro("${" //$NON-NLS-1$
+                                + CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL + "}", //$NON-NLS-1$
                                 envs);
                         toolCall = LaunchUtils.buildBuildToolCall(buildToolMacro,
                                 step.getCommandArguments(envs));
@@ -323,7 +322,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "CMake Build";
+            return Messages.getString("CmakeBuilder.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
         /**

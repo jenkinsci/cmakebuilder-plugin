@@ -180,13 +180,13 @@ public class CmakeBuilderStep extends AbstractStep {
 
         args.add(cmakeBin);
         if (generator != null) {
-            args.add("-G").add(generator);
+            args.add("-G").add(generator); //$NON-NLS-1$
         }
         if (preloadScript != null) {
-            args.add("-C").add(preloadScript);
+            args.add("-C").add(preloadScript); //$NON-NLS-1$
         }
         if (buildType != null) {
-            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType);
+            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (cmakeArgs != null) {
             args.addTokenized(cmakeArgs);
@@ -236,7 +236,7 @@ public class CmakeBuilderStep extends AbstractStep {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         args.add(cmakeBin);
-        args.add("--build");
+        args.add("--build"); //$NON-NLS-1$
         args.add(theBuildDir.getRemote());
         if (toolArgs != null) {
             args.add(toolArgs);
@@ -284,9 +284,7 @@ public class CmakeBuilderStep extends AbstractStep {
             // Raise an error if the cmake installation isn't found
             if (installToUse == null) {
                 throw new AbortException(
-                        "There is no CMake installation selected."
-                                + " Please review the build step configuration"
-                                + " and make sure it is configured on the Global Tool Configuration page.");
+                        Messages.getString("No_installation_selected")); //$NON-NLS-1$
             }
 
             // Get the CMake version for this node, installing it if necessary
@@ -294,7 +292,7 @@ public class CmakeBuilderStep extends AbstractStep {
                     .forEnvironment(env);
 
             final String cmakeBin = installToUse.getAbsoluteCommand(node,
-                    "cmake");
+                    "cmake"); //$NON-NLS-1$
             final FilePath workSpace = context.get(FilePath.class);
             /*
              * Determine remote build directory path. Clean it, if requested.
@@ -307,8 +305,8 @@ public class CmakeBuilderStep extends AbstractStep {
                 if (step.isCleanBuild()
                         && !buildDir.equals(step.getSourceDir())) {
                     // avoid deleting source dir
-                    listener.getLogger().println(
-                            "Cleaning build dir... " + theBuildDir.getRemote());
+                    listener.getLogger().format(
+                            Messages.getString("Cleaning_build_dir"), theBuildDir.getRemote()); //$NON-NLS-1$
                     theBuildDir.deleteRecursive();
                 }
                 theBuildDir.mkdirs();
@@ -327,7 +325,7 @@ public class CmakeBuilderStep extends AbstractStep {
                     .stdout(listener).cmds(cmakeCall).join())) {
                 // invocation failed
                 throw new AbortException(
-                        String.format("%1s exited with failure code %2$s%n",
+                        String.format(Messages.getString("Exited_with_error_code"), //$NON-NLS-1$
                                 step.getCommandBasename(), exitCode));
             }
 
@@ -344,11 +342,11 @@ public class CmakeBuilderStep extends AbstractStep {
                 }
                 if (needBuildTool) {
                     /* parse CMakeCache.txt to get the actual build tool */
-                    FilePath cacheFile = theBuildDir.child("CMakeCache.txt");
+                    FilePath cacheFile = theBuildDir.child("CMakeCache.txt"); //$NON-NLS-1$
                     buildTool = cacheFile.act(new BuildToolEntryParser());
                     if (buildTool == null) {
                         throw new AbortException(String.format(
-                                "Failed to get value for variable `%1s` from %2$s.%n",
+                                Messages.getString("Failed_to_get_var_value"), //$NON-NLS-1$
                                 CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
                                 cacheFile.getRemote()));
                     }
@@ -373,7 +371,7 @@ public class CmakeBuilderStep extends AbstractStep {
                             .envs(stepEnv).stdout(listener).cmds(toolCall)
                             .join())) {
                         throw new AbortException(String.format(
-                                "%1s exited with failure code %2$s%n",
+                                Messages.getString("Exited_with_error_code"), //$NON-NLS-1$
                                 buildTool, exitCode));
                     }
                 }
@@ -393,7 +391,7 @@ public class CmakeBuilderStep extends AbstractStep {
 
         @Override
         public String getFunctionName() {
-            return "cmakeBuild";
+            return "cmakeBuild"; //$NON-NLS-1$
         }
 
         /**
@@ -401,7 +399,7 @@ public class CmakeBuilderStep extends AbstractStep {
          */
         @Override
         public String getDisplayName() {
-            return "Generate build-scripts with cmake and run the build tool";
+            return Messages.getString("CmakeBuilderStep.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
     } // DescriptorImpl

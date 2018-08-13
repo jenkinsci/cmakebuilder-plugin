@@ -51,7 +51,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     @DataBoundConstructor
     public CToolBuilder(String installationName) {
         super(installationName);
-        setToolId("cmake");
+        setToolId("cmake"); //$NON-NLS-1$
     }
 
     @DataBoundSetter
@@ -111,8 +111,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
         CmakeTool installToUse = getSelectedInstallation();
         // Raise an error if the cmake installation isn't found
         if (installToUse == null) {
-            listener.fatalError("There is no CMake installation selected."
-                    + " Please review the build step configuration.");
+            listener.fatalError(Messages.getString("No_installation_selected")); //$NON-NLS-1$
             return false;
         }
         final EnvVars envs = build.getEnvironment(listener);
@@ -146,13 +145,13 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                 if (ignoredExitCodesParsed.contains(exitCode)) {
                     // ignore this failure exit code
                     listener.getLogger().printf(
-                            "%1s exited with failure code %2$s, ignored.%n",
+                            Messages.getString("Exited_with_error_code_ignored"), //$NON-NLS-1$
                             getToolId(), exitCode);
                     return true; // no failure
                 }
                 // invocation failed, not ignored
                 listener.getLogger().printf(
-                        "%1s exited with failure code %2$s%n", getToolId(),
+                        Messages.getString("Exited_with_error_code"), getToolId(), //$NON-NLS-1$
                         exitCode);
                 return false; // invocation failed
             }
@@ -183,8 +182,8 @@ public class CToolBuilder extends AbstractCmakeBuilder {
     public static final class DescriptorImpl
             extends AbstractCmakeBuilder.DescriptorImpl {
 
-        private static Tool[] tools = { new Tool("cmake", "CMake"),
-                new Tool("cpack", "CPack"), new Tool("ctest", "CTest") };
+        private static Tool[] tools = { new Tool("cmake", "CMake"), //$NON-NLS-1$ //$NON-NLS-2$
+                new Tool("cpack", "CPack"), new Tool("ctest", "CTest") }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
         public DescriptorImpl() {
             super(CToolBuilder.class);
@@ -195,7 +194,7 @@ public class CToolBuilder extends AbstractCmakeBuilder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "CMake/CPack/CTest execution";
+            return Messages.getString("CToolBuilder.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
         public ListBoxModel doFillToolIdItems() {

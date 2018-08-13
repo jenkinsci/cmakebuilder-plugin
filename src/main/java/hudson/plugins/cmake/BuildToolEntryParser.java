@@ -51,7 +51,7 @@ public class BuildToolEntryParser extends MasterToSlaveFileCallable<String> {
 
                 @Override
                 public boolean accept(String key) {
-                    return "CMAKE_MAKE_PROGRAM".equals(key);
+                    return "CMAKE_MAKE_PROGRAM".equals(key); //$NON-NLS-1$
                 }
             }, result, null);
         } finally {

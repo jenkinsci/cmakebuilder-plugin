@@ -84,7 +84,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> implem
                 } else {
                     // log garbled expression
                     listener.error(
-                            "Garbled env. variable expression '%s' (ignored)",
+                            Messages.getString("BuildToolStep.Garbled_env_var_expression"), //$NON-NLS-1$
                             line);
                 }
             }
@@ -170,7 +170,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> implem
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Invoke Build tool";
+            return Messages.getString("BuildToolStep.Descriptor.DisplayName"); //$NON-NLS-1$
         }
     } // DescriptorImpl
 }

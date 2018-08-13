@@ -32,7 +32,7 @@ public class CPackStep extends AbstractToolStep {
     }
 
     protected String getCommandBasename() {
-        return "cpack";
+        return "cpack"; //$NON-NLS-1$
     }
 
     @Extension(optional = true)
@@ -41,7 +41,7 @@ public class CPackStep extends AbstractToolStep {
 
         @Override
         public String getFunctionName() {
-            return "cpack";
+            return "cpack"; //$NON-NLS-1$
         }
 
         /**
@@ -49,7 +49,7 @@ public class CPackStep extends AbstractToolStep {
          */
         @Override
         public String getDisplayName() {
-            return "Run cpack";
+            return Messages.getString("CPackStep.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
     }

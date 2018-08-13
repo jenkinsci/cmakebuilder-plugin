@@ -37,7 +37,7 @@ public class CMakeStep extends AbstractToolStep {
 
         @Override
         public String getFunctionName() {
-            return "cmake";
+            return "cmake"; //$NON-NLS-1$
         }
 
         /**
@@ -45,7 +45,7 @@ public class CMakeStep extends AbstractToolStep {
          */
         @Override
         public String getDisplayName() {
-            return "Run cmake with arbitrary arguments";
+            return Messages.getString("CMakeStep.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
     }

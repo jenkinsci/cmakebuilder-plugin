@@ -76,10 +76,10 @@ public class IntSet {
             ranges = null;
         } else {
             final Matcher matcher = Pattern
-                    .compile("(?:\\s*)(\\d+)(?:(?:-)(\\d+))?(?:\\s*)")
-                    .matcher("");
+                    .compile("(?:\\s*)(\\d+)(?:(?:-)(\\d+))?(?:\\s*)") //$NON-NLS-1$
+                    .matcher(""); //$NON-NLS-1$
             // split at ','
-            for (String expr : rangeSpecification.split(",")) {
+            for (String expr : rangeSpecification.split(",")) { //$NON-NLS-1$
                 // no need to check for negative values here, our regex already
                 // rejects these
                 matcher.reset(expr);
@@ -98,14 +98,14 @@ public class IntSet {
                         checkUpperLimit(highest);
                         if (lowest > highest) {
                             throw new IllegalArgumentException(
-                                    "Invalid range specification: " + lowest
-                                            + " > " + highest);
+                                    "Invalid range specification: " + lowest //$NON-NLS-1$
+                                            + " > " + highest); //$NON-NLS-1$
                         }
                         ranges0.add(new IntRange(lowest, highest));
                     }
                 } else {
                     throw new IllegalArgumentException(
-                            "Invalid range specification: '" + expr + "'");
+                            "Invalid range specification: '" + expr + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
 
@@ -155,7 +155,7 @@ public class IntSet {
      */
     public String toSpecificationString() {
         if (ranges == null) {
-            return ""; // no values
+            return ""; // no values //$NON-NLS-1$
         }
         final StringBuilder sb = new StringBuilder();
         for (Iterator<IntRange> iter = ranges.iterator(); iter.hasNext();) {
@@ -173,7 +173,7 @@ public class IntSet {
      */
     @Override
     public String toString() {
-        return "IntSet [" + this.toSpecificationString() + "]";
+        return "IntSet [" + this.toSpecificationString() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -206,7 +206,7 @@ public class IntSet {
             throws IllegalArgumentException {
         if (number > 0xFFFF) {
             throw new IllegalArgumentException(
-                    "Invalid number: " + number + " > " + 0xFFFF);
+                    "Invalid number: " + number + " > " + 0xFFFF); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -236,7 +236,7 @@ public class IntSet {
          */
         public IntRange(int lowest, int highest) {
             if (lowest > highest)
-                throw new IllegalArgumentException("lowest > highest");
+                throw new IllegalArgumentException("lowest > highest"); //$NON-NLS-1$
             this.lowest = lowest;
             this.highest = highest;
         }
@@ -262,7 +262,7 @@ public class IntSet {
             if (lowest == highest) {
                 return Integer.toString(lowest);
             }
-            return lowest + "-" + highest;
+            return lowest + "-" + highest; //$NON-NLS-1$
         }
 
         /*
@@ -270,7 +270,7 @@ public class IntSet {
          */
         @Override
         public String toString() {
-            return "IntRange [" + this.toSpecificationString() + "]";
+            return "IntRange [" + this.toSpecificationString() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         /*
@@ -361,7 +361,7 @@ public class IntSet {
          */
         @Override
         public void remove() {
-            throw new java.lang.UnsupportedOperationException("remove");
+            throw new java.lang.UnsupportedOperationException("remove"); //$NON-NLS-1$
         }
 
     } // RangeIterator

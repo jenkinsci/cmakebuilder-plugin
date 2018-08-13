@@ -54,7 +54,7 @@ public abstract class AbstractStep extends Step implements Serializable {
      * @return {@code "cmake"}
      */
     protected String getCommandBasename() {
-        return "cmake";
+        return "cmake"; //$NON-NLS-1$
     }
 
     /**

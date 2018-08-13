@@ -32,7 +32,7 @@ public class CTestStep extends AbstractToolStep {
     }
 
     protected String getCommandBasename() {
-        return "ctest";
+        return "ctest"; //$NON-NLS-1$
     }
 
     @Extension(optional = true)
@@ -41,7 +41,7 @@ public class CTestStep extends AbstractToolStep {
 
         @Override
         public String getFunctionName() {
-            return "ctest";
+            return "ctest"; //$NON-NLS-1$
         }
 
         /**
@@ -49,7 +49,7 @@ public class CTestStep extends AbstractToolStep {
          */
         @Override
         public String getDisplayName() {
-            return "Run ctest";
+            return Messages.getString("CTestStep.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
     }

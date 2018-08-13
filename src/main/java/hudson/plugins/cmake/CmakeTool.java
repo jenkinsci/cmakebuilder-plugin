@@ -43,7 +43,7 @@ public class CmakeTool extends ToolInstallation implements
      * Tool name of the default tool (usually found on the executable search
      * path). Do not use: Exposed here only for testing purposes.
      */
-    public static transient final String DEFAULT = "InSearchPath";
+    public static transient final String DEFAULT = "InSearchPath"; //$NON-NLS-1$
 
     private static final long serialVersionUID = 1;
 
@@ -85,10 +85,10 @@ public class CmakeTool extends ToolInstallation implements
         String home = getHome();
         if (home != null && !home.isEmpty()) {
             // append the node-specific dir-separator
-            String sep = "/";
+            String sep = "/"; //$NON-NLS-1$
             final Computer computer = node.toComputer();
             if (computer != null && !computer.isUnix()) {
-                sep = "\\";
+                sep = "\\"; //$NON-NLS-1$
             }
             if (!home.endsWith(sep))
                 home += sep;
@@ -105,7 +105,7 @@ public class CmakeTool extends ToolInstallation implements
     public void buildEnvVars(EnvVars env) {
         final String home = getHome();
         if (home != null && !home.isEmpty()) {
-            env.put("PATH+CMAKE", home);
+            env.put("PATH+CMAKE", home); //$NON-NLS-1$
         }
     }
 
@@ -167,14 +167,14 @@ public class CmakeTool extends ToolInstallation implements
                 // not automatically installed
                 String home = inst.getHome();
                 if (home != null) {
-                    if (home.equals("cmake")) {
+                    if (home.equals("cmake")) { //$NON-NLS-1$
                         // the legacy DEFAULT
                         CmakeTool newInst = new CmakeTool(inst.getName(),
                                 null, inst.getProperties());
                         installations[i] = newInst;
                         mustSave = true;
-                    } else if (home.endsWith("/cmake")
-                            || home.endsWith("\\cmake")) {
+                    } else if (home.endsWith("/cmake") //$NON-NLS-1$
+                            || home.endsWith("\\cmake")) { //$NON-NLS-1$
                         // user given path
                         // strip trailing '/cmake'
                         home = home.substring(0, home.length() - 6);
@@ -184,10 +184,7 @@ public class CmakeTool extends ToolInstallation implements
                         mustSave = true;
                     } else {
                         // migration impossible, log warning
-                        String msg = String.format("Could not migrate CMake installation '%s'"
-                                + " to a format compatible with the zip-installer. "
-                                + "Please remove the command name in '%s' "
-                                + "on the global tool configuration page.",
+                        String msg = String.format("Could not migrate CMake installation '%1$s' to a format compatible with the zip-installer. Please remove the command name in '%2$s' on the global tool configuration page.", //$NON-NLS-1$
                                 inst.getName(), inst.getHome());
                         LOGGER.warning(msg);
                     }
@@ -224,7 +221,7 @@ public class CmakeTool extends ToolInstallation implements
 
         @Override
         public String getDisplayName() {
-            return "CMake";
+            return "CMake"; //$NON-NLS-1$
         }
 
         @Override
@@ -232,11 +229,13 @@ public class CmakeTool extends ToolInstallation implements
                 throws FormException {
             // reject empty tool names...
             List<CmakeTool> cmakes = req.bindJSONToList(CmakeTool.class,
-                    json.get("tool"));
+                    json.get("tool")); //$NON-NLS-1$
             for (CmakeTool tool : cmakes) {
                 if (Util.fixEmpty(tool.getName()) == null)
-                    throw new FormException(getDisplayName()
-                            + " installation requires a name", "_.name");
+                    throw new FormException(String.format(
+                            Messages.getString(
+                                    "CmakeTool.Installation_requires_a_name"), //$NON-NLS-1$
+                            getDisplayName()), "_.name"); //$NON-NLS-1$
             }
 
             super.configure(req, json);

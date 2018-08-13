@@ -145,9 +145,7 @@ public class AbstractToolStep extends AbstractStep {
             // Raise an error if the cmake installation isn't found
             if (installToUse == null) {
                 throw new AbortException(
-                        "There is no CMake installation selected."
-                                + " Please review the build step configuration"
-                                + " and make sure it is configured on the Global Tool Configuration page.");
+                        Messages.getString("No_installation_selected")); //$NON-NLS-1$
             }
 
             // Get the CMake version for this node, installing it if necessary
@@ -181,13 +179,13 @@ public class AbstractToolStep extends AbstractStep {
                 // ignore this failure exit code
                 // ignore this failure exit code
                 listener.getLogger().printf(
-                        "%1s exited with failure code %2$s, ignored.%n",
+                        Messages.getString("Exited_with_error_code_ignored"), //$NON-NLS-1$
                         step.getCommandBasename(), exitCode);
                 return Integer.valueOf(exitCode); // no failure
             }
             // invocation failed, not ignored
             throw new AbortException(
-                    String.format("%1s exited with failure code %2$s%n",
+                    String.format(Messages.getString("Exited_with_error_code"), //$NON-NLS-1$
                             step.getCommandBasename(), exitCode));
         }
     } // Execution

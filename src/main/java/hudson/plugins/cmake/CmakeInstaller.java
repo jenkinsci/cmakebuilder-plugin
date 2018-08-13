@@ -57,16 +57,16 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final VirtualChannel channel = node.getChannel();
         if (channel == null) {
             throw new AbortException(
-                    "Node '" + node.getDisplayName() + "' went offline");
+                    String.format(Messages.getString("CmakeInstaller.Node_went_offline"),node.getDisplayName())); //$NON-NLS-1$
         }
         final String[] nodeProperties = channel
-                .call(new GetSystemProperties("os.name", "os.arch"));
+                .call(new GetSystemProperties("os.name", "os.arch")); //$NON-NLS-1$ //$NON-NLS-2$
 
         final Installable inst = getInstallable(
                 OsFamily.valueOfOsName(nodeProperties[0]), nodeProperties[1]);
         if (inst == null) {
             String msg = String.format(
-                    "%s [%s]: No cmake download known for OS `%s` and arch `%s`.",
+                    Messages.getString("CmakeInstaller.No_cmake_download_known"), //$NON-NLS-1$
                     getDescriptor().getDisplayName(), tool.getName(),
                     nodeProperties[0], nodeProperties[1]);
             throw new AbortException(msg);
@@ -75,15 +75,15 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final FilePath toolPath = getFixedPreferredLocation(tool, node);
         // FilePath base0 = findPullUpDirectory(toolPath);
         if (!isUpToDate(toolPath, inst)) {
-            String msg = String.format("%s [%s]: Unpacking %s to %s on %s...",
+            String msg = String.format(Messages.getString("CmakeInstaller.Unpacking_to"), //$NON-NLS-1$
                     getDescriptor().getDisplayName(), tool.getName(), inst.url,
                     toolPath, node.getDisplayName());
             if (toolPath.installIfNecessaryFrom(new URL(inst.url), log, msg)) {
                 // we don't use the timestamp..
-                toolPath.child(".timestamp").delete();
+                toolPath.child(".timestamp").delete(); //$NON-NLS-1$
                 // pull up extra subdir...
                 msg = String.format(
-                        "%s [%s]: Inspecting unpacked files at %s...",
+                        Messages.getString("CmakeInstaller.Inspecting_unpacked_files"), //$NON-NLS-1$
                         getDescriptor().getDisplayName(), tool.getName(),
                         toolPath);
                 log.getLogger().println(msg);
@@ -98,19 +98,19 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 }
                 // remove unnecessary files (docs, man pages)..
                 try {
-                    toolPath.child("doc").deleteRecursive();
+                    toolPath.child("doc").deleteRecursive(); //$NON-NLS-1$
                 } catch (IOException ignore) {
                 }
                 try {
-                    toolPath.child("man").deleteRecursive();
+                    toolPath.child("man").deleteRecursive(); //$NON-NLS-1$
                 } catch (IOException ignore) {
                 }
                 // leave a record for the next up-to-date check
-                toolPath.child(".installedFrom").write(inst.url, "UTF-8");
+                toolPath.child(".installedFrom").write(inst.url, "UTF-8"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
 
-        return toolPath.child("bin");
+        return toolPath.child("bin"); //$NON-NLS-1$
     }
 
     /**
@@ -172,7 +172,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     }
 
     private static String sanitize(String s) {
-        return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
+        return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -184,7 +184,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             throws IOException, InterruptedException {
         // 3.x archives from cmake.org have more than just the "cmake-<version>"
         // directory at the top level
-        final String glTopDir = "cmake-" + id + "-*";
+        final String glTopDir = "cmake-" + id + "-*"; //$NON-NLS-1$ //$NON-NLS-2$
         FileCallable<FilePath> callable = new RootDirScanner(glTopDir);
         return root.act(callable);
     }
@@ -212,11 +212,11 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          */
         private RootDirScanner(String glTopDir) {
             // glob to match the cmake binary
-            final String glBinCmake = glTopDir + "/**/bin/cmake";
+            final String glBinCmake = glTopDir + "/**/bin/cmake"; //$NON-NLS-1$
             // glob to match the cmake binary on windows
-            final String glBinCmakeW = glTopDir + "/**/bin/cmake.exe";
+            final String glBinCmakeW = glTopDir + "/**/bin/cmake.exe"; //$NON-NLS-1$
             // glob to match the shared files of cmake
-            final String glShare = glTopDir + "/**/share";
+            final String glShare = glTopDir + "/**/share"; //$NON-NLS-1$
             this.includes = glBinCmake + ',' + glBinCmakeW + ',' + glShare;
         }
 
@@ -239,13 +239,11 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 final String[] shareDirs = ds.getIncludedDirectories();
                 if (cmakeBinFiles.length > 1) {
                     String msg = String.format(
-                            "Unkown layout of downloaded CMake archive: "
-                                    + "Multiple candidates for cmake executable: %s",
+                            Messages.getString("CmakeInstaller.Unknown_format_of_downloaded_archive_multiple"), //$NON-NLS-1$
                             Arrays.toString(cmakeBinFiles));
                     throw new AbortException(msg);
                 } else if (cmakeBinFiles.length == 0) {
-                    String msg = "Unkown layout of downloaded CMake archive: "
-                            + "No candidate for cmake executable";
+                    String msg = Messages.getString("CmakeInstaller.Unknown_format_of_downloaded_archive_no_cmake"); //$NON-NLS-1$
                     throw new AbortException(msg);
                 }
                 // detemine top directory
@@ -254,7 +252,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     topDir = new File(topDir).getParent();
                     if (topDir != null) {
                         // check if there is a 'share' directory
-                        final String share = new File(topDir, "share")
+                        final String share = new File(topDir, "share") //$NON-NLS-1$
                                 .getPath();
                         for (String d : shareDirs) {
                             if (d.equals(share)) {
@@ -266,8 +264,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     }
                 }
             } else {
-                String msg = "Unkown layout of downloaded CMake archive: "
-                        + "No `bin` and/or `share` subdirectory found";
+                String msg = Messages.getString("CmakeInstaller.Unknown_format_of_downloaded_archive_subdirs"); //$NON-NLS-1$
                 throw new AbortException(msg);
             }
             return null;
@@ -279,7 +276,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             extends DownloadFromUrlInstaller.DescriptorImpl<CmakeInstaller> {
         @Override
         public String getDisplayName() {
-            return "Install from cmake.org";
+            return Messages.getString("CmakeInstaller.Descriptor.DisplayName"); //$NON-NLS-1$
         }
 
         /**
@@ -295,8 +292,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             JSONObject d = Downloadable.get(getId()).getData();
             if (d == null)
                 return Collections.emptyList();
-            Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
-            classMap.put("variants", CmakeVariant.class);
+            Map<String, Class<?>> classMap = new HashMap<>();
+            classMap.put("variants", CmakeVariant.class); //$NON-NLS-1$
             return Arrays.asList(((CmakeInstallableList) JSONObject.toBean(d,
                     CmakeInstallableList.class, classMap)).list);
         }
@@ -332,8 +329,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     } // GetSystemProperties
 
     private static enum OsFamily {
-        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX(
-                "IRIX64"), AIX, HPUX("HP-UX");
+        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX( //$NON-NLS-1$ //$NON-NLS-2$
+                "IRIX64"), AIX, HPUX("HP-UX");   //$NON-NLS-1$ //$NON-NLS-2$
         private final String cmakeOrgName;
 
         /**
@@ -363,21 +360,21 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          */
         public static OsFamily valueOfOsName(String osName) {
             if (osName != null) {
-                if ("Linux".equals(osName)) {
+                if ("Linux".equals(osName)) {  //$NON-NLS-1$
                     return Linux;
-                } else if (osName.startsWith("Windows")) {
+                } else if (osName.startsWith("Windows")) {  //$NON-NLS-1$
                     return Windows;
-                } else if (osName.contains("OS X")) {
+                } else if (osName.contains("OS X")) {  //$NON-NLS-1$
                     return OSX;
-                } else if ("SunOS".equals(osName)) {
+                } else if ("SunOS".equals(osName)) {  //$NON-NLS-1$
                     return SunOS;
-                } else if ("AIX".equals(osName)) {
+                } else if ("AIX".equals(osName)) {  //$NON-NLS-1$
                     return AIX;
-                } else if ("HPUX".equals(osName)) {
+                } else if ("HPUX".equals(osName)) {  //$NON-NLS-1$
                     return HPUX;
-                } else if ("Irix".equals(osName)) {
+                } else if ("Irix".equals(osName)) {  //$NON-NLS-1$
                     return IRIX;
-                } else if ("FreeBSD".equals(osName)) {
+                } else if ("FreeBSD".equals(osName)) {  //$NON-NLS-1$
                     return FreeBSD; // not verified
                 }
             }
@@ -408,9 +405,9 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         // these come frome the JSON file and finally from cmake´s download site
         // URLs
         /** OS name as specified by the cmake.org download site */
-        public String os = "";
+        public String os = "";  //$NON-NLS-1$
         /** OS architecture as specified by the cmake.org download site */
-        public String arch = "";
+        public String arch = "";  //$NON-NLS-1$
 
         /**
          * Checks whether an installation of this CmakeVariant will work on the
@@ -426,23 +423,23 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
             if (osFamily != null && osFamily.getCmakeOrgName().equals(os)) {
                 switch (osFamily) {
                 case Linux:
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {  //$NON-NLS-1$
                         return true;
                     }
-                    if (nodeOsArch.equals("amd64")
-                            && (arch.equals("i386") || arch.equals("x86_64"))) {
+                    if (nodeOsArch.equals("amd64")  //$NON-NLS-1$
+                            && (arch.equals("i386") || arch.equals("x86_64"))) {   //$NON-NLS-1$ //$NON-NLS-2$
                         return true; // allow both i386 and x86_64
                     }
                     return false;
                 case OSX: // to be verified by the community..
                     // ..cmake.org has both Darwin and Darwin64
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {
+                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {  //$NON-NLS-1$
                         return true;
                     }
-                    if ((nodeOsArch.equals("amd64")
-                            || nodeOsArch.equals("x86_64"))
-                            && (arch.equals("universal")
-                                    || arch.equals("x86_64"))) {
+                    if ((nodeOsArch.equals("amd64") //$NON-NLS-1$
+                            || nodeOsArch.equals("x86_64")) //$NON-NLS-1$
+                            && (arch.equals("universal") //$NON-NLS-1$
+                                    || arch.equals("x86_64"))) { //$NON-NLS-1$
                         return true; // allow both 32 bit and 64 bit
                     }
                     return false;
@@ -453,7 +450,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     // to be verified by the community
                     return true; // only one arch is provided by cmake.org
                 case SunOS:
-                    if (nodeOsArch.equals("sparc") && nodeOsArch.equals(arch)) {
+                    if (nodeOsArch.equals("sparc") && nodeOsArch.equals(arch)) { //$NON-NLS-1$
                         return true;
                     }
                 case IRIX:// to be verified by the community
