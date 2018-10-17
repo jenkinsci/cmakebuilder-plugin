@@ -23,3 +23,6 @@ To ease the pain of provisioning Jenkins worker nodes, it can
 Jenkins admins may configure the per-build-step-selectable CMake versions on the Jenkins` global configuration page. (Thanks to cmake.org for constantly providing portable/relocatable binaries for public download.)
 
 Issues are tracked at the [Jenkins issue Tracker](https://issues.jenkins-ci.org/issues/?jql=component%20%3D%20cmakebuilder-plugin).
+
+### Localizations
+1. Chinese localization is maintaned in https://github.com/jenkinsci/localization-zh-cn-plugin.
