@@ -25,4 +25,4 @@ Jenkins admins may configure the per-build-step-selectable CMake versions on the
 Issues are tracked at the [Jenkins issue Tracker](https://issues.jenkins-ci.org/issues/?jql=component%20%3D%20cmakebuilder-plugin).
 
 ### Localizations
-1. Chinese localization is maintaned in https://github.com/jenkinsci/localization-zh-cn-plugin.
+1. Chinese localization is maintained in https://github.com/jenkinsci/localization-zh-cn-plugin.
