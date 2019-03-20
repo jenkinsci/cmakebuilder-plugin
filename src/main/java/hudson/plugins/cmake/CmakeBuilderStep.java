@@ -330,7 +330,7 @@ public class CmakeBuilderStep extends AbstractStep {
             }
 
             if (step.getSteps() != null) {
-                final EnvVars envs = new EnvVars();
+                final EnvVars envs = new EnvVars(env);
 
                 String buildTool = null;
                 boolean needBuildTool = false;
