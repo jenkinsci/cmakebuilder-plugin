@@ -1,12 +1,11 @@
 /*
  * The MIT License
  *
- * Copyright 2018 Martin Weber
+ * Copyright 2018-2019 Martin Weber
  */
 package hudson.plugins.cmake;
 
 import java.util.List;
-import java.util.Map;
 
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
@@ -330,8 +329,6 @@ public class CmakeBuilderStep extends AbstractStep {
             }
 
             if (step.getSteps() != null) {
-                final EnvVars envs = new EnvVars();
-
                 String buildTool = null;
                 boolean needBuildTool = false;
                 for (BuildToolStep toolStep : step.getSteps()) {
@@ -358,15 +355,15 @@ public class CmakeBuilderStep extends AbstractStep {
                     if (!toolStep.getWithCmake()) {
                         // invoke directly
                         toolCall = buildBuildToolCall(buildTool,
-                                toolStep.getCommandArguments(envs));
+                                toolStep.getCommandArguments(env));
                     } else {
                         // invoke through 'cmake --build <dir>'
                         toolCall = buildBuildToolCallWithCmake(cmakeBin,
                                 theBuildDir,
-                                toolStep.getCommandArguments(envs));
+                                toolStep.getCommandArguments(env));
                     }
-                    final EnvVars stepEnv = new EnvVars(envs).overrideAll(
-                            toolStep.getEnvironmentVars(envs, listener));
+                    final EnvVars stepEnv = new EnvVars(env).overrideAll(
+                            toolStep.getEnvironmentVars(env, listener));
                     if (0 != (exitCode = launcher.launch().pwd(theBuildDir)
                             .envs(stepEnv).stdout(listener).cmds(toolCall)
                             .join())) {
