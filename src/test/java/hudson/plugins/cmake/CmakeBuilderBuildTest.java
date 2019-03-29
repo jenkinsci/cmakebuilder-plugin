@@ -1,26 +1,30 @@
 package hudson.plugins.cmake;
 
 import static org.junit.Assert.assertNotNull;
-import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.FreeStyleBuild;
-import hudson.model.AbstractBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Label;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.StringParameterDefinition;
-import hudson.slaves.DumbSlave;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.test.junit.ConditionalIgnore;
+import org.apache.geode.test.junit.rules.ConditionalIgnoreRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
+
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Label;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
+import hudson.slaves.DumbSlave;
 
 /**
  * Tests the CmakeBuilder in a running job.
@@ -29,6 +33,8 @@ import org.jvnet.hudson.test.TestBuilder;
  */
 public class CmakeBuilderBuildTest {
 
+    @Rule
+    public ConditionalIgnoreRule conditionalIgnoreRule = new ConditionalIgnoreRule();
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -48,6 +54,7 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a master.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnMaster() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -67,6 +74,7 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a slave.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnSlave() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -91,6 +99,7 @@ public class CmakeBuilderBuildTest {
      * Verifies that build variable get expanded.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildVariables() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -137,6 +146,7 @@ public class CmakeBuilderBuildTest {
      * Verifies that the build-tool variable gets injected.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolVariableInjected() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -159,6 +169,7 @@ public class CmakeBuilderBuildTest {
      * Verify that direct build tool invocations work.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolStep() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -180,7 +191,7 @@ public class CmakeBuilderBuildTest {
         step.setArgs(makeTargets2);
         steps.add(step);
         cmb.setSteps(steps);
-        
+
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
         j.assertLogContains(makeTargets, build);
@@ -194,6 +205,7 @@ public class CmakeBuilderBuildTest {
      * Test will fail with cmake >= 2.8
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolStepWithCmake() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);

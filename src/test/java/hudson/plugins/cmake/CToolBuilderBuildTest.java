@@ -2,6 +2,7 @@ package hudson.plugins.cmake;
 
 import java.util.List;
 
+import org.apache.geode.test.junit.ConditionalIgnore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -28,6 +29,7 @@ public class CToolBuilderBuildTest {
      * Verify that it works on a master.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnMaster() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -45,6 +47,7 @@ public class CToolBuilderBuildTest {
      * Verify that it works on a slave.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnSlave() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -67,6 +70,7 @@ public class CToolBuilderBuildTest {
      * Verifies that build variable get expanded.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildVariables() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -99,6 +103,7 @@ public class CToolBuilderBuildTest {
      * Verifies that the build-tool variable gets injected.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolVariableInjected() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
@@ -115,6 +120,7 @@ public class CToolBuilderBuildTest {
      * Verifies that failure exit codes get ignored.
      */
     @Test
+    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testIgnoreFailureExitCodes() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
@@ -125,7 +131,7 @@ public class CToolBuilderBuildTest {
         FreeStyleBuild build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
         j.assertBuildStatus(Result.FAILURE,build);
-        // ignore exit status 
+        // ignore exit status
         cmb.setIgnoredExitCodes("1");
         build = p.scheduleBuild2(0).get();
         System.out.println(JenkinsRule.getLog(build));
