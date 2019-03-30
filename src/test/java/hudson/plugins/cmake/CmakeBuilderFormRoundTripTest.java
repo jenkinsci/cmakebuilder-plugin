@@ -1,12 +1,12 @@
 package hudson.plugins.cmake;
 
-import hudson.model.FreeStyleProject;
-
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import hudson.model.FreeStyleProject;
 
 public class CmakeBuilderFormRoundTripTest {
 

@@ -17,18 +17,20 @@ import org.junit.runner.Description;
  * @author weber
  */
 public class CmakeNotInstalledIgnoreCondition implements IgnoreCondition {
-
+    private Boolean isInstalled= null;
     /**
      * @return <code>true</code> if the test should be skipped (cmake is NOT
      *         installed), otherwise <code>false</code>
      */
     @Override
     public boolean evaluate(Description testCaseDescription) {
+        if(isInstalled == null)
         try {
             new ProcessBuilder("cmake", "--version").start();
-            return false; // cmake is installed
+            isInstalled= Boolean.TRUE; // cmake is installed
         } catch (IOException e) {
-            return true; // skip test
+            isInstalled= Boolean.FALSE; // skip test
         }
+        return !isInstalled.booleanValue();
     }
 }

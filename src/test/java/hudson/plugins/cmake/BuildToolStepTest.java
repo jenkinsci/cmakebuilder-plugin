@@ -10,9 +10,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import hudson.EnvVars;
-import hudson.console.ConsoleNote;
-import hudson.util.AbstractTaskListener;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -21,6 +18,10 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import hudson.EnvVars;
+import hudson.console.ConsoleNote;
+import hudson.util.AbstractTaskListener;
 
 /**
  * @author Martin Weber

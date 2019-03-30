@@ -1,6 +1,6 @@
 [![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fcmakebuilder-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/cmakebuilder-plugin/job/master/)
 
-This plugin oversees the launch of CMake based builds.
+This plugin oversees the launch of CMake based builds for free-style and pipeline jobs.
 
 It provides a user interface for configuring the following parameters of a build step
 

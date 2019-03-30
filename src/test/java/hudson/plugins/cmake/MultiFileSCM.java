@@ -1,17 +1,17 @@
 package hudson.plugins.cmake;
 
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
-import hudson.scm.NullSCM;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jvnet.hudson.test.SingleFileSCM;
+
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.scm.NullSCM;
 
 /*
  *  Stolen from cppncss-plugin
@@ -34,7 +34,8 @@ public class MultiFileSCM extends NullSCM {
             FilePath workspace, BuildListener listener, File changeLogFile)
             throws IOException, InterruptedException {
         for (SingleFileSCM file : this.files) {
-            file.checkout(build, launcher, workspace, listener, changeLogFile);
+            file.checkout(build, launcher, workspace, listener, changeLogFile, null);
+//            file.checkout(build, launcher, workspace, listener, changeLogFile);
         }
         return true;
     }
