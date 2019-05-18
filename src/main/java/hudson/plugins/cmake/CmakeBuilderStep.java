@@ -304,8 +304,10 @@ public class CmakeBuilderStep extends AbstractStep {
                 if (step.isCleanBuild()
                         && !buildDir.equals(step.getSourceDir())) {
                     // avoid deleting source dir
-                    listener.getLogger().format(
-                            Messages.getString("Cleaning_build_dir"), theBuildDir.getRemote()); //$NON-NLS-1$
+                    listener.getLogger()
+                            .format(Messages.getString("Cleaning_build_dir"), //$NON-NLS-1$
+                                    theBuildDir.getRemote())
+                            .println();
                     theBuildDir.deleteRecursive();
                 }
                 theBuildDir.mkdirs();

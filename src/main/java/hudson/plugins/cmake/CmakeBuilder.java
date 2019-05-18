@@ -1,3 +1,8 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2018-2019 Martin Weber
+ */
 package hudson.plugins.cmake;
 
 import java.io.IOException;
@@ -219,8 +224,10 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             if (buildDir != null) {
                 if (this.cleanBuild && !buildDir.equals(sourceDir)) {
                     // avoid deleting source dir
-                    listener.getLogger().format(
-                            Messages.getString("Cleaning_build_dir"), theBuildDir.getRemote()); //$NON-NLS-1$
+                    listener.getLogger()
+                            .format(Messages.getString("Cleaning_build_dir"), //$NON-NLS-1$
+                                    theBuildDir.getRemote())
+                            .println();
                     theBuildDir.deleteRecursive();
                 }
                 theBuildDir.mkdirs();
