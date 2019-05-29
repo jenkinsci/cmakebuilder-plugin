@@ -78,20 +78,41 @@
       <version>2.10</version>
       <optional>true</optional>
     </dependency>
+
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-aggregator</artifactId>
+      <version>2.1</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-junit</artifactId>
       <version>1.7.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- to avoid NoSuchMethodError: com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor
+          in unittests -->
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.jayway.jsonpath</groupId>
+          <artifactId>json-path</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
   <profiles>
     <profile>
       <!-- pipeline requires an newer version of jenkins -->
-      <id>pipeline-test</id>
+      <id>dev-pipeline</id>
       <properties>
-        <jenkins.version>2.60.3</jenkins.version>
-        <java.level>8</java.level>
+        <jenkins.version>2.150.3</jenkins.version>
+        <jenkinsHome>${project.basedir}/work-${jenkins.version}</jenkinsHome>
       </properties>
       <dependencies>
         <dependency>
