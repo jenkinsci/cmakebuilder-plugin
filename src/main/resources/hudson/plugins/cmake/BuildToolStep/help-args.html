@@ -1,7 +1,7 @@
 <div>
-Specify arguments to pass to the build tool or <code>cmake</code> (separated by spaces).
-Arguments may contain spaces if they are enclosed in double quotes (will be handled like a Unix shell does),<br>
-HINT: If you plan to archive the artifacts, specify <code>DESTDIR=${WORKSPACE}/artifacts all install</code> here
-to instruct the tool to copy the artifacts to <code>DESTDIR</code>. At least the <code>make</code> and the
-<code>ninja</code> tool allow overriding the installation directory that way.
+Specify arguments to pass to the build tool or to <code>cmake</code>.
+Arguments must be separated by spaces but may contain spaces if they are enclosed in double quotes
+(will be handled like a Unix shell does),<br>
+Most of the time, you will want to leave this empty (to call the default build target) or you
+will specify just some build target names here.
 </div>

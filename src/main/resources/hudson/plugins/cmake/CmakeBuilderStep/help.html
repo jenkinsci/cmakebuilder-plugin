@@ -1,5 +1,25 @@
-<div>Uses CMake to generate build-scripts and can run these.</br>
-  This causes Jenkins to invoke <code>cmake -G</code> with the given options.</br>
-  Any non-zero exit code during build-script generation causes Jenkins to mark the build as a failure.</br>
-  Use the <i>build tool invocation</i> steps below to perform the actual build.
+<div>Uses CMake to generate build-scripts and can run these.<br>
+  This invokes <code>cmake</code> with the given options to generate the build scripts.<br>
+  Any non-zero exit code during build-script generation causes Jenkins to mark the build as a failure.
+  <p>
+  To run the generated build script, you have to add <i>build tool invocation</i> steps.
+  <br>For example, to run the equivalent of the <code>sh</code> shell script
+  <pre><code>
+   mkdir build &amp;&amp; cd build
+   cmake -G Ninja &lt;workpace-root>/source
+   ninja all
+   DESTDIR=&lt;workpace-root>/artifacts ninja install
+  </code></pre>
+  you would enter the following pipeline script:
+  <pre><code>
+  cmakeBuild
+      generator: 'Ninja',
+      buildDir: 'build',
+      sourceDir: 'source',
+      installation: 'InSearchPath',
+      steps: [
+          [args: 'all install', envVars: 'DESTDIR=${WORKSPACE}/artifacts']
+      ]
+  </code></pre>
+  </p>
 </div>
