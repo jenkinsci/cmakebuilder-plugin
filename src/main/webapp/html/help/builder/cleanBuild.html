@@ -1,3 +1,6 @@
 <div>
-If checked, the build directory will be deleted before CMake invokation.
+If checked, the build directory will be deleted before CMake invokation, <b>unless</b>
+the <a href="#CmakeBuilder.sourceDir">source directory</a> and the 
+<a href="#CmakeBuilder.buildDir">build directory</a> (above) are equal
+(Because deleting the sources and then starting a build will definitely fail).
 </div>
