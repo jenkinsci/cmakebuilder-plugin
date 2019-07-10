@@ -3,7 +3,8 @@
   Any non-zero exit code during build-script generation causes Jenkins to mark the build as a failure.
   <p>
   To run the generated build script, you have to add <i>build tool invocation</i> steps.
-  <br>For example, to run the equivalent of the <code>sh</code> shell script
+  </p>
+  For example, to run the equivalent of the <code>sh</code> shell script
   <pre><code>
    mkdir build &amp;&amp; cd build
    cmake -G Ninja &lt;workpace-root>/source
@@ -20,5 +21,4 @@
           [args: 'all install', envVars: 'DESTDIR=${WORKSPACE}/artifacts']
       ]
   </code></pre>
-  </p>
 </div>
