@@ -35,8 +35,7 @@ download a recent version of cmake on demand from
 exclusively for a build. (Thanks to cmake.org for constantly providing
 portable/relocatable binaries for public download.)  
 Jenkins admins may configure the available CMake versions on the [global
-configuration
-page](https://wiki.jenkins.io/display/JENKINS/Global+Configuration).
+configuration page](https://wiki.jenkins.io/display/JENKINS/Global+Configuration).
 
 ### Build-script generator build step
 
@@ -69,8 +68,7 @@ build tool corresponding to the chosen CMake Buildscript Generator and
 
 This build step allows to invoke the corresponding tool of the CMake
 suite with arbitrary command-line arguments.  
-It accepts the following [configuration
-parameters](https://wiki.jenkins.io/display/JENKINS/Tool+Configuration):
+It accepts the following [configuration parameters](https://wiki.jenkins.io/display/JENKINS/Tool+Configuration):
 
 1.  CMake version to use
 2.  Working directory
@@ -81,4 +79,4 @@ parameters](https://wiki.jenkins.io/display/JENKINS/Tool+Configuration):
 Issues are tracked at the [Jenkins issue Tracker](https://issues.jenkins-ci.org/issues/?jql=component%20%3D%20cmakebuilder-plugin).
 
 ### Localizations
-1. Chinese localization is maintained in https://github.com/jenkinsci/localization-zh-cn-plugin.
+1. Chinese localization is maintained in /jenkinsci/localization-zh-cn-plugin.

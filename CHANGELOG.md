@@ -2,7 +2,7 @@
 
 ### Newer versions
 
-See [GitHub releases](releases)
+See [GitHub releases](cmakebuilder-plugin/releases)
 
 ### 2.6.2
 
@@ -16,7 +16,7 @@ Release date: 07 Aug 2019
 Release date: 31 Mar 2019
 
 - Internationalized to support Chinese localization. Chinese localization is maintained in
- [https://github.com/jenkinsci/localization-zh-cn-plugin](https://github.com/jenkinsci/localization-zh-cn-plugin/tree/master/plugins/cmakebuilder-plugin){.external-link}.
+ [https://github.com/jenkinsci/localization-zh-cn-plugin](https://github.com/jenkinsci/localization-zh-cn-plugin/tree/master/plugins/cmakebuilder-plugin).
 - FIX: User-defined Environment variables are not passed to steps within withCmake 
  (Thanks to Diorcet Yann).
 - CHANGE: The plugin now requires Java 8 to run.
@@ -26,7 +26,7 @@ Release date: 31 Mar 2019
 
 Release date: 21 Jun 2018
 
-- FIXED [JENKINS-51904](https://issues.jenkins-ci.org/browse/JENKINS-51904){.external-link}:
+- FIXED [JENKINS-51904](https://issues.jenkins-ci.org/browse/JENKINS-51904):
     cmake install from archive paths are wrong.  
     Compatibility note: To be compatible with the *install from
     archive*-installer, it is no longer possible to specify a
@@ -39,14 +39,14 @@ automatically**. Any default *InSearchPath* installation with a tool
 name of just *cmake* is auto-migrated. Anyway, You will find messages in
 the Jenkins log if the cmake installation cannot be auto-migrated.
 
-- FIXED [JENKINS-52104](https://issues.jenkins-ci.org/browse/JENKINS-52104){.external-link}:
+- FIXED [JENKINS-52104](https://issues.jenkins-ci.org/browse/JENKINS-52104):
     Plugin always fills arguments field with "all" for build tool.
 
 ### 2.5.2
 
 Release date: 05 May 2018
 
-- FIXED [JENKINS-51060](https://issues.jenkins-ci.org/browse/JENKINS-51060){.external-link}:
+- FIXED [JENKINS-51060](https://issues.jenkins-ci.org/browse/JENKINS-51060):
   Environment variables are not passed to cmake steps when running in pipeline withEnv.
 
 ### 2.5.1
@@ -60,7 +60,7 @@ Release date: 31 Mar 2018
 
 Release date: 27 Mar 2018
 
-- FIXED [JENKINS-34998](https://issues.jenkins-ci.org/browse/JENKINS-34998){.external-link}: Make
+- FIXED [JENKINS-34998](https://issues.jenkins-ci.org/browse/JENKINS-34998): Make
  CMake plugin compatible with pipeline.
 
 DO NOT USE WITH PIPELINE: The Pipeline snippet generator duplicates
@@ -70,28 +70,28 @@ argument 'cmakeArgs' as 'arguments and 'buildDir as 'workingDir'.
 
 Release date: 11 Feb 2018
 
-- FIXED [JENKINS-48102](https://issues.jenkins-ci.org/browse/JENKINS-48102){.external-link}:
+- FIXED [JENKINS-48102](https://issues.jenkins-ci.org/browse/JENKINS-48102):
     CMake plugin leaks file handle on CMakeCache.txt.
 
 ### 2.4.5
 
 Release date: 04 Apr 2017
 
-- FIXED [JENKINS-43175](https://issues.jenkins-ci.org/browse/JENKINS-43175){.external-link}:
+- FIXED [JENKINS-43175](https://issues.jenkins-ci.org/browse/JENKINS-43175):
     NPE at hudson.plugins.cmake.CmakeBuilder.perform()
 
 ### 2.4.4
 
 Release date: 20 Sep 2016
 
-- FIXED [JENKINS-38227](https://issues.jenkins-ci.org/browse/JENKINS-38227){.external-link}:
+- FIXED [JENKINS-38227](https://issues.jenkins-ci.org/browse/JENKINS-38227):
     Allow letting CMake choose the (default) generator.
 
 ### 2.4.3
 
 Release date: 26 Jun 2016
 
-- FIXED [JENKINS-35911](https://issues.jenkins-ci.org/browse/JENKINS-35911){.external-link}:
+- FIXED [JENKINS-35911](https://issues.jenkins-ci.org/browse/JENKINS-35911):
     Allow to ignore failure exit codes from CMake/CPack/CTest build step.
 
 ### 2.4.2
@@ -102,7 +102,7 @@ Release date: 09 May 2016
 - Require Java 7 to run the plugin now.
 - Integrated Findbugs and fixed potential errors discovered by it.
 - CLOSED JENKINS--29142 (cannot be fixed, but mentioning workaround in online help)
-- FIXED [JENKINS-34613:](https://issues.jenkins-ci.org/browse/JENKINS-34613){.external-link}
+- FIXED [JENKINS-34613:](https://issues.jenkins-ci.org/browse/JENKINS-34613)
  Set default value of Generator in Java instead of jelly.
 
 ### 2.4.1
@@ -131,7 +131,7 @@ Release date: 20 Nov 2015
 
 - Build tool step no longer discards the environment set up.with
     EnvInject. This allows to apply a workaround for  
-    [JENKINS-30114](https://issues.jenkins-ci.org/browse/JENKINS-30114){.external-link}.
+    [JENKINS-30114](https://issues.jenkins-ci.org/browse/JENKINS-30114).
     (Thanks to Armin Novak for reporting and testing on Windows.)
 
 ### 2.3.2
