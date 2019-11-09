@@ -6,7 +6,7 @@ See [GitHub releases](cmakebuilder-plugin/releases)
 
 ### 2.6.3
 
-Release date: 07 Aug 2019
+Release date: 09 Nov 2019
 
 - Moved docs to GitHub.
 
