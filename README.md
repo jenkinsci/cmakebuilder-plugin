@@ -1,6 +1,6 @@
 [![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fcmakebuilder-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/cmakebuilder-plugin/job/master/)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/cmakebuilder.svg?color=blue)](https://plugins.jenkins.io/cmakebuilder)
-[Changelog](https://github.com/jenkinsci/cmakebuilder-plugin/blob/master/CHANGELOG.md)
+[Changelog](CHANGELOG.md)
 
 ## About this plugin
 
