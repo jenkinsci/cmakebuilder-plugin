@@ -24,19 +24,14 @@
       <f:expandableTextbox />
     </f:entry>
   </f:advanced>
-
   <f:entry title="${%build_steps}" field="runTool" help="/plugin/cmakebuilder/html/help/builder/runTool.html">
     <f:repeatable field="steps" header="${%actual_build_tool}" add="${%Add build tool invocation}">
       <table width="100%">
         <st:include page="config.jelly" class="hudson.plugins.cmake.BuildToolStep" />
         <f:entry>
-          <div align="right">
             <f:repeatableDeleteButton />
-          </div>
         </f:entry>
       </table>
     </f:repeatable>
   </f:entry>
-  <!--
-  -->
 </j:jelly>
