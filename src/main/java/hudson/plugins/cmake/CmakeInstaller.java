@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Martin Weber.
+ * Copyright (c) 2015-2021 Martin Weber.
  *
  * Contributors:
  *      Martin Weber - Initial implementation
@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
@@ -42,8 +42,6 @@ import net.sf.json.JSONObject;
  * Automatic Cmake installer from cmake.org.
  */
 public class CmakeInstaller extends DownloadFromUrlInstaller {
-    private static Logger logger = Logger
-            .getLogger(CmakeInstaller.class.getName());
 
     @DataBoundConstructor
     public CmakeInstaller(String id) {
@@ -62,16 +60,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         final String[] nodeProperties = channel
                 .call(new GetSystemProperties("os.name", "os.arch")); //$NON-NLS-1$ //$NON-NLS-2$
 
-        final Installable inst = getInstallable(
-                OsFamily.valueOfOsName(nodeProperties[0]), nodeProperties[1]);
-        if (inst == null) {
-            String msg = String.format(
-                    Messages.getString("CmakeInstaller.No_cmake_download_known"), //$NON-NLS-1$
-                    getDescriptor().getDisplayName(), tool.getName(),
-                    nodeProperties[0], nodeProperties[1]);
-            throw new AbortException(msg);
-        }
-
+        final Installable inst = getInstallable(tool, nodeProperties[0], nodeProperties[1]);
         final FilePath toolPath = getFixedPreferredLocation(tool, node);
         // FilePath base0 = findPullUpDirectory(toolPath);
         if (!isUpToDate(toolPath, inst)) {
@@ -117,31 +106,63 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
      * Overloaded to select the OS-ARCH specific variant and to fill in the
      * variant´s URL.
      *
-     * @param nodeOsFamily
+     * @param toolInstallation
+     *            the ToolInstallation to get an {@code Installable} for
+     * @param nodeOsFamilyJvm
      *            the value of the JVM system property "os.name" of the node,
-     *            represented as an enum
-     * @param nodeOsArch
+     * @param nodeOsArchJvm
      *            the value of the JVM system property "os.arch" of the node
      * @return null if no such matching variant is found.
+     *
+     * @throws AbortException
+     *             if no matching download URL is known
      */
-    public Installable getInstallable(OsFamily nodeOsFamily, String nodeOsArch)
+    public Installable getInstallable(ToolInstallation toolInstallation, String nodeOsFamilyJvm, String nodeOsArchJvm)
             throws IOException {
         List<CmakeInstallable> installables = ((DescriptorImpl) getDescriptor())
                 .getInstallables();
+        for (CmakeInstallable inst : installables) {
+            if (this.id.equals(inst.id)) {
+                // our ID (aka cmake version) matches the requested ID...
+                OsFamily osFamily = OsFamily.valueOfOsName(nodeOsFamilyJvm);
+                if (osFamily == null) {
+                    String msg = String.format(
+                            Messages.getString("CmakeInstaller.Unknown_OS"), //$NON-NLS-1$
+                            getDescriptor().getDisplayName(),
+                            toolInstallation.getName(), nodeOsFamilyJvm);
+                    throw new AbortException(msg);
+                }
 
-        for (CmakeInstallable inst : installables)
-            if (id.equals(inst.id)) {
                 // Filter variants to install by system-properties
                 // for the node to install on
                 for (CmakeVariant variant : inst.variants) {
-                    if (variant.appliesTo(nodeOsFamily, nodeOsArch)) {
+                    if (variant.appliesTo(osFamily, nodeOsArchJvm)) {
+                        // matching variant found!
                         // fill in URL for download machinery
                         inst.url = variant.url;
                         return inst;
                     }
                 }
+                // our ID (aka cmake version) DOES match the requested ID but
+                // no download URL is known for the "os.name"/"os.arch" tuple...
+                String provided = Arrays.stream(inst.variants)
+                        .map(v -> v.os + " / " + v.arch).sorted() //$NON-NLS-1$
+                        .collect(Collectors.joining("\n\t", "\t", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                String msg = String.format(Messages.getString(
+                        "CmakeInstaller.No_download_for_requested_OS_arch"), //$NON-NLS-1$
+                        getDescriptor().getDisplayName(),
+                        toolInstallation.getName(), this.id, nodeOsFamilyJvm,
+                        nodeOsArchJvm, provided);
+                throw new AbortException(msg);
             }
-        return null;
+        }
+        // no ID (aka cmake version) matches the requested ID...
+        String msg = String.format(
+                Messages.getString(
+                        "CmakeInstaller.No_download_for_requested_version"), //$NON-NLS-1$
+                getDescriptor().getDisplayName(), toolInstallation.getName(),
+                this.id);
+        throw new AbortException(msg);
     }
 
     /**
@@ -329,27 +350,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     } // GetSystemProperties
 
     private static enum OsFamily {
-        Linux, Windows("win32"), OSX("Darwin"), SunOS, FreeBSD, IRIX( //$NON-NLS-1$ //$NON-NLS-2$
-                "IRIX64"), AIX, HPUX("HP-UX");   //$NON-NLS-1$ //$NON-NLS-2$
-        private final String cmakeOrgName;
-
-        /**
-         * Gets the OS name as specified in the files on the cmake.org download
-         * site.
-         *
-         * @return the current cmakeOrgName property.
-         */
-        public String getCmakeOrgName() {
-            return cmakeOrgName != null ? cmakeOrgName : name();
-        }
-
-        private OsFamily() {
-            this(null);
-        }
-
-        private OsFamily(String cmakeOrgName) {
-            this.cmakeOrgName = cmakeOrgName;
-        }
+        Linux, Windows, OSX, SunOS, FreeBSD, IRIX(), AIX, HPUX();
 
         /**
          * Gets the OS family from the value of the system property "os.name".
@@ -360,7 +361,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          */
         public static OsFamily valueOfOsName(String osName) {
             if (osName != null) {
-                if ("Linux".equals(osName)) {  //$NON-NLS-1$
+                if ("Linux".equals(osName) ) {  //$NON-NLS-1$
                     return Linux;
                 } else if (osName.startsWith("Windows")) {  //$NON-NLS-1$
                     return Windows;
@@ -402,7 +403,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     @Restricted(NoExternalUse.class)
     public static class CmakeVariant {
         public String url;
-        // these come frome the JSON file and finally from cmake´s download site
+        // these come from the JSON file and finally from cmake´s download site
         // URLs
         /** OS name as specified by the cmake.org download site */
         public String os = "";  //$NON-NLS-1$
@@ -420,15 +421,21 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          *            the value of the JVM system property "os.arch" of the node
          */
         public boolean appliesTo(OsFamily osFamily, String nodeOsArch) {
-            if (osFamily != null && osFamily.getCmakeOrgName().equals(os)) {
+            if (osFamily != null) {
                 switch (osFamily) {
                 case Linux:
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {  //$NON-NLS-1$
-                        return true;
-                    }
-                    if (nodeOsArch.equals("amd64")  //$NON-NLS-1$
-                            && (arch.equals("i386") || arch.equals("x86_64"))) {   //$NON-NLS-1$ //$NON-NLS-2$
-                        return true; // allow both i386 and x86_64
+                    switch (this.os) {
+                    case "linux":  //$NON-NLS-1$
+                    case "Linux":  //$NON-NLS-1$
+                        switch (this.arch) {
+                        case "i386":  //$NON-NLS-1$
+                            // allow 32 bit executable on 64 bit machine
+                            return nodeOsArch.equals("i386") || nodeOsArch.equals("amd64");  //$NON-NLS-1$ //$NON-NLS-2$
+                        case "x86_64":  //$NON-NLS-1$
+                            return nodeOsArch.equals("amd64");  //$NON-NLS-1$
+                        case "aarch64":  //$NON-NLS-1$
+                            return nodeOsArch.equals("aarch64");  //$NON-NLS-1$
+                        }
                     }
                     return false;
                 case OSX: // to be verified by the community..
@@ -444,7 +451,21 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     }
                     return false;
                 case Windows:
-                    return true; // only "x86" arch is provided by cmake.org
+                    switch (this.os) {
+                    case "win32":  //$NON-NLS-1$
+                        // allow 32 bit executable on 64 bit machine
+                        return nodeOsArch.equals("x86") || nodeOsArch.equals("amd64");  //$NON-NLS-1$ //$NON-NLS-2$
+                    case "win64":  //$NON-NLS-1$
+                        return nodeOsArch.equals("amd64");  //$NON-NLS-1$
+                    case "windows":  //$NON-NLS-1$
+                        switch (this.arch) {
+                        case "i386":  //$NON-NLS-1$
+                            return nodeOsArch.equals("i386");  //$NON-NLS-1$
+                        case "x86_64":  //$NON-NLS-1$
+                            return nodeOsArch.equals("amd64");  //$NON-NLS-1$
+                        }
+                    }
+                    return false;
                 case AIX:
                 case HPUX:
                     // to be verified by the community
@@ -464,7 +485,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         }
     }
 
-    // Needs to be public for JSON deserialisation
+    // Needs to be public for JSON de-serialization
     @Restricted(NoExternalUse.class)
     public static class CmakeInstallable extends Installable {
         public CmakeVariant[] variants = new CmakeVariant[0];
