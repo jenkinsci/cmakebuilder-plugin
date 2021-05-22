@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import hudson.EnvVars;
 import hudson.console.ConsoleNote;
-import hudson.util.AbstractTaskListener;
+import hudson.model.TaskListener;
 
 /**
  * @author Martin Weber
@@ -33,7 +33,7 @@ public class BuildToolStepTest {
     /**
      * @author Martin Weber
      */
-    private static class DummyTaskListener extends AbstractTaskListener {
+    private static class DummyTaskListener implements TaskListener {
         /**  */
         private static final long serialVersionUID = 1L;
 

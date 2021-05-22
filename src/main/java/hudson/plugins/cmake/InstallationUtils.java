@@ -23,7 +23,7 @@ class InstallationUtils {
      */
     static ListBoxModel doFillInstallationNameItems() {
         ListBoxModel items = new ListBoxModel();
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
                     .getDescriptor(CmakeTool.class);
@@ -44,7 +44,7 @@ class InstallationUtils {
      *         found
      */
     static CmakeTool getInstallationByName(String installationName) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             final CmakeTool.DescriptorImpl descriptor = (CmakeTool.DescriptorImpl) jenkins
                     .getDescriptor(CmakeTool.class);

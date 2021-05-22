@@ -129,7 +129,7 @@ public class CmakeTool extends ToolInstallation implements
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "Older Jenkins may return null here")
     public static void onLoaded() {
 
-        Jenkins jenkinsInstance = Jenkins.getInstance();
+        Jenkins jenkinsInstance = Jenkins.getInstanceOrNull();
         if (jenkinsInstance == null) {
             return;
         }
