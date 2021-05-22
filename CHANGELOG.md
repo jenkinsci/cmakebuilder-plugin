@@ -2,7 +2,7 @@
 
 ### Newer versions
 
-See [GitHub releases](cmakebuilder-plugin/releases)
+See [GitHub releases](https://github.com/jenkinsci/cmakebuilder-plugin/releases)
 
 ### 2.6.3
 
