@@ -439,15 +439,26 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     }
                     return false;
                 case OSX: // to be verified by the community..
+                    switch (this.os) {
                     // ..cmake.org has both Darwin and Darwin64
-                    if (nodeOsArch.equals("i386") && nodeOsArch.equals(arch)) {  //$NON-NLS-1$
-                        return true;
-                    }
-                    if ((nodeOsArch.equals("amd64") //$NON-NLS-1$
-                            || nodeOsArch.equals("x86_64")) //$NON-NLS-1$
-                            && (arch.equals("universal") //$NON-NLS-1$
-                                    || arch.equals("x86_64"))) { //$NON-NLS-1$
-                        return true; // allow both 32 bit and 64 bit
+                    case "macos": // arch=universal? //$NON-NLS-1$
+                        switch (this.arch) {
+                        case "universal": //$NON-NLS-1$
+                            return true;
+                        }
+                    case "Darwin": //$NON-NLS-1$
+                        switch (this.arch) {
+                        case "x86_64": //$NON-NLS-1$
+                            return nodeOsArch.equals("amd64") //$NON-NLS-1$
+                                    || nodeOsArch.equals("x86_64");
+                        case "universal": //$NON-NLS-1$
+                            return true;
+                        }
+                    case "Darwin64": //$NON-NLS-1$
+                        switch (this.arch) {
+                        case "universal": //$NON-NLS-1$
+                            return true;
+                        }
                     }
                     return false;
                 case Windows:
