@@ -450,7 +450,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                         switch (this.arch) {
                         case "x86_64": //$NON-NLS-1$
                             return nodeOsArch.equals("amd64") //$NON-NLS-1$
-                                    || nodeOsArch.equals("x86_64");
+                                    || nodeOsArch.equals("x86_64"); //$NON-NLS-1$
                         case "universal": //$NON-NLS-1$
                             return true;
                         }
