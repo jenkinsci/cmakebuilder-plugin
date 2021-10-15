@@ -8,8 +8,16 @@ package hudson.plugins.cmake;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.workflow.actions.LabelAction;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.Step;
+import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.jenkinsci.plugins.workflow.steps.StepExecution;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -19,18 +27,26 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.model.Descriptor.FormException;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 /**
- * A Step that holds information about a cmake installation,
+ * A pipeline Step that holds information about a cmake installation.<br>
+ * NOTE: Actually, this class is NOT abstract, since we want to re-use the
+ * {@code @DataBoundSetter} methods defined here.
  *
  * @author Martin weber
  */
-public abstract class AbstractStep extends Step implements Serializable {
+public class AbstractStep extends Step implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private static final int MAX_LABEL_LENGTH = 100;
 
     /** the name of the cmake tool installation to use for this build step */
     private String installation;
+
+    private String label;
 
     /**
      * Minimal constructor.
@@ -39,6 +55,7 @@ public abstract class AbstractStep extends Step implements Serializable {
      *            the name of the cmake tool installation from the global config
      *            page.
      */
+    @DataBoundConstructor
     public AbstractStep(String installation) {
         this.installation = Util.fixEmptyAndTrim(installation);
     }
@@ -68,6 +85,30 @@ public abstract class AbstractStep extends Step implements Serializable {
         return InstallationUtils.getInstallationByName(installation);
     }
 
+    @DataBoundSetter
+    public void setLabel(String label) {
+        this.label = Util.fixEmptyAndTrim(label);
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    /**
+     * Implemented to just add the label string to the build log.<br>
+     * Sub-classes should override and call super.
+     *
+     * @return always <code>null</code>
+     */
+    @Override
+    public StepExecution start(StepContext context) throws Exception {
+        if (this.label != null) {
+            context.get(FlowNode.class).addAction(
+                    new LabelAction(StringUtils.left(label, MAX_LABEL_LENGTH)));
+        }
+        return null;
+    }
+
     // //////////////////////////////////////////////////////////////////
     // inner classes
     // //////////////////////////////////////////////////////////////////
@@ -88,6 +129,15 @@ public abstract class AbstractStep extends Step implements Serializable {
          */
         public ListBoxModel doFillInstallationItems() {
             return InstallationUtils.doFillInstallationNameItems();
+        }
+
+        public FormValidation doCheckLabel(@QueryParameter String label) {
+            if (label != null && label.length() > MAX_LABEL_LENGTH) {
+                return FormValidation.error(Messages.getString(
+                        "AbstractStep.Descriptor.FormValidation.Label_too_long"), //$NON-NLS-1$
+                        MAX_LABEL_LENGTH);
+            }
+            return FormValidation.ok();
         }
     }
 }

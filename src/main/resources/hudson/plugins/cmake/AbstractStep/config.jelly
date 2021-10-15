@@ -4,4 +4,7 @@
     help="/plugin/cmakebuilder/html/help/cmake-installer/installation.html">
     <f:select />
   </f:entry>
+  <f:entry title="${%Label}" field="label">
+    <f:textbox autoCompleteDelimChar=" " />
+  </f:entry>
 </j:jelly>

@@ -93,6 +93,7 @@ public class AbstractToolStep extends AbstractStep {
      */
     @Override
     public StepExecution start(StepContext context) throws Exception {
+        super.start(context);
         return new Execution(this, context);
     }
 
