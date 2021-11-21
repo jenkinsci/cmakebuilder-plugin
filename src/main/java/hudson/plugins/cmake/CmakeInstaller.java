@@ -124,7 +124,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
         for (CmakeInstallable inst : installables) {
             if (this.id.equals(inst.id)) {
                 // our ID (aka cmake version) matches the requested ID...
-                OsFamily osFamily = OsFamily.valueOfOsName(nodeOsFamilyJvm);
+                OsFamily osFamily = OsFamily.valueOfJvmOsName(nodeOsFamilyJvm);
                 if (osFamily == null) {
                     String msg = String.format(
                             Messages.getString("CmakeInstaller.Unknown_OS"), //$NON-NLS-1$
@@ -146,8 +146,8 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                 // our ID (aka cmake version) DOES match the requested ID but
                 // no download URL is known for the "os.name"/"os.arch" tuple...
                 String provided = Arrays.stream(inst.variants)
-                        .map(v -> v.os + " / " + v.arch).sorted() //$NON-NLS-1$
-                        .collect(Collectors.joining("\n\t", "\t", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        .map(v -> v.os + " / " + v.arch + ":\t" + v.url) //$NON-NLS-1$ //$NON-NLS-2$
+                        .sorted().collect(Collectors.joining("\n\t", "\t", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 String msg = String.format(Messages.getString(
                         "CmakeInstaller.No_download_for_requested_OS_arch"), //$NON-NLS-1$
                         getDescriptor().getDisplayName(),
@@ -359,7 +359,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          *            the value of the system property "os.name"
          * @return the OsFalimly object or {@code null} if osName is unknown
          */
-        public static OsFamily valueOfOsName(String osName) {
+        public static OsFamily valueOfJvmOsName(String osName) {
             if (osName != null) {
                 if ("Linux".equals(osName) ) {  //$NON-NLS-1$
                     return Linux;
