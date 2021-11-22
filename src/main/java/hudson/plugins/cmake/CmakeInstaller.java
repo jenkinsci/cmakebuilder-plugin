@@ -471,7 +471,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
                     case "windows":  //$NON-NLS-1$
                         switch (this.arch) {
                         case "i386":  //$NON-NLS-1$
-                            return nodeOsArch.equals("i386");  //$NON-NLS-1$
+                            return nodeOsArch.equals("x86");  //$NON-NLS-1$
                         case "x86_64":  //$NON-NLS-1$
                             return nodeOsArch.equals("amd64");  //$NON-NLS-1$
                         }
