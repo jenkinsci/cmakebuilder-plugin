@@ -27,7 +27,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.model.Descriptor.FormException;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
