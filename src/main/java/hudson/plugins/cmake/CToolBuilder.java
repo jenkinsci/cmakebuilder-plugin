@@ -2,7 +2,7 @@ package hudson.plugins.cmake;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
