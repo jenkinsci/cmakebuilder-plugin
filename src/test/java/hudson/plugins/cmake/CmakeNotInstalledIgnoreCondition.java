@@ -7,30 +7,39 @@ package hudson.plugins.cmake;
 
 import java.io.IOException;
 
-import org.apache.geode.test.junit.IgnoreCondition;
-import org.junit.runner.Description;
+import org.junit.Assume;
 
 /**
  * Prevents test from being run if cmake is not in search path for executables
- * ({@code $path} on linux).
+ * ({@code $PATH} on linux).
  *
  * @author weber
  */
-public class CmakeNotInstalledIgnoreCondition implements IgnoreCondition {
-    private Boolean isInstalled= null;
+public class CmakeNotInstalledIgnoreCondition {
+    private static Boolean isInstalled = null;
+
     /**
-     * @return <code>true</code> if the test should be skipped (cmake is NOT
-     *         installed), otherwise <code>false</code>
+     * @return {@code true} if {@code cmake} is installed and available on PATH
      */
-    @Override
-    public boolean evaluate(Description testCaseDescription) {
-        if(isInstalled == null)
-        try {
-            new ProcessBuilder("cmake", "--version").start();
-            isInstalled= Boolean.TRUE; // cmake is installed
-        } catch (IOException e) {
-            isInstalled= Boolean.FALSE; // skip test
+    public static synchronized boolean isCmakeInstalled() {
+        if (isInstalled == null) {
+            try {
+                Process p = new ProcessBuilder("cmake", "--version").start();
+                p.waitFor();
+                isInstalled = Boolean.TRUE;
+            } catch (IOException | InterruptedException e) {
+                isInstalled = Boolean.FALSE;
+            }
         }
-        return !isInstalled.booleanValue();
+        return isInstalled.booleanValue();
+    }
+
+    /**
+     * Skips the current JUnit test via {@link Assume#assumeTrue} if
+     * {@code cmake} is not installed.
+     */
+    public static void assumeCmakeInstalled() {
+        Assume.assumeTrue("SKIPPED: cmake tool not installed",
+                isCmakeInstalled());
     }
 }

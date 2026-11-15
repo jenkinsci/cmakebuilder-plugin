@@ -1,3 +1,21 @@
 <div>
- The working directory for execution, relative to $WORKSPACE.
+  <p>
+    The working directory in which the selected tool (<code>cmake</code>, <code>ctest</code>, or
+    <code>cpack</code>) is executed, resolved relative to <code>$WORKSPACE</code>. If left empty,
+    the workspace root is used. If the directory does not exist, it will be created automatically
+    before the tool is launched.
+  </p>
+  <p>
+    For <code>ctest</code> and <code>cpack</code> steps, set <code>workingDir</code> to the CMake
+    build directory (e.g. <code>build</code>) where <code>CMakeCache.txt</code>,
+    <code>CTestTestfile.cmake</code>, or <code>CPackConfig.cmake</code> were generated.
+  </p>
+  <p>
+    <b>Note on <code>ctest</code> and CMake's <code>WORKING_DIRECTORY</code> test property:</b>
+    <code>workingDir</code> specifies the directory from which Jenkins launches the <code>ctest</code>
+    runner to discover test definitions. Individual tests executed by <code>ctest</code> run inside
+    the directory configured via the <code>WORKING_DIRECTORY</code> property on
+    <a href="https://cmake.org/cmake/help/latest/command/add_test.html" target="_blank" rel="noopener noreferrer"><code>add_test()</code></a>
+    in <code>CMakeLists.txt</code> (or the corresponding build directory if not specified).
+  </p>
 </div>

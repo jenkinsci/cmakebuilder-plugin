@@ -43,6 +43,7 @@ public class CmakeBuilderStep extends AbstractStep {
     private String buildType;
     private String cmakeArgs;
     private String preloadScript;
+    private String preset;
     private boolean cleanBuild;
 
     private List<BuildToolStep> toolSteps;
@@ -121,6 +122,15 @@ public class CmakeBuilderStep extends AbstractStep {
     }
 
     @DataBoundSetter
+    public void setPreset(String preset) {
+        this.preset = Util.fixEmptyAndTrim(preset);
+    }
+
+    public String getPreset() {
+        return this.preset;
+    }
+
+    @DataBoundSetter
     public void setCmakeArgs(String cmakeArgs) {
         this.cmakeArgs= Util.fixEmptyAndTrim(cmakeArgs);
     }
@@ -150,98 +160,6 @@ public class CmakeBuilderStep extends AbstractStep {
     public StepExecution start(StepContext context) throws Exception {
         super.start(context);
         return new Execution(this, context);
-    }
-
-    /**
-     * Constructs the command line to invoke cmake.
-     *
-     * @param cmakeBin
-     *            the name of the cmake binary, either as an absolute or
-     *            relative file system path.
-     * @param generator
-     *            the name of the build-script generator or {@code null}
-     * @param preloadScript
-     *            name of the pre-load a script to populate the cache or
-     *            {@code null}
-     * @param theSourceDir
-     *            source directory, must not be {@code null}
-     * @param buildType
-     *            build type argument for cmake or {@code null} to pass none
-     * @param cmakeArgs
-     *            additional arguments, separated by spaces to pass to cmake or
-     *            {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildCMakeCall(final String cmakeBin,
-            final String generator, final String preloadScript,
-            final FilePath theSourceDir, final String buildType,
-            final String cmakeArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(cmakeBin);
-        if (generator != null) {
-            args.add("-G").add(generator); //$NON-NLS-1$
-        }
-        if (preloadScript != null) {
-            args.add("-C").add(preloadScript); //$NON-NLS-1$
-        }
-        if (buildType != null) {
-            args.add("-D").add("CMAKE_BUILD_TYPE=" + buildType); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (cmakeArgs != null) {
-            args.addTokenized(cmakeArgs);
-        }
-        args.add(theSourceDir.getRemote());
-        return args;
-    }
-
-    /**
-     * Constructs the command line to invoke the actual build tool.
-     *
-     * @param toolBin
-     *            the name of the build tool binary, either as an absolute or
-     *            relative file system path.
-     * @param toolArgs
-     *            addional arguments, separated by spaces to pass to cmake or
-     *            {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildBuildToolCall(final String toolBin,
-            String... toolArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(toolBin);
-        if (toolArgs != null) {
-            args.add(toolArgs);
-        }
-        return args;
-    }
-
-    /**
-     * Constructs the command line to have the actual build tool invoked with
-     * cmake.
-     *
-     * @param cmakeBin
-     *            the name of the cmake tool binary, either as an absolute or
-     *            relative file system path.
-     * @param theBuildDir
-     *            the build directory path
-     * @param toolArgs
-     *            addional build tool arguments, separated by spaces to pass to
-     *            cmake or {@code null}
-     * @return the argument list, never {@code null}
-     */
-    private static ArgumentListBuilder buildBuildToolCallWithCmake(
-            final String cmakeBin, FilePath theBuildDir, String... toolArgs) {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-
-        args.add(cmakeBin);
-        args.add("--build"); //$NON-NLS-1$
-        args.add(theBuildDir.getRemote());
-        if (toolArgs != null) {
-            args.add(toolArgs);
-        }
-        return args;
     }
 
     /**
@@ -315,16 +233,21 @@ public class CmakeBuilderStep extends AbstractStep {
             }
 
             /* Invoke cmake in build dir */
-            FilePath theSourceDir = LaunchUtils.makeRemotePath(workSpace,
-                    step.sourceDir);
-            ArgumentListBuilder cmakeCall = buildCMakeCall(cmakeBin,
-                    step.getGenerator(), step.getPreloadScript(), theSourceDir,
-                    step.getBuildType(), step.getCmakeArgs());
+            FilePath theSourceDir = (step.getPreset() != null
+                    && step.sourceDir == null)
+                            ? null
+                            : LaunchUtils.makeRemotePath(workSpace,
+                                    step.sourceDir);
+            ArgumentListBuilder cmakeCall = LaunchUtils.buildCMakeCall(cmakeBin,
+                    step.getGenerator(), step.getPreloadScript(),
+                    step.getPreset(), theSourceDir, step.getBuildType(),
+                    step.getCmakeArgs());
             // invoke cmake
 
-            int exitCode;
-            if (0 != (exitCode = launcher.launch().pwd(theBuildDir).envs(env)
-                    .stdout(listener).cmds(cmakeCall).join())) {
+            int exitCode = launcher.launch().pwd(theBuildDir).envs(env)
+                    .stdout(listener).cmds(cmakeCall).join();
+            listener.getLogger().flush();
+            if (0 != exitCode) {
                 // invocation failed
                 throw new AbortException(
                         String.format(Messages.getString("Exited_with_error_code"), //$NON-NLS-1$
@@ -335,7 +258,8 @@ public class CmakeBuilderStep extends AbstractStep {
                 String buildTool = null;
                 boolean needBuildTool = false;
                 for (BuildToolStep toolStep : step.getSteps()) {
-                    if (!toolStep.getWithCmake()) {
+                    if (!toolStep.getWithCmake()
+                            && toolStep.getPreset() == null) {
                         needBuildTool = true;
                         break;
                     }
@@ -355,24 +279,32 @@ public class CmakeBuilderStep extends AbstractStep {
                 /* invoke each build tool step in build dir */
                 for (BuildToolStep toolStep : step.getSteps()) {
                     ArgumentListBuilder toolCall;
-                    if (!toolStep.getWithCmake()) {
+                    if (!toolStep.getWithCmake()
+                            && toolStep.getPreset() == null) {
                         // invoke directly
-                        toolCall = buildBuildToolCall(buildTool,
+                        toolCall = LaunchUtils.buildBuildToolCall(buildTool,
                                 toolStep.getCommandArguments(env));
                     } else {
                         // invoke through 'cmake --build <dir>'
-                        toolCall = buildBuildToolCallWithCmake(cmakeBin,
-                                theBuildDir,
+                        toolCall = LaunchUtils.buildBuildToolCallWithCmake(
+                                cmakeBin, theBuildDir, step.getBuildType(),
+                                toolStep.getPreset(),
                                 toolStep.getCommandArguments(env));
                     }
                     final EnvVars stepEnv = new EnvVars(env).overrideAll(
                             toolStep.getEnvironmentVars(env, listener));
-                    if (0 != (exitCode = launcher.launch().pwd(theBuildDir)
+                    exitCode = launcher.launch().pwd(theBuildDir)
                             .envs(stepEnv).stdout(listener).cmds(toolCall)
-                            .join())) {
+                            .join();
+                    listener.getLogger().flush();
+                    if (0 != exitCode) {
                         throw new AbortException(String.format(
                                 Messages.getString("Exited_with_error_code"), //$NON-NLS-1$
-                                buildTool, exitCode));
+                                (!toolStep.getWithCmake()
+                                        && toolStep.getPreset() == null)
+                                                ? buildTool
+                                                : step.getCommandBasename(),
+                                exitCode));
                     }
                 }
             }

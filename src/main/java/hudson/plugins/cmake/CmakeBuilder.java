@@ -8,7 +8,7 @@ package hudson.plugins.cmake;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -50,6 +50,7 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     private String sourceDir;
     private String buildType;
     private String preloadScript;
+    private String preset;
     private boolean cleanBuild;
 
     // for backward compatibility with < 2.4.0
@@ -167,6 +168,15 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
     }
 
     @DataBoundSetter
+    public void setPreset(String preset) {
+        this.preset = Util.fixEmptyAndTrim(preset);
+    }
+
+    public String getPreset() {
+        return this.preset;
+    }
+
+    @DataBoundSetter
     public void setCmakeArgs(String cmakeArgs) {
         // because of: error: @DataBoundConstructor may not be used on an
         // abstract class
@@ -234,27 +244,38 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             }
 
             /* Invoke cmake in build dir */
-            FilePath theSourceDir = LaunchUtils.makeRemotePath(workSpace,
-                    Util.replaceMacro(sourceDir, envs));
+            final String resolvedPreset = Util.replaceMacro(this.preset, envs);
+            final String resolvedBuildType = Util.replaceMacro(this.buildType,
+                    envs);
+            FilePath theSourceDir = (resolvedPreset != null && sourceDir == null)
+                    ? null
+                    : LaunchUtils.makeRemotePath(workSpace,
+                            Util.replaceMacro(sourceDir, envs));
             ArgumentListBuilder cmakeCall = LaunchUtils.buildCMakeCall(cmakeBin,
                     Util.replaceMacro(getGenerator(), envs),
-                    Util.replaceMacro(this.preloadScript, envs), theSourceDir,
-                    Util.replaceMacro(this.buildType, envs),
+                    Util.replaceMacro(this.preloadScript, envs),
+                    resolvedPreset, theSourceDir, resolvedBuildType,
                     Util.replaceMacro(getCmakeArgs(), envs));
             // invoke cmake
-            if (0 != launcher.launch().pwd(theBuildDir).envs(envs)
-                    .stdout(listener).cmds(cmakeCall).join()) {
+            int cmakeExit = launcher.launch().pwd(theBuildDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join();
+            listener.getLogger().flush();
+            if (0 != cmakeExit) {
                 return false; // invocation failed
             }
 
             /* parse CMakeCache.txt to get the actual build tool */
             FilePath cacheFile = theBuildDir.child("CMakeCache.txt"); //$NON-NLS-1$
-            String buildTool = cacheFile.act(new BuildToolEntryParser());
+            String buildTool = (resolvedPreset == null || cacheFile.exists())
+                    ? cacheFile.act(new BuildToolEntryParser())
+                    : null;
             if (buildTool == null) {
-                listener.getLogger().printf(
-                        Messages.getString("Failed_to_get_var_value"), //$NON-NLS-1$
-                        CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
-                        cacheFile.getRemote());
+                if (resolvedPreset == null) {
+                    listener.getLogger().printf(
+                            Messages.getString("Failed_to_get_var_value"), //$NON-NLS-1$
+                            CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL,
+                            cacheFile.getRemote());
+                }
             } else {
                 // add CMAKE_BUILD_TOOL variable for toolSteps
                 envs.put(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, buildTool);
@@ -271,7 +292,9 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
             if( toolSteps != null) {
                 for (BuildToolStep step : toolSteps) {
                     ArgumentListBuilder toolCall;
-                    if (!step.getWithCmake()) {
+                    final String stepPreset = Util
+                            .replaceMacro(step.getPreset(), envs);
+                    if (!step.getWithCmake() && stepPreset == null) {
                         // invoke directly
                         // if buildTool == null, let the unexpanded macro show up in
                         // the log
@@ -282,13 +305,17 @@ public class CmakeBuilder extends AbstractCmakeBuilder {
                                 step.getCommandArguments(envs));
                     } else {
                         // invoke through 'cmake --build <dir>'
-                        toolCall = LaunchUtils.buildBuildToolCallWithCmake(cmakeBin,
-                                theBuildDir, step.getCommandArguments(envs));
+                        toolCall = LaunchUtils.buildBuildToolCallWithCmake(
+                                cmakeBin, theBuildDir, resolvedBuildType,
+                                stepPreset, step.getCommandArguments(envs));
                     }
                     final EnvVars stepEnv = new EnvVars(envs)
                             .overrideAll(step.getEnvironmentVars(envs, listener));
-                    if (0 != launcher.launch().pwd(theBuildDir).envs(stepEnv)
-                            .stdout(listener).cmds(toolCall).join()) {
+                    int stepExit = launcher.launch().pwd(theBuildDir)
+                            .envs(stepEnv).stdout(listener).cmds(toolCall)
+                            .join();
+                    listener.getLogger().flush();
+                    if (0 != stepExit) {
                         return false; // invocation failed
                     }
                 }
