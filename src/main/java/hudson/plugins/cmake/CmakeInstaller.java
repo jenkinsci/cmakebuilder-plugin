@@ -310,10 +310,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
          */
         @Override
         public List<CmakeInstallable> getInstallables() throws IOException {
-            Downloadable downloadable = Downloadable.get(getId());
-            if (downloadable == null)
-                return Collections.emptyList();
-            JSONObject d = downloadable.getData();
+            JSONObject d = Downloadable.get(getId()).getData();
             if (d == null)
                 return Collections.emptyList();
             Map<String, Class<?>> classMap = new HashMap<>();

@@ -1,6 +1,3 @@
-buildPlugin(
-  useContainerAgent: true,
-  configurations: [
-    [platform: 'linux', jdk: 17],
-    [platform: 'linux', jdk: 21],
-  ])
+#!/usr/bin/env groovy
+
+buildPlugin(platforms: ['linux'])

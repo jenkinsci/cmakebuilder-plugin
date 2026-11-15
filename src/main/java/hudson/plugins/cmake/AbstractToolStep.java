@@ -7,7 +7,7 @@ package hudson.plugins.cmake;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;

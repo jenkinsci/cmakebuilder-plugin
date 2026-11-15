@@ -8,7 +8,7 @@ package hudson.plugins.cmake;
 import java.io.IOException;
 import java.util.List;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
