@@ -167,9 +167,10 @@ public class AbstractToolStep extends AbstractStep {
                             installToUse.getAbsoluteCommand(node,
                                     step.getCommandBasename()),
                             step.getArguments());
-            final int exitCode;
-            if (0 == (exitCode = launcher.launch().pwd(theWorkDir).envs(env)
-                    .stdout(listener).cmds(cmakeCall).join())) {
+            final int exitCode = launcher.launch().pwd(theWorkDir).envs(env)
+                    .stdout(listener).cmds(cmakeCall).join();
+            listener.getLogger().flush();
+            if (0 == exitCode) {
                 return Integer.valueOf(exitCode);
             }
             // should this failure be ignored?

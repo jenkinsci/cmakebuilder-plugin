@@ -17,6 +17,9 @@
   </f:entry>
 
   <f:advanced>
+    <f:entry title="${%Preset}" field="preset" help="/plugin/cmakebuilder/html/help/builder/preset.html">
+      <f:textbox />
+    </f:entry>
     <f:entry title="${%Preload Script}" field="preloadScript" help="/plugin/cmakebuilder/html/help/builder/preloadScript.html">
       <f:textbox />
     </f:entry>

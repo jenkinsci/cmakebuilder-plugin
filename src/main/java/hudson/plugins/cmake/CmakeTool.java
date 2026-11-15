@@ -199,13 +199,11 @@ public class CmakeTool extends ToolInstallation implements
     }
 
     private static CmakeTool[] getInstallations(DescriptorImpl descriptor) {
-        CmakeTool[] installations;
-        try {
-            installations = descriptor.getInstallations();
-        } catch (NullPointerException e) {
-            installations = new CmakeTool[0];
+        if (descriptor == null) {
+            return new CmakeTool[0];
         }
-        return installations;
+        CmakeTool[] installations = descriptor.getInstallations();
+        return installations != null ? installations : new CmakeTool[0];
     }
 
     // //////////////////////////////////////////////////////////////////

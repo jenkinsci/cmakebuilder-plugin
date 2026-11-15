@@ -28,7 +28,7 @@ public class CmakeBuilderFormRoundTripTest {
         j.assertEqualBeans(
                 before,
                 after,
-                "installationName,generator,sourceDir,buildType,cleanBuild,preloadScript,cmakeArgs");
+                "installationName,generator,sourceDir,buildType,cleanBuild,preloadScript,preset,cmakeArgs");
         assertEquals(after.getBuildDir(),"build");
     }
 

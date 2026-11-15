@@ -1,17 +1,19 @@
 <div>
-Common values are &lt;empty>, <kbd>Debug</kbd>, <kbd>Release</kbd>, <kbd>RelWithDebInfo</kbd>
-and <kbd>MinSizeRel</kbd>.<br/>
-An empty value is usually used with multi-configuration generators such as Visual Studio.
-The Debug/Release values are
-usually used with single configuration generators such as Ninja or Unix Makefiles.
-<p>
-If the value is not empty, the CMake cache variable <code>CMAKE_BUILD_TYPE</code>
-will pre-populated with the value before CMake invocation.   
-</p>
-<p>
-If you desire to use a custom build type, you are able to do so. 
-Any custom build type requires additional configuration in CMakeLists.txt.
-Please see the <a href="https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/Useful-Variables#LC1">CMake wiki</a>
-for details on extending the default set of build types.
-</p>
+  Common values are &lt;empty&gt;, <kbd>Debug</kbd>, <kbd>Release</kbd>, <kbd>RelWithDebInfo</kbd>
+  and <kbd>MinSizeRel</kbd>.
+  <p>
+    For single-configuration generators (such as <kbd>Ninja</kbd> or <kbd>Unix Makefiles</kbd>), a
+    non-empty value populates the CMake cache variable <code>-D CMAKE_BUILD_TYPE=&lt;buildType&gt;</code>
+    during the configure step.
+  </p>
+  <p>
+    For multi-configuration generators (such as <kbd>Visual Studio</kbd>, <kbd>Xcode</kbd>, or
+    <kbd>Ninja Multi-Config</kbd>), <code>CMAKE_BUILD_TYPE</code> is omitted during the configure step
+    and <code>--config &lt;buildType&gt;</code> is passed automatically during <code>cmake --build</code>
+    steps (when <i>Use cmake</i> / <code>withCmake: true</code> is enabled).
+  </p>
+  <p>
+    If you desire to use a custom build type, you are able to do so.
+    Any custom build type requires additional configuration in <code>CMakeLists.txt</code>.
+  </p>
 </div>

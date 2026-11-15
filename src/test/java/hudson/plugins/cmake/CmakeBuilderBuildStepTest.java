@@ -2,11 +2,10 @@ package hudson.plugins.cmake;
 
 import java.util.Locale;
 
-import org.apache.geode.test.junit.ConditionalIgnore;
-import org.apache.geode.test.junit.rules.ConditionalIgnoreRule;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,17 +24,19 @@ import hudson.model.Result;
 public class CmakeBuilderBuildStepTest {
 
     @Rule
-    public ConditionalIgnoreRule conditionalIgnoreRule = new ConditionalIgnoreRule();
-    @Rule
     public JenkinsRule j = new JenkinsRule();
     @ClassRule
     public static BuildWatcher bw = new BuildWatcher();
+
+    @Before
+    public void setup() {
+        CmakeNotInstalledIgnoreCondition.assumeCmakeInstalled();
+    }
 
     /**
      * Verify that it works on a master.
      */
     @Test
-    @ConditionalIgnore(value = "SKIPPED: cmake tool not installed", condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnMaster() throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String cMakeLists = "cmake_minimum_required(VERSION 3.10)\n"
@@ -60,7 +61,6 @@ public class CmakeBuilderBuildStepTest {
      * Verify that it works on a slave.
      */
     @Test
-    @ConditionalIgnore(value = "SKIPPED: cmake tool not installed", condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnSlave() throws Exception {
         final String NODE_NAME = "cmakebuilder-test-slave";
 
@@ -93,7 +93,6 @@ public class CmakeBuilderBuildStepTest {
      * Verifies that environment variable are passed to cmake.
      */
     @Test
-    @ConditionalIgnore(value = "SKIPPED: cmake tool not installed", condition = CmakeNotInstalledIgnoreCondition.class)
     public void testEnvToCmake_1() throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String cMakeLists = "cmake_minimum_required(VERSION 3.10)\n"
@@ -125,7 +124,6 @@ public class CmakeBuilderBuildStepTest {
      * Verifies that environment variable are passed to cmake.
      */
     @Test
-    @ConditionalIgnore(value = "SKIPPED: cmake tool not installed", condition = CmakeNotInstalledIgnoreCondition.class)
     public void testEnvToCmake_2() throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String envValue = "XYZabcDEF";
@@ -157,7 +155,6 @@ public class CmakeBuilderBuildStepTest {
      * Verify that build tool invocations work.
      */
     @Test
-    @ConditionalIgnore(value = "SKIPPED: cmake tool not installed", condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolStep() throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         // let the build invoke 'make clean all'..

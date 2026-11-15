@@ -36,6 +36,7 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> implem
     private String args;
     private String vars;
     private boolean withCmake;
+    private String preset;
 
     /**
      *
@@ -149,6 +150,21 @@ public class BuildToolStep extends AbstractDescribableImpl<BuildToolStep> implem
     @DataBoundSetter
     public void setEnvVars(String vars) {
         this.vars = Util.fixEmptyAndTrim(vars);
+    }
+
+    /**
+     * Gets the CMake build preset name ({@code --preset <preset>}).
+     */
+    public String getPreset() {
+        return preset;
+    }
+
+    /**
+     * Sets the CMake build preset name ({@code --preset <preset>}).
+     */
+    @DataBoundSetter
+    public void setPreset(String preset) {
+        this.preset = Util.fixEmptyAndTrim(preset);
     }
 
     // //////////////////////////////////////////////////////////////////

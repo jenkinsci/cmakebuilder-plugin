@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.test.junit.ConditionalIgnore;
-import org.apache.geode.test.junit.rules.ConditionalIgnoreRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,14 +31,13 @@ import hudson.slaves.DumbSlave;
 public class CmakeBuilderBuildTest {
 
     @Rule
-    public ConditionalIgnoreRule conditionalIgnoreRule = new ConditionalIgnoreRule();
-    @Rule
     public JenkinsRule j = new JenkinsRule();
 
     private MultiFileSCM scm;
 
     @Before
     public void setup() throws IOException {
+        CmakeNotInstalledIgnoreCondition.assumeCmakeInstalled();
         List<SingleFileSCM> files = new ArrayList<SingleFileSCM>(2);
         files.add(new SingleFileSCM("src/CMakeLists.txt", getClass()
                 .getResource("CMakeLists.txt")));
@@ -53,7 +50,6 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a master.
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnMaster() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -73,7 +69,6 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a slave.
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testOnSlave() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -98,7 +93,6 @@ public class CmakeBuilderBuildTest {
      * Verifies that build variable get expanded.
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildVariables() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -145,7 +139,6 @@ public class CmakeBuilderBuildTest {
      * Verifies that the build-tool variable gets injected.
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolVariableInjected() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -168,7 +161,6 @@ public class CmakeBuilderBuildTest {
      * Verify that direct build tool invocations work.
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolStep() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
@@ -204,7 +196,6 @@ public class CmakeBuilderBuildTest {
      * Test will fail with cmake >= 2.8
      */
     @Test
-    @ConditionalIgnore(value="SKIPPED: cmake tool not installed",condition = CmakeNotInstalledIgnoreCondition.class)
     public void testBuildToolStepWithCmake() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);

@@ -135,9 +135,10 @@ public class CToolBuilder extends AbstractCmakeBuilder {
                     installToUse.getAbsoluteCommand(build.getBuiltOn(),
                             getToolId()),
                     Util.replaceMacro(getArguments(), envs));
-            final int exitCode;
-            if (0 != (exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
-                    .stdout(listener).cmds(cmakeCall).join())) {
+            final int exitCode = launcher.launch().pwd(theWorkDir).envs(envs)
+                    .stdout(listener).cmds(cmakeCall).join();
+            listener.getLogger().flush();
+            if (0 != exitCode) {
                 // should this failure be ignored?
                 if (ignoredExitCodesParsed == null) {
                     ignoredExitCodesParsed = new IntSet(ignoredExitCodes);
