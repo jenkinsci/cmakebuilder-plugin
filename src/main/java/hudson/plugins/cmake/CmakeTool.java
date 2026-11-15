@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
@@ -126,7 +126,6 @@ public class CmakeTool extends ToolInstallation implements
      *
      */
     @Initializer(after = EXTENSIONS_AUGMENTED)
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "Older Jenkins may return null here")
     public static void onLoaded() {
 
         Jenkins jenkinsInstance = Jenkins.getInstanceOrNull();
@@ -223,7 +222,7 @@ public class CmakeTool extends ToolInstallation implements
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json)
+        public boolean configure(StaplerRequest2 req, JSONObject json)
                 throws FormException {
             // reject empty tool names...
             List<CmakeTool> cmakes = req.bindJSONToList(CmakeTool.class,
