@@ -28,7 +28,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 
 /**
- * Executes <tt>cmake</tt> as a build step.
+ * Executes <code>cmake</code> as a build step.
  *
  * @author Volker Kaiser (initial implementation)
  * @author Martin Weber

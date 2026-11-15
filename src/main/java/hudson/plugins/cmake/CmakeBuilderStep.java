@@ -24,7 +24,7 @@ import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 
 /**
- * Generates the build scripts with <tt>cmake</tt> and runs the appropriate
+ * Generates the build scripts with <code>cmake</code> and runs the appropriate
  * build tool.<br>
  * Similar to {@code CMakeBuilder}, but pipeline compatible.
  *
