@@ -4,7 +4,7 @@
 - **Plugin ID**: `cmakebuilder`
 - **Repository**: `jenkinsci/cmakebuilder-plugin`
 - **Java Package**: `hudson.plugins.cmake`
-- **Jenkins Baseline**: `2.346.3` / `2.492.3` (`org.jenkins-ci.plugins:plugin`)
+- **Jenkins Baseline**: `2.492.3` (`org.jenkins-ci.plugins:plugin:6.x`)
 
 Provides CMake, CTest, and CPack build steps and Pipeline steps (`cmakeBuild`, `cmake`, `ctest`, `cpack`), along with automatic CMake tool installation (`CmakeTool`, `CmakeInstaller`), CMake `--preset` support, and multi-config generator (`Visual Studio *`, `Xcode`, `Ninja Multi-Config`) `buildType` handling.
 
@@ -49,12 +49,12 @@ mvn hpi:run
   - `BuildToolStep.java` — Nested build tool invocation step supporting both direct build-tool invocation (`make`, `ninja`) and `cmake --build <dir> [--preset <preset>] [--config <buildType>]` (`withCmake: true`).
   - `CToolBuilder.java`, `AbstractToolStep.java`, `CMakeStep.java`, `CTestStep.java`, `CPackStep.java` — Standalone Freestyle and Pipeline steps (`cmake`, `ctest`, `cpack`).
   - `LaunchUtils.java` — Constructs `ArgumentListBuilder` commands for `cmake` configure calls (`buildCMakeCall`), `cmake --build` calls (`buildBuildToolCallWithCmake`), and multi-config generator detection (`isMultiConfigGenerator`).
-  - `CmakeTool.java` & `CmakeInstaller.java` — Global tool installation and downloadable archive installer from `cmake.org`.
+  - `CmakeTool.java` & `CmakeInstaller.java` — Global tool installation (`@Symbol("cmake")`) and downloadable archive installer from `cmake.org` (`@Symbol("cmakeInstaller")`) supporting Declarative `tools { cmake ... }` and JCasC.
 - `src/main/resources/` & `src/main/webapp/html/help/`
   - `lib/cmake/common-fields.jelly`, `hudson/plugins/cmake/*/config.jelly` — Freestyle and Snippet Generator UI definitions.
   - `src/main/webapp/html/help/builder/*.html` & `src/main/webapp/html/help/tool/*.html` — Field help documentation.
-- `src/test/java/hudson/plugins/cmake/`
-  - `CmakeBuilderTest.java`, `CmakeBuilderFormRoundTripTest.java`, `CToolBuilderFormRoundTripTest.java`, `BuildToolStepTest.java`, `IntSetTest.java`, `CmakeBuilderBuildTest.java`, `CmakeBuilderBuildStepTest.java`, `CToolBuilderBuildTest.java`.
+- `src/test/java/hudson/plugins/cmake/` (JUnit 5 / `@WithJenkins`; JUnit 4 imports banned via `ban-junit4-imports.skip=false`)
+  - `CmakeBuilderTest.java`, `CmakeBuilderFormRoundTripTest.java`, `CToolBuilderFormRoundTripTest.java`, `BuildToolStepTest.java`, `IntSetTest.java`, `CmakeToolSymbolAndCascTest.java`, `CmakeBuilderBuildTest.java`, `CmakeBuilderBuildStepTest.java`, `CToolBuilderBuildTest.java`.
 
 ---
 

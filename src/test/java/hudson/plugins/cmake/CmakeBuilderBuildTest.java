@@ -1,17 +1,17 @@
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -28,15 +28,13 @@ import hudson.slaves.DumbSlave;
  *
  * @author Martin Weber
  */
-public class CmakeBuilderBuildTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class CmakeBuilderBuildTest {
 
     private MultiFileSCM scm;
 
-    @Before
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         CmakeNotInstalledIgnoreCondition.assumeCmakeInstalled();
         List<SingleFileSCM> files = new ArrayList<SingleFileSCM>(2);
         files.add(new SingleFileSCM("src/CMakeLists.txt", getClass()
@@ -50,7 +48,7 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a master.
      */
     @Test
-    public void testOnMaster() throws Exception {
+    void testOnMaster(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
@@ -69,7 +67,7 @@ public class CmakeBuilderBuildTest {
      * Verify that it works on a slave.
      */
     @Test
-    public void testOnSlave() throws Exception {
+    void testOnSlave(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
@@ -93,7 +91,7 @@ public class CmakeBuilderBuildTest {
      * Verifies that build variable get expanded.
      */
     @Test
-    public void testBuildVariables() throws Exception {
+    void testBuildVariables(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
@@ -139,7 +137,7 @@ public class CmakeBuilderBuildTest {
      * Verifies that the build-tool variable gets injected.
      */
     @Test
-    public void testBuildToolVariableInjected() throws Exception {
+    void testBuildToolVariableInjected(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
         CmakeBuilder cmb = new CmakeBuilder(CmakeTool.DEFAULT);
@@ -154,14 +152,14 @@ public class CmakeBuilderBuildTest {
         System.out.println(JenkinsRule.getLog(build));
         j.assertBuildStatusSuccess(build);
 
-        assertNotNull(CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL, gevb.value);
+        assertNotNull(gevb.value, CmakeBuilder.ENV_VAR_NAME_CMAKE_BUILD_TOOL);
     }
 
     /**
      * Verify that direct build tool invocations work.
      */
     @Test
-    public void testBuildToolStep() throws Exception {
+    void testBuildToolStep(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 
@@ -196,7 +194,7 @@ public class CmakeBuilderBuildTest {
      * Test will fail with cmake >= 2.8
      */
     @Test
-    public void testBuildToolStepWithCmake() throws Exception {
+    void testBuildToolStepWithCmake(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(scm);
 

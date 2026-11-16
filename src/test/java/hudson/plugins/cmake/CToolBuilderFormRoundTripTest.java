@@ -1,20 +1,18 @@
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.FreeStyleProject;
 
-public class CToolBuilderFormRoundTripTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class CToolBuilderFormRoundTripTest {
 
     @Test
-    public void checkValidation() throws Exception {
+    void checkValidation(JenkinsRule j) throws Exception {
 
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder before = new CToolBuilder(CmakeTool.DEFAULT);

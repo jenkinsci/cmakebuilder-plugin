@@ -1,51 +1,43 @@
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Iterator;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Martin Weber
  */
-public class IntSetTest {
+class IntSetTest {
 
   private IntSet testee;
 
   /**
    * @throws java.lang.Exception
    */
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     testee = new IntSet();
   }
 
   /**
-   * @throws java.lang.Exception
-   */
-  @After
-  public void tearDown() throws Exception {
-  }
-
-  /**
    * Test method for
    * {@link hudson.plugins.cmake.IntSet#toSpecificationString()}.
    */
   @Test
-  public final void testToSpecificationString() {
+  final void testToSpecificationString() {
     final String rangeIn = "1";
     testee.setValues(rangeIn);
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertEquals("toSpecificationString()", rangeIn,
-        testee.toSpecificationString());
+    assertNotNull(iter, "iterator()");
+    assertEquals(rangeIn, testee.toSpecificationString(),
+        "toSpecificationString()");
   }
 
   /**
@@ -53,22 +45,22 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#toSpecificationString()}.
    */
   @Test
-  public final void testToSpecificationStringOrder() {
+  final void testToSpecificationStringOrder() {
     final String rangeIn = "30,10,20";
     testee.setValues(rangeIn);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", "10,20,30",
-        testee.toSpecificationString());
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals("10,20,30", testee.toSpecificationString(),
+        "toSpecificationString()");
     // we expect port 10, 20, 30 in exactly that order
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertTrue("1", iter.hasNext());
+    assertNotNull(iter, "iterator()");
+    assertTrue(iter.hasNext(), "1");
     assertEquals(10, iter.next().intValue());
-    assertTrue("2", iter.hasNext());
+    assertTrue(iter.hasNext(), "2");
     assertEquals(20, iter.next().intValue());
-    assertTrue("3", iter.hasNext());
+    assertTrue(iter.hasNext(), "3");
     assertEquals(30, iter.next().intValue());
-    assertFalse("4", iter.hasNext());
+    assertFalse(iter.hasNext(), "4");
   }
 
   /**
@@ -76,22 +68,22 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#toSpecificationString()}.
    */
   @Test
-  public final void testToSpecificationStringListDuplicates() {
+  final void testToSpecificationStringListDuplicates() {
     final String rangeIn = "30,10,20,10,20,30";
     testee.setValues(rangeIn);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", "10,20,30",
-        testee.toSpecificationString());
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals("10,20,30", testee.toSpecificationString(),
+        "toSpecificationString()");
     // we expect port 10, 20, 30 in exactly that order
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertTrue("1", iter.hasNext());
+    assertNotNull(iter, "iterator()");
+    assertTrue(iter.hasNext(), "1");
     assertEquals(10, iter.next().intValue());
-    assertTrue("2", iter.hasNext());
+    assertTrue(iter.hasNext(), "2");
     assertEquals(20, iter.next().intValue());
-    assertTrue("3", iter.hasNext());
+    assertTrue(iter.hasNext(), "3");
     assertEquals(30, iter.next().intValue());
-    assertFalse("4", iter.hasNext());
+    assertFalse(iter.hasNext(), "4");
   }
 
   /**
@@ -99,22 +91,22 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#setValues(java.lang.String)}.
    */
   @Test
-  public final void testRestrictToList() {
+  final void testRestrictToList() {
     final String rangeIn = "10,20,30";
     testee.setValues(rangeIn);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", rangeIn,
-        testee.toSpecificationString());
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals(rangeIn, testee.toSpecificationString(),
+        "toSpecificationString()");
     // we expect port 10, 20, 30 in exactly that order
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertTrue("1", iter.hasNext());
+    assertNotNull(iter, "iterator()");
+    assertTrue(iter.hasNext(), "1");
     assertEquals(10, iter.next().intValue());
-    assertTrue("2", iter.hasNext());
+    assertTrue(iter.hasNext(), "2");
     assertEquals(20, iter.next().intValue());
-    assertTrue("3", iter.hasNext());
+    assertTrue(iter.hasNext(), "3");
     assertEquals(30, iter.next().intValue());
-    assertFalse("4", iter.hasNext());
+    assertFalse(iter.hasNext(), "4");
   }
 
   /**
@@ -122,28 +114,28 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#setValues(java.lang.String)}.
    */
   @Test
-  public final void testRestrictToRange() {
+  final void testRestrictToRange() {
     final String rangeIn = "30-35";
     testee.setValues(rangeIn);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", rangeIn,
-        testee.toSpecificationString());
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals(rangeIn, testee.toSpecificationString(),
+        "toSpecificationString()");
     // we expect port 10, 20, 30 in exactly that order
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertTrue("1", iter.hasNext());
+    assertNotNull(iter, "iterator()");
+    assertTrue(iter.hasNext(), "1");
     assertEquals(30, iter.next().intValue());
-    assertTrue("2", iter.hasNext());
+    assertTrue(iter.hasNext(), "2");
     assertEquals(31, iter.next().intValue());
-    assertTrue("3", iter.hasNext());
+    assertTrue(iter.hasNext(), "3");
     assertEquals(32, iter.next().intValue());
-    assertTrue("4", iter.hasNext());
+    assertTrue(iter.hasNext(), "4");
     assertEquals(33, iter.next().intValue());
-    assertTrue("5", iter.hasNext());
+    assertTrue(iter.hasNext(), "5");
     assertEquals(34, iter.next().intValue());
-    assertTrue("6", iter.hasNext());
+    assertTrue(iter.hasNext(), "6");
     assertEquals(35, iter.next().intValue());
-    assertFalse("7", iter.hasNext());
+    assertFalse(iter.hasNext(), "7");
   }
 
   /**
@@ -151,28 +143,28 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#setValues(java.lang.String)}.
    */
   @Test
-  public final void testRestrictToRangeDuplicates() {
+  final void testRestrictToRangeDuplicates() {
     final String rangeIn = "30-35,30-35,30-35";
     testee.setValues(rangeIn);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", "30-35",
-        testee.toSpecificationString());
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals("30-35", testee.toSpecificationString(),
+        "toSpecificationString()");
     // we expect port 10, 20, 30 in exactly that order
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertTrue("1", iter.hasNext());
+    assertNotNull(iter, "iterator()");
+    assertTrue(iter.hasNext(), "1");
     assertEquals(30, iter.next().intValue());
-    assertTrue("2", iter.hasNext());
+    assertTrue(iter.hasNext(), "2");
     assertEquals(31, iter.next().intValue());
-    assertTrue("3", iter.hasNext());
+    assertTrue(iter.hasNext(), "3");
     assertEquals(32, iter.next().intValue());
-    assertTrue("4", iter.hasNext());
+    assertTrue(iter.hasNext(), "4");
     assertEquals(33, iter.next().intValue());
-    assertTrue("5", iter.hasNext());
+    assertTrue(iter.hasNext(), "5");
     assertEquals(34, iter.next().intValue());
-    assertTrue("6", iter.hasNext());
+    assertTrue(iter.hasNext(), "6");
     assertEquals(35, iter.next().intValue());
-    assertFalse("7", iter.hasNext());
+    assertFalse(iter.hasNext(), "7");
   }
 
   /**
@@ -180,14 +172,14 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#setValues(java.lang.String)}.
    */
   @Test
-  public final void testRestrictToComplex() {
+  final void testRestrictToComplex() {
     final String rangeIn = "1,2,3,10-15,20";
     testee.setValues(rangeIn);
     Iterator<Integer> iter = testee.iterator();
-    assertNotNull("iterator()", iter);
-    assertFalse("isEmpty()", testee.isEmpty());
-    assertEquals("toSpecificationString()", rangeIn,
-        testee.toSpecificationString());
+    assertNotNull(iter, "iterator()");
+    assertFalse(testee.isEmpty(), "isEmpty()");
+    assertEquals(rangeIn, testee.toSpecificationString(),
+        "toSpecificationString()");
   }
 
   /**
@@ -195,38 +187,11 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#setValues(java.lang.String)}.
    */
   @Test
-  public final void testRestrictToIllegal() {
-    try {
-      testee.setValues("1-");
-      // invalid port range "1-"
-      fail("IllegalArgumentException expected");
-    } catch (IllegalArgumentException expected) {
-      assertTrue("isEmpty()", testee.isEmpty());
-      assertEquals("toSpecificationString()", "", testee.toSpecificationString());
-    }
-    try {
-      testee.setValues("11-1");
-      // invalid port range "1-"
-      fail("IllegalArgumentException expected");
-    } catch (IllegalArgumentException expected) {
-      assertTrue("isEmpty()", testee.isEmpty());
-      assertEquals("toSpecificationString()", "", testee.toSpecificationString());
-    }
-    try {
-      testee.setValues("10wartma-111");
-      // invalid port number "0"
-      fail("IllegalArgumentException expected");
-    } catch (IllegalArgumentException expected) {
-      assertTrue("isEmpty()", testee.isEmpty());
-      assertEquals("toSpecificationString()", "", testee.toSpecificationString());
-    }
-    try {
-      testee.setValues("10-111wartma");
-      // invalid port number "0"
-      fail("IllegalArgumentException expected");
-    } catch (IllegalArgumentException expected) {
-      assertTrue("isEmpty()", testee.isEmpty());
-      assertEquals("toSpecificationString()", "", testee.toSpecificationString());
+  final void testRestrictToIllegal() {
+    for (String illegal : new String[] { "1-", "11-1", "10wartma-111", "10-111wartma" }) {
+      assertThrows(IllegalArgumentException.class, () -> testee.setValues(illegal));
+      assertTrue(testee.isEmpty(), "isEmpty()");
+      assertEquals("", testee.toSpecificationString(), "toSpecificationString()");
     }
   }
 
@@ -235,7 +200,7 @@ public class IntSetTest {
    * {@link hudson.plugins.cmake.IntSet#contains(int)}.
    */
   @Test
-  public final void testContains() {
+  final void testContains() {
       final String rangeIn = "30,10,20";
       testee.setValues(rangeIn);
       assertFalse(testee.isEmpty());

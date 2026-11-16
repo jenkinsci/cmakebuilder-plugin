@@ -8,7 +8,6 @@ package hudson.plugins.cmake;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -102,8 +101,10 @@ public class AbstractStep extends Step implements Serializable {
     @Override
     public StepExecution start(StepContext context) throws Exception {
         if (this.label != null) {
-            context.get(FlowNode.class).addAction(
-                    new LabelAction(StringUtils.left(label, MAX_LABEL_LENGTH)));
+            String truncated = label.length() > MAX_LABEL_LENGTH
+                    ? label.substring(0, MAX_LABEL_LENGTH)
+                    : label;
+            context.get(FlowNode.class).addAction(new LabelAction(truncated));
         }
         return null;
     }

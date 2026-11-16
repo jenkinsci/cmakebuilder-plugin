@@ -6,18 +6,18 @@
  *******************************************************************************/
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import hudson.EnvVars;
 import hudson.console.ConsoleNote;
@@ -26,7 +26,7 @@ import hudson.model.TaskListener;
 /**
  * @author Martin Weber
  */
-public class BuildToolStepTest {
+class BuildToolStepTest {
     // @Rule
     // public JenkinsRule j = new JenkinsRule();
 
@@ -73,8 +73,8 @@ public class BuildToolStepTest {
     /**
      * @throws java.lang.Exception
      */
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         testee = new BuildToolStep();
     }
 

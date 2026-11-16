@@ -1,0 +1,10 @@
+tool:
+  cmake:
+    installations:
+      - name: "InSearchPath"
+      - name: "cmake-3.31"
+        properties:
+          - installSource:
+              installers:
+                - cmakeInstaller:
+                    id: "3.31.6"

@@ -2,10 +2,10 @@ package hudson.plugins.cmake;
 
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -20,13 +20,11 @@ import hudson.slaves.DumbSlave;
  *
  * @author Martin Weber
  */
-public class CToolBuilderBuildTest {
+@WithJenkins
+class CToolBuilderBuildTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         CmakeNotInstalledIgnoreCondition.assumeCmakeInstalled();
     }
 
@@ -34,7 +32,7 @@ public class CToolBuilderBuildTest {
      * Verify that it works on a master.
      */
     @Test
-    public void testOnMaster() throws Exception {
+    void testOnMaster(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
@@ -51,7 +49,7 @@ public class CToolBuilderBuildTest {
      * Verify that it works on a slave.
      */
     @Test
-    public void testOnSlave() throws Exception {
+    void testOnSlave(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         // create a slave with a given label to execute projectB on
@@ -73,7 +71,7 @@ public class CToolBuilderBuildTest {
      * Verifies that build variable get expanded.
      */
     @Test
-    public void testBuildVariables() throws Exception {
+    void testBuildVariables(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         StringParameterDefinition pd1 = new StringParameterDefinition("WORKDIR",
@@ -105,7 +103,7 @@ public class CToolBuilderBuildTest {
      * Verifies that the build-tool variable gets injected.
      */
     @Test
-    public void testBuildToolVariableInjected() throws Exception {
+    void testBuildToolVariableInjected(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
         cmb.setArguments("-version");
@@ -121,7 +119,7 @@ public class CToolBuilderBuildTest {
      * Verifies that failure exit codes get ignored.
      */
     @Test
-    public void testIgnoreFailureExitCodes() throws Exception {
+    void testIgnoreFailureExitCodes(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CToolBuilder cmb = new CToolBuilder(CmakeTool.DEFAULT);
         // useless with ctest v 2.8.11, which seems to never exit with failure code...
