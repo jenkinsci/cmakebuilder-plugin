@@ -211,7 +211,7 @@ public class CmakeTool extends ToolInstallation implements
     // //////////////////////////////////////////////////////////////////
 
     @Extension
-    @Symbol("cmake")
+    @Symbol({ "cmake", "cmakeTool" })
     public static class DescriptorImpl extends ToolDescriptor<CmakeTool> {
 
         public DescriptorImpl() {

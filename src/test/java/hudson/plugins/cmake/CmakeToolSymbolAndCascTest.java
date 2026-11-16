@@ -35,9 +35,26 @@ class CmakeToolSymbolAndCascTest {
         assertNotNull(SymbolLookup.get().findDescriptor(CmakeTool.class, "cmake"),
                 "CmakeTool descriptor should expose @Symbol(\"cmake\")");
         assertNotNull(
+                SymbolLookup.get().findDescriptor(CmakeTool.class, "cmakeTool"),
+                "CmakeTool descriptor should preserve legacy \"cmakeTool\" symbol alias");
+        assertNotNull(
                 SymbolLookup.get().findDescriptor(CmakeInstaller.class,
                         "cmakeInstaller"),
                 "CmakeInstaller descriptor should expose @Symbol(\"cmakeInstaller\")");
+    }
+
+    @Test
+    void testLegacyJcascCmakeToolAlias(JenkinsRule j) throws Exception {
+        String yamlUrl = getClass().getResource("casc-legacy.yaml")
+                .toExternalForm();
+        ConfigurationAsCode.get().configure(yamlUrl);
+
+        CmakeTool.DescriptorImpl descriptor = j.jenkins
+                .getDescriptorByType(CmakeTool.DescriptorImpl.class);
+        CmakeTool[] installations = descriptor.getInstallations();
+        assertEquals(1, installations.length);
+        assertEquals("cmake-legacy-jcasc", installations[0].getName());
+        assertEquals("/opt/cmake/bin", installations[0].getHome());
     }
 
     @Test

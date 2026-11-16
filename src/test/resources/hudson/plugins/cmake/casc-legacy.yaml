@@ -1,0 +1,10 @@
+tool:
+  cmakeTool:
+    installations:
+      - name: "cmake-legacy-jcasc"
+        home: "/opt/cmake/bin"
+        properties:
+          - installSource:
+              installers:
+                - cmakeInstaller:
+                    id: "3.31.6"
