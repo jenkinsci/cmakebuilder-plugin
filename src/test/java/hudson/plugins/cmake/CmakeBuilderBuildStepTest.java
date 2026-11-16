@@ -5,12 +5,12 @@ import java.util.Locale;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.BuildWatcherExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.Label;
 import hudson.model.Result;
@@ -21,15 +21,14 @@ import hudson.model.Result;
  *
  * @author Martin Weber
  */
-public class CmakeBuilderBuildStepTest {
+@WithJenkins
+class CmakeBuilderBuildStepTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-    @ClassRule
-    public static BuildWatcher bw = new BuildWatcher();
+    @RegisterExtension
+    private static final BuildWatcherExtension BUILD_WATCHER = new BuildWatcherExtension();
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         CmakeNotInstalledIgnoreCondition.assumeCmakeInstalled();
     }
 
@@ -37,7 +36,7 @@ public class CmakeBuilderBuildStepTest {
      * Verify that it works on a master.
      */
     @Test
-    public void testOnMaster() throws Exception {
+    void testOnMaster(JenkinsRule j) throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String cMakeLists = "cmake_minimum_required(VERSION 3.10)\n"
                 + "project(test C)\n" + "message(STATUS \"success!\")\n";
@@ -61,7 +60,7 @@ public class CmakeBuilderBuildStepTest {
      * Verify that it works on a slave.
      */
     @Test
-    public void testOnSlave() throws Exception {
+    void testOnSlave(JenkinsRule j) throws Exception {
         final String NODE_NAME = "cmakebuilder-test-slave";
 
         WorkflowJob p = j.createProject(WorkflowJob.class);
@@ -93,7 +92,7 @@ public class CmakeBuilderBuildStepTest {
      * Verifies that environment variable are passed to cmake.
      */
     @Test
-    public void testEnvToCmake_1() throws Exception {
+    void testEnvToCmake_1(JenkinsRule j) throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String cMakeLists = "cmake_minimum_required(VERSION 3.10)\n"
                 + "project(test C)\n"
@@ -124,7 +123,7 @@ public class CmakeBuilderBuildStepTest {
      * Verifies that environment variable are passed to cmake.
      */
     @Test
-    public void testEnvToCmake_2() throws Exception {
+    void testEnvToCmake_2(JenkinsRule j) throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         String envValue = "XYZabcDEF";
         String cMakeLists = "cmake_minimum_required(VERSION 3.10)\n"
@@ -155,7 +154,7 @@ public class CmakeBuilderBuildStepTest {
      * Verify that build tool invocations work.
      */
     @Test
-    public void testBuildToolStep() throws Exception {
+    void testBuildToolStep(JenkinsRule j) throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class);
         // let the build invoke 'make clean all'..
         final String makeTargets = "clean all";

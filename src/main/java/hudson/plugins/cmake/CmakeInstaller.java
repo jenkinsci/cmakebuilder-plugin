@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -293,6 +294,7 @@ public class CmakeInstaller extends DownloadFromUrlInstaller {
     }
 
     @Extension
+    @Symbol("cmakeInstaller")
     public static final class DescriptorImpl
             extends DownloadFromUrlInstaller.DescriptorImpl<CmakeInstaller> {
         @Override

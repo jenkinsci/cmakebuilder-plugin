@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -210,6 +211,7 @@ public class CmakeTool extends ToolInstallation implements
     // //////////////////////////////////////////////////////////////////
 
     @Extension
+    @Symbol("cmake")
     public static class DescriptorImpl extends ToolDescriptor<CmakeTool> {
 
         public DescriptorImpl() {

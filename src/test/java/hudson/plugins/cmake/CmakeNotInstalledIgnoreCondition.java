@@ -7,7 +7,7 @@ package hudson.plugins.cmake;
 
 import java.io.IOException;
 
-import org.junit.Assume;
+import org.junit.jupiter.api.Assumptions;
 
 /**
  * Prevents test from being run if cmake is not in search path for executables
@@ -35,11 +35,11 @@ public class CmakeNotInstalledIgnoreCondition {
     }
 
     /**
-     * Skips the current JUnit test via {@link Assume#assumeTrue} if
+     * Skips the current JUnit test via {@link Assumptions#assumeTrue} if
      * {@code cmake} is not installed.
      */
     public static void assumeCmakeInstalled() {
-        Assume.assumeTrue("SKIPPED: cmake tool not installed",
-                isCmakeInstalled());
+        Assumptions.assumeTrue(isCmakeInstalled(),
+                "SKIPPED: cmake tool not installed");
     }
 }

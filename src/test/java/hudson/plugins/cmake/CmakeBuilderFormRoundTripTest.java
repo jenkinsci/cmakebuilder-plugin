@@ -1,20 +1,18 @@
 package hudson.plugins.cmake;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.FreeStyleProject;
 
-public class CmakeBuilderFormRoundTripTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class CmakeBuilderFormRoundTripTest {
 
     @Test
-    public void checkValidation() throws Exception {
+    void checkValidation(JenkinsRule j) throws Exception {
 
         FreeStyleProject p = j.createFreeStyleProject();
         CmakeBuilder before = new CmakeBuilder(CmakeTool.DEFAULT);
@@ -29,7 +27,7 @@ public class CmakeBuilderFormRoundTripTest {
                 before,
                 after,
                 "installationName,generator,sourceDir,buildType,cleanBuild,preloadScript,preset,cmakeArgs");
-        assertEquals(after.getBuildDir(),"build");
+        assertEquals("build", after.getBuildDir());
     }
 
 }
